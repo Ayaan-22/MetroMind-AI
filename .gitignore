@@ -1,0 +1,32 @@
+# MetroMind AI — Git Ignore
+
+# Project Specific
+project_proposal/
+old_versions/
+
+
+# Dependencies
+node_modules/
+jspm_packages/
+
+# Build and Output
+dist/
+build/
+.cache/
+out/
+*.log
+
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+
+# IDE and System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Misc
+.temp/
+tmp/

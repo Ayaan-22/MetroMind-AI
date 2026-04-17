@@ -1,0 +1,987 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="MetroMind AI — interactive pathfinding visualization using A*, Dijkstra, BFS, DFS, Greedy Best-First, and Bidirectional A*. AI project."
+    />
+    <title>MetroMind AI — v9</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=IBM+Plex+Mono:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+        <link rel="stylesheet" href="css/styles.css" />
+  </head>
+
+  <body>
+    <!-- Drag ghost -->
+    <div id="dragGhost"></div>
+
+    <!-- Fullscreen floating HUD -->
+    <div id="fsHUD">
+      <div class="hud-stat">
+        <div class="hud-val" id="hudAlgo">A*</div>
+        <div class="hud-lbl">Algorithm</div>
+      </div>
+      <div class="hud-sep"></div>
+      <div class="hud-stat">
+        <div class="hud-val" id="hudNodes">0</div>
+        <div class="hud-lbl">Explored</div>
+      </div>
+      <div class="hud-sep"></div>
+      <div class="hud-stat">
+        <div class="hud-val" id="hudPath">—</div>
+        <div class="hud-lbl">Path Len</div>
+      </div>
+      <div class="hud-sep"></div>
+      <div class="hud-stat">
+        <div class="hud-val" id="hudCost">—</div>
+        <div class="hud-lbl">Cost</div>
+      </div>
+      <div class="hud-sep"></div>
+      <button
+        style="
+          background: none;
+          border: none;
+          color: var(--accent);
+          cursor: pointer;
+          font-size: 11px;
+          font-family: var(--font-mono);
+        "
+      >
+        ✕ EXIT
+      </button>
+    </div>
+    <!-- Fullscreen toggle button -->
+    <button
+      id="fsBtn"
+      title="Full-screen mode (G)"
+    >
+      ⛶
+    </button>
+
+    <!-- Animated background -->
+    <canvas id="bgCanvas"></canvas>
+
+    <!-- Toast notification -->
+    <div class="toast" id="toast">
+      <div class="toast-inner">
+        <span class="toast-icon" id="toastIcon">ℹ</span>
+        <span class="toast-msg" id="toastMsg"></span>
+      </div>
+      <div class="toast-bar" id="toastBar"></div>
+    </div>
+
+    <!-- Keyboard shortcuts overlay -->
+    <div class="shortcuts-overlay" id="shortcutsOverlay">
+      <div class="shortcuts-box">
+        <div class="shortcuts-title">⌨ Keyboard Shortcuts</div>
+        <div class="shortcut-row">
+          <span>Toggle sidebar</span><kbd>Tab</kbd>
+        </div>
+        <div class="shortcut-row">
+          <span>Play / Pause</span><kbd>Space</kbd>
+        </div>
+        <div class="shortcut-row"><span>Step once</span><kbd>S</kbd></div>
+        <div class="shortcut-row">
+          <span>Step backward (history)</span><kbd>B</kbd>
+        </div>
+        <div class="shortcut-row">
+          <span>Step forward (history)</span><kbd>F</kbd>
+        </div>
+        <div class="shortcut-row"><span>Reset path</span><kbd>R</kbd></div>
+        <div class="shortcut-row"><span>Clear all</span><kbd>C</kbd></div>
+        <div class="shortcut-row"><span>Wall tool</span><kbd>1</kbd></div>
+        <div class="shortcut-row"><span>Start tool</span><kbd>2</kbd></div>
+        <div class="shortcut-row"><span>Goal tool</span><kbd>3</kbd></div>
+        <div class="shortcut-row"><span>Erase tool</span><kbd>4</kbd></div>
+        <div class="shortcut-row"><span>Highway terrain</span><kbd>5</kbd></div>
+        <div class="shortcut-row"><span>Traffic terrain</span><kbd>6</kbd></div>
+        <div class="shortcut-row"><span>Mud terrain</span><kbd>7</kbd></div>
+        <div class="shortcut-row">
+          <span>Compare all algos</span><kbd>X</kbd>
+        </div>
+        <div class="shortcut-row"><span>This panel</span><kbd>?</kbd></div>
+        <div class="shortcut-row"><span>Close</span><kbd>Esc</kbd></div>
+      </div>
+    </div>
+
+    <!-- Compare overlay -->
+    <div class="compare-overlay" id="compareOverlay">
+      <div class="compare-title">⚡ Algorithm Comparison</div>
+      <div class="compare-progress" id="compareProgress">Initializing...</div>
+      <div class="compare-grid" id="compareGrid"></div>
+      <div id="compareBarChart" style="display: none"></div>
+      <button class="compare-close">✕ CLOSE</button>
+    </div>
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="header">
+      <div class="logo-wrap">
+        <button
+          class="icon-btn"
+          id="sidebarToggleBtn"
+          title="Toggle sidebar (Tab)"
+          style="font-size: 15px; padding: 5px 7px"
+        >
+          ☰
+        </button>
+        <div class="logo">🏙</div>
+        <div class="title-block">
+          <div class="app-title">MetroMind AI</div>
+          <div class="app-sub">AI Pathfinding Visualization v9</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <button
+          class="icon-btn"
+          title="Compare all algorithms (X)"
+        >
+          ⚡
+        </button>
+        <button
+          class="icon-btn"
+          title="Keyboard shortcuts (?)"
+        >
+          ⌨
+        </button>
+        <button
+          class="icon-btn"
+          id="rpToggleBtn"
+          title="Toggle log panel"
+        >
+          📋
+        </button>
+        <button
+          class="icon-btn"
+          id="themeBtn"
+          title="Toggle theme"
+        >
+          🌙
+        </button>
+        <span class="hbadge" id="algoBadge">A* Search</span>
+        <span class="hbadge blue" id="heurBadge">Manhattan</span>
+      </div>
+    </div>
+
+    <!-- ═══ MAIN ═══ -->
+    <div class="main" id="mainArea">
+      <!-- Mobile sidebar backdrop -->
+      <div
+        class="sidebar-backdrop"
+        id="sidebarBackdrop"
+      ></div>
+      <!-- ═══ SIDEBAR ═══ -->
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-section" id="sec-controls">
+          <div class="sec-label">
+            Controls
+            <span class="sec-chevron">▾</span>
+          </div>
+          <div class="sec-body">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <button
+                class="btn primary"
+                id="playBtn"
+              >
+                ▶ FIND PATH
+              </button>
+              <div class="btn-row">
+                <button
+                  class="btn"
+                  id="stepBtn"
+                  disabled
+                >
+                  ▷ Step
+                </button>
+                <button class="btn danger" id="btnClearAll">✕ Clear</button>
+              </div>
+              <button class="btn" id="btnResetPath">↺ Reset Path</button>
+              <div class="history-bar">
+                <button
+                  class="btn"
+                  id="btnBack"
+                  disabled
+                  title="Step Backward (B)"
+                >
+                  ◀ Back
+                </button>
+                <span id="historyPos">— / —</span>
+                <button
+                  class="btn"
+                  id="btnFwd"
+                  disabled
+                  title="Step Forward (F)"
+                >
+                  Fwd ▶
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section" id="sec-speed">
+          <div class="sec-label">
+            Speed <span class="sec-chevron">▾</span>
+          </div>
+          <div class="sec-body">
+            <div class="slider-row">
+              <span>Slow</span>
+              <input
+                type="range"
+                id="speedSlider"
+                min="1"
+                max="100"
+                value="50"
+              />
+              <span class="slider-val" id="speedLabel">60ms</span>
+              <span>Fast</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section" id="sec-pathopts">
+          <div class="sec-label">
+            Path Options <span class="sec-chevron">▾</span>
+          </div>
+          <div class="sec-body">
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <div class="slider-row">
+                <span>Weight</span>
+                <input
+                  type="range"
+                  id="weightSlider"
+                  min="0"
+                  max="3"
+                  step="0.1"
+                  value="1"
+                />
+                <span class="slider-val" id="weightLabel">1.0×</span>
+              </div>
+              <label class="check-label">
+                <input
+                  type="checkbox"
+                  id="allowDiagonals"
+                />
+                8-Way Diagonals
+              </label>
+              <label class="check-label">
+                <input
+                  type="checkbox"
+                  id="showCost"
+                  checked
+                />
+                Show f-cost labels
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section" id="sec-gridsize">
+          <div class="sec-label">
+            Grid Size <span class="sec-chevron">▾</span>
+          </div>
+          <div class="sec-body">
+            <div
+              style="
+                display: flex;
+                gap: 6px;
+                align-items: center;
+                margin-bottom: 4px;
+              "
+            >
+              <input
+                type="number"
+                id="mazeCols"
+                value="50"
+                min="10"
+                max="60"
+                style="
+                  width: 40%;
+                  background: rgba(0, 229, 160, 0.04);
+                  border: 1px solid var(--border2);
+                  color: var(--text);
+                  padding: 4px;
+                  font-family: var(--font-mono);
+                  font-size: 10px;
+                  border-radius: 3px;
+                  outline: none;
+                "
+              />
+              <span style="color: var(--text3); font-size: 10px">×</span>
+              <input
+                type="number"
+                id="mazeRows"
+                value="30"
+                min="10"
+                max="60"
+                style="
+                  width: 40%;
+                  background: rgba(0, 229, 160, 0.04);
+                  border: 1px solid var(--border2);
+                  color: var(--text);
+                  padding: 4px;
+                  font-family: var(--font-mono);
+                  font-size: 10px;
+                  border-radius: 3px;
+                  outline: none;
+                "
+              />
+            </div>
+            <!-- Quick-size presets -->
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 4px;
+                margin-top: 6px;
+              "
+            >
+              <button class="maze-btn" data-preset="20,15">
+                20×15
+              </button>
+              <button
+                class="maze-btn"
+                data-preset="35,22"
+                style="border-color: var(--border2)"
+              >
+                35×22
+              </button>
+              <button class="maze-btn" data-preset="50,30">
+                50×30
+              </button>
+              <button class="maze-btn" data-preset="60,40">
+                60×40
+              </button>
+              <button class="maze-btn" data-preset="60,60">
+                60×60
+              </button>
+              <button class="maze-btn" data-preset="10,10">
+                10×10
+              </button>
+            </div>
+            <div
+              style="
+                font-family: var(--font-mono);
+                font-size: 8px;
+                color: var(--text3);
+                margin-top: 4px;
+              "
+            >
+              Range: 10 – 60 · Cell size auto-scales
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section" id="sec-mazes">
+          <div class="sec-label">
+            Maze Templates <span class="sec-chevron">▾</span>
+          </div>
+          <div class="sec-body">
+            <div class="maze-grid">
+              <button class="maze-btn" data-type="empty">Empty</button>
+              <button class="maze-btn" data-type="maze1">Corridor</button>
+              <button class="maze-btn" data-type="spiral">Spiral</button>
+              <button class="maze-btn" data-type="rooms">Rooms</button>
+              <button class="maze-btn" data-type="cross">Cross</button>
+              <button class="maze-btn" data-type="random">Random</button>
+              <button class="maze-btn" data-type="snake">Snake</button>
+              <button class="maze-btn" data-type="grid2">Grid</button>
+              <button class="maze-btn" data-type="recursive">Recursive</button>
+              <button
+                class="maze-btn"
+                data-type="perlin"
+                style="
+                  border-color: rgba(0, 220, 255, 0.3);
+                  color: rgba(0, 220, 255, 0.7);
+                "
+                title="Organic terrain with weighted cells"
+              >
+                🗺 Perlin
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section" id="sec-heuristic">
+          <div class="sec-label">
+            Heuristic <span class="sec-chevron">▾</span>
+          </div>
+          <div class="sec-body">
+            <div class="heur-grid">
+              <button
+                class="heur-btn active"
+                id="heur-manhattan"
+              >
+                Manhattan
+              </button>
+              <button
+                class="heur-btn"
+                id="heur-euclidean"
+              >
+                Euclidean
+              </button>
+              <button
+                class="heur-btn"
+                id="heur-chebyshev"
+              >
+                Chebyshev
+              </button>
+              <button
+                class="heur-btn"
+                id="heur-octile"
+              >
+                Octile
+              </button>
+            </div>
+            <div
+              style="
+                font-family: var(--font-mono);
+                font-size: 8px;
+                color: var(--text3);
+                margin-top: 5px;
+              "
+              id="heurFormula"
+            >
+              |Δr|+|Δc|
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section" id="sec-terrain">
+          <div class="sec-label">
+            Terrain Legend <span class="sec-chevron">▾</span>
+          </div>
+          <div class="sec-body">
+            <div class="terrain-legend">
+              <div class="terrain-item">
+                <div class="terrain-swatch" style="background: #1a3a50"></div>
+                <span>Wall</span><span class="tw-badge">blocked</span>
+              </div>
+              <div class="terrain-item">
+                <div
+                  class="terrain-swatch"
+                  style="
+                    background: rgba(0, 220, 255, 0.25);
+                    border-color: rgba(0, 220, 255, 0.5);
+                  "
+                ></div>
+                <span>🛣 Highway</span><span class="tw-badge">0.5×</span>
+              </div>
+              <div class="terrain-item">
+                <div
+                  class="terrain-swatch"
+                  style="
+                    background: rgba(255, 140, 0, 0.25);
+                    border-color: rgba(255, 140, 0, 0.5);
+                  "
+                ></div>
+                <span>🚦 Traffic</span><span class="tw-badge">3×</span>
+              </div>
+              <div class="terrain-item">
+                <div
+                  class="terrain-swatch"
+                  style="
+                    background: rgba(120, 72, 30, 0.35);
+                    border-color: rgba(120, 72, 30, 0.6);
+                  "
+                ></div>
+                <span>🌿 Mud</span><span class="tw-badge">10×</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-section" id="sec-stats">
+          <div class="sec-label">
+            Statistics <span class="sec-chevron">▾</span>
+          </div>
+          <div class="sec-body">
+            <!-- Progress ring -->
+            <div class="progress-ring-wrap">
+              <div class="progress-ring-container">
+                <svg
+                  class="progress-ring"
+                  width="44"
+                  height="44"
+                  viewBox="0 0 44 44"
+                >
+                  <circle class="progress-ring-track" cx="22" cy="22" r="18" />
+                  <circle
+                    class="progress-ring-fill"
+                    id="progressRingFill"
+                    cx="22"
+                    cy="22"
+                    r="18"
+                  />
+                </svg>
+                <div class="progress-ring-label" id="progressLabel">0%</div>
+              </div>
+              <div
+                style="
+                  margin-left: 10px;
+                  font-family: var(--font-mono);
+                  font-size: 8px;
+                  color: var(--text3);
+                "
+              >
+                <div
+                  style="color: var(--text2); font-size: 9px"
+                  id="progressStatus"
+                >
+                  Ready
+                </div>
+                <div style="margin-top: 2px">Search coverage</div>
+              </div>
+            </div>
+            <div class="stats">
+              <div class="stat-card" id="cardNodes">
+                <div class="stat-val" id="statNodes">0</div>
+                <div class="stat-lbl">Explored</div>
+                <canvas class="stat-spark" id="sparkNodes"></canvas>
+              </div>
+              <div class="stat-card" id="cardPath">
+                <div class="stat-val" id="statPath">—</div>
+                <div class="stat-lbl">Path Len</div>
+                <canvas class="stat-spark" id="sparkPath"></canvas>
+              </div>
+              <div class="stat-card" id="cardOpen">
+                <div class="stat-val" id="statOpen">0</div>
+                <div class="stat-lbl">Open List</div>
+                <canvas class="stat-spark" id="sparkOpen"></canvas>
+              </div>
+              <div class="stat-card" id="cardCost">
+                <div class="stat-val" id="statCost">—</div>
+                <div class="stat-lbl">Cost</div>
+                <canvas class="stat-spark" id="sparkCost"></canvas>
+              </div>
+            </div>
+            <div class="mini-chart"><canvas id="effChart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="sidebar-section" id="sec-rl">
+          <div class="sec-label">
+            🧠 RL Agent <span class="rl-badge">Q-Learning</span>
+            <span class="sec-chevron">▾</span>
+          </div>
+          <div class="sec-body">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <button
+                class="btn rl-btn primary"
+                id="rlTrainBtn"
+              >
+                🧠 TRAIN AGENT
+              </button>
+              <div class="btn-row">
+                <button class="btn rl-btn" id="rlPolicyBtn">
+                  ▶ Run Policy
+                </button>
+                <button
+                  class="btn rl-btn"
+                  id="rlResetBtn"
+                  style="
+                    border-color: rgba(255, 77, 109, 0.3);
+                    color: var(--accent3);
+                  "
+                >
+                  ↺ Reset
+                </button>
+              </div>
+              <div class="rl-progress">
+                <div
+                  class="rl-progress-fill"
+                  id="rlProgressFill"
+                  style="width: 0%"
+                ></div>
+              </div>
+              <div class="rl-stat-row">
+                <span>Episode</span
+                ><span class="rl-stat-val" id="rlEpisodeCount">0</span>
+              </div>
+              <div class="rl-stat-row">
+                <span>Epsilon (ε)</span
+                ><span class="rl-stat-val" id="rlEpsilonVal">1.000</span>
+              </div>
+              <div class="rl-epsilon-bar">
+                <div
+                  class="rl-epsilon-fill"
+                  id="rlEpsilonFill"
+                  style="width: 100%"
+                ></div>
+              </div>
+              <div class="rl-stat-row">
+                <span>Best Reward</span
+                ><span class="rl-stat-val" id="rlBestRewardVal">—</span>
+              </div>
+              <div class="rl-stat-row">
+                <span>Avg (last 50)</span
+                ><span class="rl-stat-val" id="rlAvgRewardVal">—</span>
+              </div>
+              <div class="rl-stat-row">
+                <span>Best Path</span
+                ><span class="rl-stat-val" id="rlBestPathLen">—</span>
+              </div>
+              <div class="rl-stat-row">
+                <span>Q-table size</span
+                ><span class="rl-stat-val" id="rlQTableSize">0</span>
+              </div>
+              <div class="rl-divider"></div>
+              <div class="rl-slider-row">
+                <span>α</span>
+                <input
+                  type="range"
+                  id="rlAlpha"
+                  min="0.01"
+                  max="0.5"
+                  step="0.01"
+                  value="0.1"
+                />
+                <span class="rl-slider-val" id="rlAlphaVal">0.1</span>
+              </div>
+              <div class="rl-slider-row">
+                <span>γ</span>
+                <input
+                  type="range"
+                  id="rlGamma"
+                  min="0.5"
+                  max="0.99"
+                  step="0.01"
+                  value="0.95"
+                />
+                <span class="rl-slider-val" id="rlGammaVal">0.95</span>
+              </div>
+              <div class="rl-slider-row">
+                <span>ε decay</span>
+                <input
+                  type="range"
+                  id="rlEpsilonDecay"
+                  min="0.990"
+                  max="0.999"
+                  step="0.001"
+                  value="0.997"
+                />
+                <span class="rl-slider-val" id="rlDecayVal">0.997</span>
+              </div>
+              <div class="rl-slider-row">
+                <span>Episodes</span>
+                <input
+                  type="range"
+                  id="rlMaxEpisodes"
+                  min="100"
+                  max="5000"
+                  step="100"
+                  value="2000"
+                />
+                <span class="rl-slider-val" id="rlMaxEpVal">2000</span>
+              </div>
+              <div class="rl-slider-row">
+                <span>Steps/ep</span>
+                <input
+                  type="range"
+                  id="rlMaxSteps"
+                  min="100"
+                  max="2000"
+                  step="50"
+                  value="1000"
+                />
+                <span class="rl-slider-val" id="rlMaxStepsVal">1000</span>
+              </div>
+              <div class="rl-slider-row">
+                <span>Batch</span>
+                <input
+                  type="range"
+                  id="rlBatchSize"
+                  min="1"
+                  max="50"
+                  step="1"
+                  value="20"
+                />
+                <span class="rl-slider-val" id="rlBatchVal">20</span>
+              </div>
+              <div class="rl-divider"></div>
+              <label class="check-label">
+                <input
+                  type="checkbox"
+                  id="rlHeatmapToggle"
+                />
+                Q-Value Heatmap
+              </label>
+              <label class="check-label">
+                <input
+                  type="checkbox"
+                  id="rlArrowsToggle"
+                />
+                Policy Arrows
+              </label>
+              <div class="rl-heatmap-legend">
+                <span>Low Q</span>
+                <div class="rl-heatmap-gradient"></div>
+                <span>High Q</span>
+              </div>
+              <div class="rl-convergence">
+                <canvas id="rlConvergenceChart"></canvas>
+                <div class="rl-conv-label">REWARD / EPISODE</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="sidebar-section"
+          id="sec-algo"
+          style="margin-top: auto; border-bottom: none"
+        >
+          <div class="sec-label">
+            Algorithm <span class="sec-chevron">▾</span>
+          </div>
+          <div class="sec-body">
+            <div class="algo-grid">
+              <button
+                class="algo-btn active"
+                id="btn-algo-astar"
+              >
+                A* Search
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-bidirectional"
+              >
+                Bidir. A*
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-dijkstra"
+              >
+                Dijkstra's
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-greedy"
+              >
+                Greedy BFS
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-bfs"
+              >
+                Breadth-First
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-dfs"
+              >
+                Depth-First
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-jps"
+                title="Jump Point Search"
+                style="border-color: rgba(0, 229, 160, 0.25)"
+              >
+                JPS ⚡
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-thetastar"
+                title="Theta* any-angle"
+                style="border-color: rgba(167, 139, 250, 0.25)"
+              >
+                Theta* ∠
+              </button>
+            </div>
+            <div class="algo-desc" id="algoDesc" style="margin-top: 8px">
+              A* uses f(n)=g(n)+h(n) balancing cost and heuristic estimate.
+            </div>
+            <div class="formula" id="algoFormula">
+              <div><span class="fvar">f(n)</span> = g(n) + h(n)</div>
+              <div><span class="fvar">g(n)</span> = cost from start</div>
+              <div><span class="fvar">h(n)</span> = Manhattan dist</div>
+            </div>
+            <!-- Algorithm portrait -->
+            <div class="algo-portrait-wrap">
+              <canvas id="algoPortrait"></canvas>
+              <div class="algo-portrait-label" id="portraitLabel">
+                VISUALIZER
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="sidebar-section"
+          id="sec-export"
+          style="border-bottom: none"
+        >
+          <div class="sec-label">
+            Export <span class="sec-chevron">▾</span>
+          </div>
+          <div class="sec-body">
+            <div style="display: flex; flex-direction: column; gap: 5px">
+              <button class="btn export-btn" id="exportCSV">
+                📊 Export Stats CSV
+              </button>
+              <button class="btn export-btn" id="exportJSON">
+                🗂 Export Grid JSON
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /sidebar -->
+
+      <!-- ═══ CANVAS ═══ -->
+      <div class="canvas-wrap">
+        <!-- Sidebar edge tab (always visible) -->
+        <div
+          class="sidebar-toggle"
+          id="sidebarTab"
+          title="Toggle sidebar (Tab)"
+        >
+          ‹
+        </div>
+        <!-- Right panel edge tab -->
+        <div
+          class="rp-toggle"
+          id="rpToggle"
+          title="Toggle log panel"
+        >
+          ›
+        </div>
+        <div class="canvas-toolbar" id="canvasToolbar">
+          <span class="toolbar-label">Tool:</span>
+          <button
+            class="tool-btn active"
+            id="toolWall"
+          >
+            🧱 Wall
+          </button>
+          <button class="tool-btn" id="toolStart">
+            🟢 Start
+          </button>
+          <button class="tool-btn" id="toolGoal">
+            🔴 Goal
+          </button>
+          <button class="tool-btn" id="toolErase">
+            ✏ Erase
+          </button>
+          <div class="toolbar-sep"></div>
+          <button
+            class="tool-btn terrain-highway"
+            id="toolHighway"
+            title="Highway — 0.5× cost"
+          >
+            🛣 Hwy
+          </button>
+          <button
+            class="tool-btn terrain-traffic"
+            id="toolTraffic"
+            title="Heavy Traffic — 3× cost"
+          >
+            🚦 Traffic
+          </button>
+          <button
+            class="tool-btn terrain-mud"
+            id="toolMud"
+            title="Mud / Rough terrain — 10× cost"
+          >
+            🌿 Mud
+          </button>
+          <div class="toolbar-sep"></div>
+          <button class="tool-btn" id="btnCompare">
+            ⚡ Compare All
+          </button>
+          <div
+            style="
+              margin-left: auto;
+              font-family: var(--font-mono);
+              font-size: 9px;
+              color: var(--text3);
+            "
+          >
+            Click/drag ·
+            <kbd
+              style="
+                background: rgba(0, 229, 160, 0.07);
+                border: 1px solid var(--border2);
+                border-radius: 3px;
+                padding: 1px 5px;
+                font-family: var(--font-mono);
+                font-size: 8px;
+                color: var(--accent);
+              "
+              >?</kbd
+            >
+            for shortcuts
+          </div>
+        </div>
+        <div class="grid-container">
+          <canvas
+            id="grid"
+            role="img"
+            aria-label="Pathfinding grid — click or drag to place walls, start, and goal nodes"
+          ></canvas>
+          <canvas id="rippleCanvas"></canvas>
+        </div>
+        <div class="statusbar">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText">Ready — draw walls then click ▶ FIND PATH</span>
+          <span
+            style="margin-left: auto; color: var(--text3)"
+            id="coordDisplay"
+          ></span>
+        </div>
+      </div>
+
+      <!-- ═══ RIGHT PANEL ═══ -->
+      <div class="right-panel" id="rightPanel">
+        <div class="rp-header">
+          <div class="rp-title">
+            <span>Algorithm Log</span>
+            <span style="font-size: 8px; color: var(--text3)" id="stepCounter"
+              >step 0</span
+            >
+          </div>
+          <div class="log-controls">
+            <button
+              class="log-ctrl-btn active"
+              id="btnAutoScroll"
+            >
+              ⬇ Auto
+            </button>
+            <button class="log-ctrl-btn" id="btnClearLog">Clear</button>
+            <button class="log-ctrl-btn" id="btnExportLog">Export</button>
+          </div>
+        </div>
+        <div class="log-wrap">
+          <div class="log" id="algoLog"></div>
+          <div
+            class="scroll-fab"
+            id="scrollFab"
+            role="button"
+            aria-label="Scroll to bottom"
+          >
+            ↓
+          </div>
+        </div>
+        <div class="rp-bottom">
+          <div class="algo-title">Open List — Top Candidates</div>
+          <div class="mini-list">
+            <div class="list-lbl">By F-Score</div>
+            <div id="openListItems" style="color: var(--text3)">—</div>
+          </div>
+          <div class="algo-title">Closed List</div>
+          <div class="mini-list">
+            <div class="list-lbl">Visited Nodes</div>
+            <div id="closedCount" style="color: var(--text3)">0 nodes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /main -->
+
+        <script type="module" src="js/main.js"></script>
+  </body>
+</html>
