@@ -5,113 +5,169 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="MetroMind AI — interactive pathfinding visualization using A*, Dijkstra, BFS, DFS, Greedy Best-First, and Bidirectional A*. AI project."
+      content="MetroMind AI — Advanced Pathfinding &amp; RL Simulator v11"
     />
-    <title>MetroMind AI — v9</title>
+    <title>MetroMind AI — v11</title>
     <link
-      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=IBM+Plex+Mono:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap"
       rel="stylesheet"
     />
     <style>
+      /* ═══════════════════════════════════════════════════
+   DESIGN TOKENS — single source of truth
+═══════════════════════════════════════════════════ */
       :root {
         --bg: #050b14;
         --bg2: #080f1c;
         --bg3: #0c1626;
         --bg4: #101e30;
-        --panel: rgba(10, 20, 38, 0.85);
-        --border: rgba(0, 200, 150, 0.12);
-        --border2: rgba(0, 200, 150, 0.25);
-        --border3: rgba(0, 200, 150, 0.5);
+        --panel: rgba(10, 20, 38, 0.88);
+        --br1: rgba(0, 200, 150, 0.1);
+        --br2: rgba(0, 200, 150, 0.22);
+        --br3: rgba(0, 200, 150, 0.48);
         --accent: #00e5a0;
         --accent2: #00b8ff;
         --accent3: #ff4d6d;
         --accent4: #f7b731;
         --accent5: #a78bfa;
-        --text: #c8e0f0;
-        --text2: #6e92aa;
-        --text3: #3a556a;
-        --glow: 0 0 15px rgba(0, 229, 160, 0.3);
-        --glow2: 0 0 20px rgba(0, 184, 255, 0.4);
-        --red-glow: 0 0 15px rgba(255, 77, 109, 0.4);
-        --radius: 6px;
+        --tx1: #c8e0f0;
+        --tx2: #7090a8;
+        --tx3: #3a556a;
+        --glow: 0 0 14px rgba(0, 229, 160, 0.28);
+        --glow-red: 0 0 14px rgba(255, 77, 109, 0.35);
+        --r-sm: 4px;
+        --r-md: 6px;
+        --r-lg: 10px;
         --font-display: "Orbitron", monospace;
         --font-mono: "IBM Plex Mono", monospace;
-        --font-body: "Space Grotesk", sans-serif;
+        --sb-w: 220px;
+        --rp-w: 204px;
+        --t-fast: 0.15s ease;
+        --t-med: 0.25s ease;
+        /* Keep v9 variables for JS compat */
+        --border: rgba(0, 200, 150, 0.1);
+        --border2: rgba(0, 200, 150, 0.22);
+        --text: #c8e0f0;
+        --text2: #7090a8;
+        --text3: #3a556a;
+        --radius: 6px;
       }
-
       [data-theme="light"] {
-        --bg: #f0f4f8;
+        --bg: #eef2f7;
         --bg2: #e4ecf4;
         --bg3: #d8e4f0;
         --bg4: #c8d8e8;
-        --panel: rgba(240, 244, 248, 0.92);
-        --border: rgba(0, 140, 100, 0.15);
-        --border2: rgba(0, 140, 100, 0.3);
-        --border3: rgba(0, 140, 100, 0.6);
-        --accent: #00956a;
+        --panel: rgba(238, 242, 247, 0.94);
+        --br1: rgba(0, 140, 100, 0.12);
+        --br2: rgba(0, 140, 100, 0.28);
+        --br3: rgba(0, 140, 100, 0.55);
+        --accent: #009c6e;
         --accent2: #0070cc;
-        --accent3: #d63050;
-        --accent4: #d9900a;
+        --accent3: #c82040;
+        --accent4: #c07010;
+        --tx1: #1a2a38;
+        --tx2: #3a5268;
+        --tx3: #8090a0;
+        --glow: none;
+        --glow-red: none;
+        --border: rgba(0, 140, 100, 0.12);
+        --border2: rgba(0, 140, 100, 0.28);
         --text: #1a2a38;
         --text2: #3a5268;
-        --text3: #7a92a8;
-        --glow: none;
-        --glow2: none;
-        --red-glow: none;
+        --text3: #8090a0;
       }
 
-      * {
+      /* ═══════════════════════════════════════════════════ RESET */
+      *,
+      *::before,
+      *::after {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
       }
-
       html,
       body {
         height: 100%;
         overflow: hidden;
       }
-
       body {
-        font-family: var(--font-body);
+        font-family: var(--font-mono);
+        font-size: 12px;
         background: var(--bg);
-        color: var(--text);
+        color: var(--tx1);
         display: flex;
         flex-direction: column;
         height: 100vh;
         position: relative;
       }
-
-      /* ── SCANLINE OVERLAY ── */
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background: repeating-linear-gradient(
-          0deg,
-          transparent,
-          transparent 2px,
-          rgba(0, 0, 0, 0.03) 2px,
-          rgba(0, 0, 0, 0.03) 4px
-        );
-        pointer-events: none;
-        z-index: 1000;
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+        border-radius: var(--r-sm);
+      }
+      [hidden] {
+        display: none !important;
+      }
+      /* ── Global scrollbar ── */
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgba(0, 200, 150, 0.22);
+        border-radius: 3px;
+        transition: background 0.2s;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 229, 160, 0.55);
+      }
+      ::-webkit-scrollbar-corner {
+        background: transparent;
+      }
+      [data-theme="light"]::-webkit-scrollbar-thumb {
+        background: rgba(0, 140, 100, 0.25);
+      }
+      [data-theme="light"]::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 140, 100, 0.5);
+      }
+      button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
       }
 
-      [data-theme="light"] body::before {
-        display: none;
-      }
-
-      /* ── ANIMATED BG GRID ── */
+      /* ═══════════════════════════════════════════════════ BACKGROUND */
       #bgCanvas {
         position: fixed;
         inset: 0;
         pointer-events: none;
         z-index: 0;
-        opacity: 0.35;
+        opacity: 0.32;
       }
 
-      /* ── HEADER ── */
+      /* Scanline — scoped to canvas wrap only */
+      .canvas-wrap::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 2px,
+          rgba(0, 0, 0, 0.022) 2px,
+          rgba(0, 0, 0, 0.022) 4px
+        );
+        pointer-events: none;
+        z-index: 5;
+      }
+      [data-theme="light"] .canvas-wrap::before {
+        display: none;
+      }
+
+      /* ═══════════════════════════════════════════════════ HEADER */
       .header {
         position: relative;
         z-index: 30;
@@ -120,12 +176,11 @@
         justify-content: space-between;
         padding: 8px 14px;
         background: var(--panel);
-        border-bottom: 1px solid var(--border2);
-        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--br2);
+        backdrop-filter: blur(14px);
         flex-shrink: 0;
         gap: 8px;
       }
-
       .header::after {
         content: "";
         position: absolute;
@@ -139,45 +194,31 @@
           var(--accent),
           transparent
         );
-        opacity: 0.6;
+        opacity: 0.5;
       }
-
       .logo-wrap {
         display: flex;
         align-items: center;
         gap: 10px;
         min-width: 0;
       }
-
       .logo {
-        width: 34px;
-        height: 34px;
+        width: 32px;
+        height: 32px;
         border-radius: 8px;
-        border: 1px solid var(--border2);
+        border: 1px solid var(--br2);
         background: linear-gradient(
           135deg,
-          rgba(0, 229, 160, 0.15),
-          rgba(0, 184, 255, 0.1)
+          rgba(0, 229, 160, 0.14),
+          rgba(0, 184, 255, 0.09)
         );
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
-        position: relative;
-        box-shadow: var(--glow);
+        font-size: 15px;
         flex-shrink: 0;
+        box-shadow: var(--glow);
       }
-
-      .logo::before {
-        content: "";
-        position: absolute;
-        inset: -1px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, var(--accent), var(--accent2));
-        opacity: 0.2;
-        z-index: -1;
-      }
-
       .app-title {
         font-family: var(--font-display);
         font-size: 12px;
@@ -187,58 +228,48 @@
         text-shadow: var(--glow);
         text-transform: uppercase;
         white-space: nowrap;
+        position: relative;
       }
-
       .app-sub {
         font-family: var(--font-mono);
-        font-size: 8px;
-        color: var(--text2);
-        margin-top: 2px;
-        letter-spacing: 0.5px;
+        font-size: 10px;
+        color: var(--tx3);
+        margin-top: 1px;
         white-space: nowrap;
       }
-
-      /* Hide sub-title on small screens */
-      @media (max-width: 600px) {
-        .app-sub {
-          display: none;
-        }
-        .app-title {
-          font-size: 10px;
-          letter-spacing: 1px;
-        }
-        .hbadge {
-          display: none;
-        }
-      }
-
       .header-right {
         display: flex;
         align-items: center;
         gap: 6px;
         flex-shrink: 0;
       }
-
       .hbadge {
         font-family: var(--font-mono);
-        font-size: 9px;
+        font-size: 11px;
         padding: 3px 8px;
         border-radius: 20px;
-        border: 1px solid var(--border2);
+        border: 1px solid var(--br2);
         background: rgba(0, 229, 160, 0.07);
         color: var(--accent);
-        letter-spacing: 0.5px;
-        transition: all 0.3s;
         white-space: nowrap;
       }
-
       .hbadge.blue {
-        border-color: rgba(0, 184, 255, 0.3);
+        border-color: rgba(0, 184, 255, 0.28);
         background: rgba(0, 184, 255, 0.07);
         color: var(--accent2);
       }
+      @media (max-width: 600px) {
+        .app-sub,
+        .hbadge {
+          display: none;
+        }
+        .app-title {
+          font-size: 10px;
+          letter-spacing: 1px;
+        }
+      }
 
-      /* ── MAIN ── */
+      /* ═══════════════════════════════════════════════════ LAYOUT */
       .main {
         display: flex;
         flex: 1;
@@ -248,53 +279,103 @@
         overflow: hidden;
       }
 
-      /* ── SIDEBAR ── */
+      /* ═══════════════════════════════════════════════════ SIDEBAR */
       .sidebar {
-        width: 200px;
+        width: var(--sb-w);
         flex-shrink: 0;
-        border-right: 1px solid var(--border);
+        border-right: 1px solid var(--br1);
         background: var(--panel);
         backdrop-filter: blur(14px);
         display: flex;
         flex-direction: column;
-        gap: 0;
-        overflow-y: scroll; /* always show scrollbar track */
-        overflow-x: hidden;
-        scrollbar-width: thin;
-        scrollbar-color: var(--border2) rgba(0, 0, 0, 0.15);
+        overflow: hidden;
         transition:
-          width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-          opacity 0.25s ease,
-          transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-        will-change: width, transform;
+          width var(--t-med) cubic-bezier(0.4, 0, 0.2, 1),
+          opacity var(--t-fast);
+        will-change: width;
         position: relative;
         z-index: 20;
       }
-
-      /* Custom webkit scrollbar — always visible, styled */
-      .sidebar::-webkit-scrollbar {
-        width: 5px;
-      }
-      .sidebar::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.15);
-        border-radius: 0;
-      }
-      .sidebar::-webkit-scrollbar-thumb {
-        background: var(--border2);
-        border-radius: 3px;
-      }
-      .sidebar::-webkit-scrollbar-thumb:hover {
-        background: var(--accent);
-      }
-
       .sidebar.collapsed {
         width: 0 !important;
         opacity: 0;
         overflow: hidden;
         border-right-color: transparent;
       }
-
-      /* Mobile: sidebar becomes a floating drawer */
+      .sb-tabs {
+        display: flex;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--br1);
+        background: rgba(0, 0, 0, 0.18);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      .sb-tab {
+        flex: 1;
+        padding: 10px 2px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--tx3);
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        white-space: nowrap;
+        transition:
+          color var(--t-fast),
+          border-color var(--t-fast),
+          background var(--t-fast);
+      }
+      .sb-tab:hover {
+        color: var(--tx1);
+        background: rgba(0, 229, 160, 0.04);
+      }
+      .sb-tab.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+        background: rgba(0, 229, 160, 0.06);
+      }
+      [data-theme="light"] .sb-tabs {
+        background: rgba(0, 0, 0, 0.04);
+      }
+      .sb-panel {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-width: thin;
+        scrollbar-color: var(--br2) rgba(0, 0, 0, 0.12);
+        display: flex;
+        flex-direction: column;
+      }
+      /* scrollbars — handled globally above */
+      .sb-section {
+        padding: 12px 11px;
+        border-bottom: 1px solid var(--br1);
+        flex-shrink: 0;
+      }
+      .sb-section:last-child {
+        border-bottom: none;
+        padding-bottom: 16px;
+      }
+      .sb-label {
+        font-family: var(--font-display);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.8px;
+        color: var(--tx3);
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .sb-label::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(90deg, var(--br2), transparent);
+      }
       @media (max-width: 768px) {
         .sidebar {
           position: absolute;
@@ -302,47 +383,64 @@
           left: 0;
           bottom: 0;
           z-index: 50;
-          width: 200px !important;
+          width: var(--sb-w) !important;
           transform: translateX(0);
-          box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
+          box-shadow: 4px 0 28px rgba(0, 0, 0, 0.5);
+          transition: transform var(--t-med) cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
         .sidebar.collapsed {
-          transform: translateX(-205px);
+          transform: translateX(-100%);
           opacity: 1;
-          width: 200px !important;
+          width: var(--sb-w) !important;
         }
-        .sidebar-backdrop {
+        .sidebar-backdrop.visible {
           display: block !important;
         }
         .right-panel {
-          display: none !important;
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 50;
+          width: var(--rp-w) !important;
+          transform: translateX(0);
+          box-shadow: -4px 0 28px rgba(0, 0, 0, 0.5);
+          transition: transform var(--t-med) cubic-bezier(0.4, 0, 0.2, 1) !important;
+          border-left: 1px solid var(--br1);
+          opacity: 1 !important;
+          display: flex !important;
+        }
+        .right-panel.collapsed {
+          transform: translateX(100%);
+          width: var(--rp-w) !important;
+          opacity: 1 !important;
+        }
+        .rp-toggle,
+        #rpToggleBtn {
+          display: flex !important;
         }
       }
 
-      /* Sidebar backdrop for mobile */
+
+
       .sidebar-backdrop {
         display: none;
         position: absolute;
         inset: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.48);
         z-index: 40;
         backdrop-filter: blur(2px);
       }
-      .sidebar-backdrop.visible {
-        display: block !important;
-      }
-
-      /* Sidebar toggle FAB – floats at left edge of canvas area */
       .sidebar-toggle {
         position: absolute;
         left: 0;
         top: 50%;
         transform: translateY(-50%);
         z-index: 55;
-        width: 18px;
-        height: 48px;
+        width: 16px;
+        height: 44px;
         background: var(--panel);
-        border: 1px solid var(--border2);
+        border: 1px solid var(--br2);
         border-left: none;
         border-radius: 0 6px 6px 0;
         cursor: pointer;
@@ -350,91 +448,28 @@
         align-items: center;
         justify-content: center;
         color: var(--accent);
-        font-size: 10px;
-        transition: all 0.2s;
+        font-size: 11px;
+        transition: all var(--t-fast);
         backdrop-filter: blur(8px);
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
-        user-select: none;
       }
       .sidebar-toggle:hover {
         background: rgba(0, 229, 160, 0.1);
-        box-shadow: 2px 0 16px rgba(0, 229, 160, 0.2);
       }
 
-      /* ── SIDEBAR SECTIONS ── */
-      .sidebar-section {
-        padding: 8px 10px;
-        border-bottom: 1px solid var(--border);
-        overflow: hidden;
-        flex-shrink: 0;
-      }
-
-      .sec-label {
-        font-family: var(--font-display);
-        font-size: 8px;
-        font-weight: 700;
-        letter-spacing: 2px;
-        color: var(--text3);
-        text-transform: uppercase;
-        margin-bottom: 8px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        cursor: pointer;
-        user-select: none;
-        transition: color 0.2s;
-      }
-      .sec-label:hover {
-        color: var(--text2);
-      }
-
-      .sec-label::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: linear-gradient(90deg, var(--border2), transparent);
-      }
-
-      .sec-chevron {
-        font-size: 8px;
-        color: var(--text3);
-        transition: transform 0.2s;
-        flex-shrink: 0;
-        margin-left: 2px;
-        order: 10;
-      }
-      .sidebar-section.collapsed .sec-chevron {
-        transform: rotate(-90deg);
-      }
-      .sec-body {
-        transition:
-          max-height 0.25s ease,
-          opacity 0.2s ease;
-        max-height: 800px;
-        opacity: 1;
-        overflow: hidden;
-      }
-      .sidebar-section.collapsed .sec-body {
-        max-height: 0;
-        opacity: 0;
-      }
-      .sidebar-section.collapsed {
-        padding-bottom: 10px;
-      }
-
-      /* ── BUTTONS ── */
+      /* ═══════════════════════════════════════════════════ BUTTONS */
       .btn {
         width: 100%;
-        padding: 6px 10px;
-        border-radius: var(--radius);
-        border: 1px solid var(--border2);
+        padding: 7px 10px;
+        border-radius: var(--r-md);
+        border: 1px solid var(--br2);
         background: rgba(0, 229, 160, 0.04);
-        color: var(--text);
+        color: var(--tx1);
         font-family: var(--font-mono);
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 500;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all var(--t-fast);
         text-align: left;
         display: flex;
         align-items: center;
@@ -443,7 +478,6 @@
         overflow: hidden;
         letter-spacing: 0.3px;
       }
-
       .btn::before {
         content: "";
         position: absolute;
@@ -453,29 +487,25 @@
         width: 2px;
         background: var(--accent);
         opacity: 0;
-        transition: opacity 0.2s;
+        transition: opacity var(--t-fast);
       }
-
       .btn:hover {
-        border-color: var(--border3);
+        border-color: var(--br3);
         background: rgba(0, 229, 160, 0.08);
         color: var(--accent);
         box-shadow: var(--glow);
       }
-
       .btn:hover::before {
         opacity: 1;
       }
-
       .btn:active {
         transform: scale(0.98);
       }
-
       .btn.primary {
         background: linear-gradient(
           135deg,
-          rgba(0, 229, 160, 0.15),
-          rgba(0, 184, 255, 0.1)
+          rgba(0, 229, 160, 0.14),
+          rgba(0, 184, 255, 0.09)
         );
         border-color: var(--accent);
         color: var(--accent);
@@ -484,68 +514,348 @@
         justify-content: center;
         letter-spacing: 1px;
       }
-
       .btn.primary:hover {
         background: linear-gradient(
           135deg,
-          rgba(0, 229, 160, 0.25),
-          rgba(0, 184, 255, 0.2)
+          rgba(0, 229, 160, 0.24),
+          rgba(0, 184, 255, 0.18)
         );
-        box-shadow: 0 0 25px rgba(0, 229, 160, 0.5);
+        box-shadow: 0 0 24px rgba(0, 229, 160, 0.48);
       }
-
       .btn.primary.running {
         background: linear-gradient(
           135deg,
-          rgba(247, 183, 49, 0.15),
-          rgba(255, 77, 109, 0.1)
+          rgba(247, 183, 49, 0.14),
+          rgba(255, 77, 109, 0.09)
         );
         border-color: var(--accent4);
         color: var(--accent4);
-        box-shadow: 0 0 15px rgba(247, 183, 49, 0.3);
+        box-shadow: 0 0 14px rgba(247, 183, 49, 0.28);
       }
-
       .btn.danger {
-        border-color: rgba(255, 77, 109, 0.3);
-        background: rgba(255, 77, 109, 0.06);
+        border-color: rgba(255, 77, 109, 0.28);
+        background: rgba(255, 77, 109, 0.05);
         color: var(--accent3);
       }
-
       .btn.danger:hover {
         border-color: var(--accent3);
         background: rgba(255, 77, 109, 0.12);
-        box-shadow: var(--red-glow);
+        box-shadow: var(--glow-red);
       }
-
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
       .btn-row {
         display: flex;
-        gap: 6px;
+        gap: 7px;
       }
-
       .btn-row .btn {
         flex: 1;
         justify-content: center;
-        font-size: 10px;
-        padding: 7px 4px;
+        font-size: 11px;
+        padding: 8px 4px;
+      }
+      .btn.rl-btn {
+        border-color: rgba(167, 139, 250, 0.28);
+        background: rgba(167, 139, 250, 0.04);
+        color: var(--accent5);
+      }
+      .btn.rl-btn:hover {
+        border-color: var(--accent5);
+        background: rgba(167, 139, 250, 0.1);
+        box-shadow: 0 0 12px rgba(167, 139, 250, 0.2);
+      }
+      .btn.rl-btn.primary {
+        background: linear-gradient(
+          135deg,
+          rgba(167, 139, 250, 0.14),
+          rgba(0, 184, 255, 0.09)
+        );
+        border-color: var(--accent5);
+        color: var(--accent5);
+        font-weight: 600;
+        box-shadow: 0 0 14px rgba(167, 139, 250, 0.28);
+        justify-content: center;
+        letter-spacing: 1px;
+      }
+      .btn.rl-btn.primary:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(167, 139, 250, 0.24),
+          rgba(0, 184, 255, 0.18)
+        );
+      }
+      .btn.rl-btn.primary.training {
+        background: linear-gradient(
+          135deg,
+          rgba(247, 183, 49, 0.14),
+          rgba(167, 139, 250, 0.09)
+        );
+        border-color: var(--accent4);
+        color: var(--accent4);
+        box-shadow: 0 0 14px rgba(247, 183, 49, 0.28);
+        animation: rlPulse 1.5s ease-in-out infinite;
+      }
+      @keyframes rlPulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.72;
+        }
+      }
+      .icon-btn {
+        padding: 6px 8px;
+        border-radius: var(--r-md);
+        border: 1px solid var(--br1);
+        background: rgba(0, 229, 160, 0.03);
+        color: var(--tx2);
+        font-size: 14px;
+        cursor: pointer;
+        transition: all var(--t-fast);
+        line-height: 1;
+      }
+      .icon-btn:hover {
+        border-color: var(--br2);
+        color: var(--accent);
+        background: rgba(0, 229, 160, 0.06);
+      }
+      .history-bar {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 4px;
+      }
+      .history-bar .btn {
+        flex: 1;
+        justify-content: center;
+        font-size: 11px;
+        padding: 6px 4px;
+      }
+      #historyPos {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--tx3);
+        text-align: center;
+        min-width: 40px;
+        flex-shrink: 0;
       }
 
-      /* ── STATS ── */
+      /* ═══════════════════════════════════════════════════ SLIDERS */
+      .slider-row {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--tx2);
+      }
+      input[type="range"] {
+        flex: 1;
+        appearance: none;
+        height: 3px;
+        border-radius: 2px;
+        background: var(--br2);
+        outline: none;
+        cursor: pointer;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        appearance: none;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 8px rgba(0, 229, 160, 0.55);
+        cursor: pointer;
+        transition: transform var(--t-fast);
+      }
+      input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.25);
+      }
+      input[type="range"]:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+        border-radius: 2px;
+      }
+      .slider-val {
+        min-width: 34px;
+        text-align: right;
+        font-size: 11px;
+        color: var(--accent);
+        font-weight: 500;
+      }
+      .rl-slider-row {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--tx3);
+      }
+      .rl-slider-row input[type="range"] {
+        background: var(--br2);
+        height: 2px;
+      }
+      .rl-slider-row input[type="range"]::-webkit-slider-thumb {
+        width: 11px;
+        height: 11px;
+        background: var(--accent5);
+        box-shadow: 0 0 6px rgba(167, 139, 250, 0.55);
+      }
+      .rl-slider-val {
+        min-width: 34px;
+        text-align: right;
+        font-size: 11px;
+        color: var(--accent5);
+        font-weight: 500;
+      }
+      .rl-slider-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+        margin-top: 2px;
+      }
+      .rl-slider-label span:first-child {
+        font-size: 11px;
+        color: var(--tx2);
+        cursor: help;
+        border-bottom: 1px dotted var(--tx3);
+      }
+
+      /* ═══════════════════════════════════════════════════ ALGO / HEUR / MAZE BUTTONS */
+      .algo-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 5px;
+      }
+      .algo-btn {
+        padding: 7px 4px;
+        border-radius: 5px;
+        border: 1px solid var(--br1);
+        background: rgba(0, 229, 160, 0.03);
+        color: var(--tx2);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        cursor: pointer;
+        text-align: center;
+        transition: all var(--t-fast);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .algo-btn:hover {
+        border-color: var(--br2);
+        color: var(--accent);
+        background: rgba(0, 229, 160, 0.07);
+      }
+      .algo-btn.active {
+        border-color: var(--accent);
+        color: var(--accent);
+        background: rgba(0, 229, 160, 0.14);
+        font-weight: 600;
+        box-shadow:
+          inset 0 -2px 0 var(--accent),
+          var(--glow);
+      }
+      .heur-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+      }
+      .heur-btn {
+        padding: 6px 4px;
+        border-radius: 5px;
+        border: 1px solid var(--br1);
+        background: rgba(0, 184, 255, 0.03);
+        color: var(--tx2);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        cursor: pointer;
+        text-align: center;
+        transition: all var(--t-fast);
+      }
+      .heur-btn:hover {
+        border-color: rgba(0, 184, 255, 0.3);
+        color: var(--accent2);
+      }
+      .heur-btn.active {
+        border-color: var(--accent2);
+        color: var(--accent2);
+        background: rgba(0, 184, 255, 0.12);
+        font-weight: 600;
+      }
+      .maze-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+      }
+      .maze-btn {
+        padding: 6px 4px;
+        border-radius: 5px;
+        border: 1px solid var(--br1);
+        background: rgba(0, 229, 160, 0.03);
+        color: var(--tx2);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        cursor: pointer;
+        text-align: center;
+        transition: all var(--t-fast);
+      }
+      .maze-btn:hover {
+        border-color: var(--br2);
+        color: var(--accent);
+        background: rgba(0, 229, 160, 0.07);
+      }
+      .check-label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--tx2);
+        cursor: pointer;
+        transition: color var(--t-fast);
+      }
+      .check-label:hover {
+        color: var(--accent);
+      }
+      .check-label input[type="checkbox"] {
+        appearance: none;
+        width: 13px;
+        height: 13px;
+        border: 1px solid var(--br2);
+        border-radius: 3px;
+        cursor: pointer;
+        background: transparent;
+        transition: all var(--t-fast);
+        flex-shrink: 0;
+      }
+      .check-label input[type="checkbox"]:checked {
+        background: var(--accent);
+        border-color: var(--accent);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M2 5l2.5 2.5L8 3' stroke='%23000' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-size: 10px;
+      }
+
+      /* ═══════════════════════════════════════════════════ STATS */
       .stats {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 6px;
       }
-
       .stat-card {
         background: rgba(0, 229, 160, 0.04);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        padding: 8px 10px;
+        border: 1px solid var(--br1);
+        border-radius: var(--r-md);
+        padding: 10px 10px 8px;
         position: relative;
         overflow: hidden;
-        transition: all 0.3s;
+        transition: all 0.28s;
       }
-
       .stat-card::before {
         content: "";
         position: absolute;
@@ -560,244 +870,354 @@
           transparent
         );
         opacity: 0;
-        transition: opacity 0.3s;
+        transition: opacity 0.28s;
       }
-
       .stat-card.active::before {
         opacity: 1;
       }
-
       .stat-card.active {
-        border-color: var(--border2);
+        border-color: var(--br2);
         box-shadow: var(--glow);
       }
-
       .stat-val {
         font-family: var(--font-display);
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 700;
         color: var(--accent);
         text-shadow: var(--glow);
-        transition: all 0.3s;
         letter-spacing: 1px;
       }
-
       .stat-lbl {
         font-family: var(--font-mono);
-        font-size: 7px;
-        color: var(--text3);
+        font-size: 10px;
+        color: var(--tx3);
         margin-top: 2px;
-        letter-spacing: 0.6px;
+        letter-spacing: 0.5px;
         text-transform: uppercase;
       }
+      .stat-spark {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 22px;
+        opacity: 0.35;
+        pointer-events: none;
+      }
+      @keyframes bump {
+        0% {
+          transform: scale(1.12);
+        }
+        50% {
+          transform: scale(0.96);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      .bump {
+        animation: bump 0.2s ease;
+      }
 
-      /* ── SPEED / SLIDERS ── */
-      .slider-row {
+      /* ═══════════════════════════════════════════════════ PROGRESS RING */
+      .progress-ring-wrap {
         display: flex;
         align-items: center;
-        gap: 5px;
-        font-family: var(--font-mono);
-        font-size: 9px;
-        color: var(--text2);
+        padding: 4px 0 6px;
       }
-
-      .slider-row input[type="range"] {
-        flex: 1;
-        appearance: none;
-        height: 3px;
-        border-radius: 2px;
-        background: var(--border2);
-        outline: none;
-        cursor: pointer;
+      .progress-ring {
+        transform: rotate(-90deg);
       }
-
-      .slider-row input[type="range"]::-webkit-slider-thumb {
-        appearance: none;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: var(--accent);
-        box-shadow: 0 0 8px rgba(0, 229, 160, 0.6);
-        cursor: pointer;
-        transition: transform 0.15s;
+      .progress-ring-track {
+        fill: none;
+        stroke: var(--br2);
+        stroke-width: 3;
       }
-
-      .slider-row input[type="range"]::-webkit-slider-thumb:hover {
-        transform: scale(1.3);
+      .progress-ring-fill {
+        fill: none;
+        stroke: var(--accent);
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-dasharray: 113;
+        stroke-dashoffset: 113;
+        transition: stroke-dashoffset 0.3s ease;
+        filter: drop-shadow(0 0 4px rgba(0, 229, 160, 0.55));
       }
-
-      .slider-val {
-        min-width: 30px;
-        text-align: right;
-        font-size: 9px;
+      .progress-ring-label {
+        position: absolute;
+        font-family: var(--font-display);
+        font-size: 10px;
         color: var(--accent);
-        font-weight: 500;
-      }
-
-      /* ── ALGO BTNS ── */
-      .algo-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 4px;
-      }
-
-      .algo-btn {
-        padding: 5px 3px;
-        border-radius: 5px;
-        border: 1px solid var(--border);
-        background: rgba(0, 229, 160, 0.03);
-        color: var(--text2);
-        font-family: var(--font-mono);
-        font-size: 8px;
-        cursor: pointer;
         text-align: center;
-        transition: all 0.2s;
-        letter-spacing: 0.2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        pointer-events: none;
+      }
+      .progress-ring-container {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .progress-status {
+        margin-left: 10px;
+      }
+      #progressStatus {
+        font-size: 11px;
+        color: var(--tx2);
+      }
+      .progress-sub {
+        font-size: 10px;
+        color: var(--tx3);
+        margin-top: 2px;
       }
 
-      .algo-btn:hover {
-        border-color: var(--border2);
-        color: var(--accent);
-        background: rgba(0, 229, 160, 0.07);
+      /* ═══════════════════════════════════════════════════ TERRAIN LEGEND */
+      .terrain-legend {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
       }
-
-      .algo-btn.active {
-        border-color: var(--accent);
-        color: var(--accent);
-        background: rgba(0, 229, 160, 0.15);
-        font-weight: 600;
-        box-shadow: var(--glow);
-      }
-
-      /* ── FORMULA ── */
-      .formula {
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid var(--border);
-        border-left: 2px solid var(--accent);
-        border-radius: var(--radius);
-        padding: 6px 8px;
+      .terrain-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
         font-family: var(--font-mono);
-        font-size: 8px;
-        color: var(--text2);
-        margin-top: 5px;
-        line-height: 1.6;
+        font-size: 11px;
+        color: var(--tx2);
+        background: rgba(0, 229, 160, 0.03);
+        border: 1px solid var(--br1);
+        border-radius: 5px;
+        padding: 6px 7px;
+        transition: border-color var(--t-fast);
+      }
+      .terrain-item:hover {
+        border-color: var(--br2);
+      }
+      .terrain-swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        flex-shrink: 0;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+      }
+      .tw-badge {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--accent);
+        padding: 1px 5px;
+        background: rgba(0, 229, 160, 0.1);
+        border-radius: 3px;
+        border: 1px solid var(--br2);
       }
 
+      /* ═══════════════════════════════════════════════════ FORMULA */
+      .formula {
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid var(--br1);
+        border-left: 2px solid var(--accent);
+        border-radius: var(--r-md);
+        padding: 7px 9px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--tx2);
+        margin-top: 6px;
+        line-height: 1.65;
+      }
       [data-theme="light"] .formula {
         background: rgba(0, 0, 0, 0.04);
       }
-
       .fvar {
         color: var(--accent);
         font-weight: 600;
       }
+      .algo-desc {
+        font-size: 11px;
+        color: var(--tx2);
+        line-height: 1.6;
+        margin-top: 0;
+      }
+      .algo-portrait-wrap {
+        margin-top: 8px;
+        border: 1px solid var(--br1);
+        border-radius: var(--r-md);
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.18);
+        height: 48px;
+        position: relative;
+      }
+      #algoPortrait {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .algo-portrait-label {
+        position: absolute;
+        bottom: 3px;
+        right: 5px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--tx3);
+        pointer-events: none;
+        letter-spacing: 1px;
+      }
 
-      /* ── MAZE BTNS ── */
-      .maze-grid {
+      /* ═══════════════════════════════════════════════════ RL */
+      .rl-badge {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 3px;
+        background: rgba(167, 139, 250, 0.12);
+        color: var(--accent5);
+        border: 1px solid rgba(167, 139, 250, 0.3);
+        letter-spacing: 0.5px;
+      }
+      .rl-stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--tx2);
+        padding: 2px 0;
+      }
+      .rl-stat-val {
+        color: var(--accent5);
+        font-weight: 600;
+        font-family: var(--font-display);
+        font-size: 12px;
+      }
+      .rl-progress,
+      .rl-epsilon-bar {
+        height: 3px;
+        background: var(--br1);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 4px;
+      }
+      .rl-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent5), var(--accent4));
+        border-radius: 2px;
+        transition: width 0.3s;
+      }
+      .rl-epsilon-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent2), var(--accent5));
+        border-radius: 2px;
+        transition: width 0.2s;
+      }
+      .rl-divider {
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--br2),
+          transparent
+        );
+        margin: 8px 0;
+      }
+      .rl-heatmap-legend {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 5px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--tx3);
+      }
+      .rl-heatmap-gradient {
+        flex: 1;
+        height: 5px;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #0055ff, #00e5a0, #f7b731);
+        border: 1px solid var(--br1);
+      }
+      .rl-convergence {
+        height: 44px;
+        border: 1px solid var(--br1);
+        border-radius: var(--r-sm);
+        background: rgba(0, 0, 0, 0.18);
+        margin-top: 8px;
+        overflow: hidden;
+        position: relative;
+      }
+      [data-theme="light"] .rl-convergence {
+        background: rgba(0, 0, 0, 0.04);
+      }
+      #rlConvergenceChart {
+        width: 100%;
+        height: 100%;
+      }
+      .rl-conv-label {
+        position: absolute;
+        top: 2px;
+        right: 5px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--tx3);
+        pointer-events: none;
+        letter-spacing: 1px;
+      }
+
+      /* ═══════════════════════════════════════════════════ GRID SIZE */
+      .grid-size-inputs {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        margin-bottom: 6px;
+      }
+      .grid-size-inputs input[type="number"] {
+        width: 44%;
+        background: rgba(0, 229, 160, 0.04);
+        border: 1px solid var(--br2);
+        color: var(--tx1);
+        padding: 5px 6px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        border-radius: 3px;
+        outline: none;
+        transition: border-color var(--t-fast);
+      }
+      .grid-size-inputs input[type="number"]:focus {
+        border-color: var(--accent);
+      }
+      .grid-size-inputs span {
+        color: var(--tx3);
+        font-size: 11px;
+        flex-shrink: 0;
+      }
+      .grid-presets {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 4px;
       }
-
-      .maze-btn {
-        padding: 5px 3px;
-        border-radius: 5px;
-        border: 1px solid var(--border);
-        background: rgba(0, 229, 160, 0.03);
-        color: var(--text2);
-        font-family: var(--font-mono);
-        font-size: 8px;
-        cursor: pointer;
-        text-align: center;
-        transition: all 0.2s;
-        letter-spacing: 0.2px;
-      }
-
-      .maze-btn:hover {
-        border-color: var(--border2);
-        color: var(--accent);
-        background: rgba(0, 229, 160, 0.07);
-      }
-
-      /* ── LEGEND ── */
-      .legend {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-      }
-
-      .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+      .grid-note {
         font-family: var(--font-mono);
         font-size: 10px;
-        color: var(--text2);
+        color: var(--tx3);
+        margin-top: 4px;
       }
 
-      .legend-swatch {
-        width: 12px;
-        height: 12px;
-        border-radius: 3px;
-        flex-shrink: 0;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+      /* ═══════════════════════════════════════════════════ MINI CHART */
+      .mini-chart {
+        height: 36px;
+        position: relative;
+        border-radius: var(--r-sm);
+        overflow: hidden;
+        border: 1px solid var(--br1);
+        background: rgba(0, 0, 0, 0.18);
+        margin-top: 6px;
+      }
+      [data-theme="light"] .mini-chart {
+        background: rgba(0, 0, 0, 0.04);
+      }
+      #effChart {
+        width: 100%;
+        height: 100%;
       }
 
-      /* ── TOOL BUTTONS ── */
-      .tool-btn {
-        padding: 6px 10px;
-        border-radius: 5px;
-        border: 1px solid var(--border);
-        background: rgba(0, 229, 160, 0.03);
-        color: var(--text2);
-        font-family: var(--font-mono);
-        font-size: 10px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        transition: all 0.2s;
-        white-space: nowrap;
-        letter-spacing: 0.3px;
-      }
-
-      .tool-btn:hover {
-        border-color: var(--border2);
-        color: var(--accent);
-      }
-
-      .tool-btn.active {
-        background: linear-gradient(
-          135deg,
-          rgba(0, 229, 160, 0.12),
-          rgba(0, 184, 255, 0.08)
-        );
-        border-color: var(--accent);
-        color: var(--accent);
-        box-shadow: var(--glow);
-      }
-
-      .icon-btn {
-        padding: 6px 8px;
-        border-radius: 5px;
-        border: 1px solid var(--border);
-        background: rgba(0, 229, 160, 0.03);
-        color: var(--text2);
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.2s;
-        line-height: 1;
-      }
-
-      .icon-btn:hover {
-        border-color: var(--border2);
-        color: var(--accent);
-      }
-
-      /* ── CANVAS AREA ── */
+      /* ═══════════════════════════════════════════════════ CANVAS AREA */
       .canvas-wrap {
         flex: 1;
         display: flex;
@@ -807,123 +1227,222 @@
         background: var(--bg);
         position: relative;
       }
-
       .canvas-toolbar {
         padding: 6px 10px;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--br1);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
         flex-wrap: wrap;
         background: var(--panel);
         backdrop-filter: blur(12px);
         flex-shrink: 0;
         row-gap: 5px;
+        position: relative;
+        z-index: 6;
       }
-
+      .toolbar-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--tx3);
+        flex-shrink: 0;
+      }
       .toolbar-sep {
         width: 1px;
         height: 18px;
-        background: var(--border2);
-        margin: 0 1px;
+        background: var(--br2);
+        margin: 0 2px;
         flex-shrink: 0;
       }
-
-      .toolbar-label {
+      /* Tool buttons — improved active state */
+      .tool-btn {
+        padding: 6px 10px;
+        border-radius: 5px;
+        border: 1px solid var(--br1);
+        background: rgba(0, 229, 160, 0.03);
+        color: var(--tx2);
         font-family: var(--font-mono);
-        font-size: 9px;
-        color: var(--text3);
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        font-size: 11px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all var(--t-fast);
         white-space: nowrap;
       }
-
-      /* Hide terrain group label on very small screens */
-      @media (max-width: 540px) {
-        .toolbar-label {
-          display: none;
-        }
-        .toolbar-sep {
-          display: none;
-        }
-        .tool-btn {
-          font-size: 9px;
-          padding: 5px 6px;
-        }
+      .tool-btn:hover {
+        border-color: var(--br2);
+        color: var(--accent);
+        background: rgba(0, 229, 160, 0.06);
+      }
+      .tool-btn.active {
+        background: rgba(0, 229, 160, 0.15);
+        border-color: var(--accent);
+        color: var(--accent);
+        box-shadow:
+          inset 0 -2px 0 var(--accent),
+          var(--glow);
+        font-weight: 600;
+      }
+      .tool-btn.terrain-highway.active {
+        background: rgba(0, 220, 255, 0.12);
+        border-color: rgba(0, 220, 255, 0.6);
+        color: rgba(0, 220, 255, 0.9);
+        box-shadow: inset 0 -2px 0 rgba(0, 220, 255, 0.8);
+      }
+      .tool-btn.terrain-traffic.active {
+        background: rgba(255, 140, 0, 0.12);
+        border-color: rgba(255, 140, 0, 0.6);
+        color: rgba(255, 140, 0, 0.9);
+        box-shadow: inset 0 -2px 0 rgba(255, 140, 0, 0.8);
+      }
+      .tool-btn.terrain-mud.active {
+        background: rgba(120, 72, 30, 0.18);
+        border-color: rgba(140, 90, 40, 0.6);
+        color: rgba(180, 120, 60, 0.9);
+        box-shadow: inset 0 -2px 0 rgba(140, 90, 40, 0.8);
+      }
+      .toolbar-hint {
+        margin-left: auto;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--tx3);
+        white-space: nowrap;
+      }
+      .toolbar-hint kbd {
+        background: rgba(0, 229, 160, 0.07);
+        border: 1px solid var(--br2);
+        border-radius: 3px;
+        padding: 1px 5px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent);
       }
 
+      /* ═══════════════════════════════════════════════════ GRID */
       .grid-container {
         flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 12px;
         overflow: hidden;
+        padding: 8px;
         position: relative;
       }
-
-      /* ── GRID CANVAS ── */
       #grid {
-        border: 1px solid var(--border2);
+        border: 1px solid var(--br2);
         border-radius: 8px;
         cursor: crosshair;
         image-rendering: pixelated;
         image-rendering: crisp-edges;
         box-shadow:
-          0 0 0 1px var(--border),
-          0 0 40px rgba(0, 229, 160, 0.08),
-          inset 0 0 60px rgba(0, 0, 0, 0.3);
+          0 0 0 1px var(--br1),
+          0 0 36px rgba(0, 229, 160, 0.07),
+          inset 0 0 50px rgba(0, 0, 0, 0.28);
         transition: box-shadow 0.3s;
-        /* Canvas fills its logical size; CSS scales it to fit container */
         max-width: 100%;
         max-height: 100%;
         display: block;
       }
-
       #grid.running {
         box-shadow:
           0 0 0 1px var(--accent),
-          0 0 50px rgba(0, 229, 160, 0.2),
-          inset 0 0 60px rgba(0, 0, 0, 0.3);
+          0 0 44px rgba(0, 229, 160, 0.18),
+          inset 0 0 50px rgba(0, 0, 0, 0.28);
       }
-
       #grid.done {
         box-shadow:
           0 0 0 1px var(--accent2),
-          0 0 50px rgba(0, 184, 255, 0.2),
-          inset 0 0 60px rgba(0, 0, 0, 0.3);
+          0 0 44px rgba(0, 184, 255, 0.18),
+          inset 0 0 50px rgba(0, 0, 0, 0.28);
+      }
+      #rippleCanvas {
+        position: absolute;
+        pointer-events: none;
+        z-index: 4;
       }
 
-      /* ── STATUS BAR ── */
+      /* Canvas empty state */
+      .canvas-empty-state {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        z-index: 3;
+        transition: opacity 0.4s;
+      }
+      .canvas-empty-state.hidden {
+        opacity: 0;
+      }
+      .ces-inner {
+        text-align: center;
+        padding: 20px 28px;
+        background: rgba(5, 11, 20, 0.72);
+        border: 1px solid var(--br2);
+        border-radius: var(--r-lg);
+        backdrop-filter: blur(8px);
+      }
+      [data-theme="light"] .ces-inner {
+        background: rgba(238, 242, 247, 0.82);
+      }
+      .ces-title {
+        font-family: var(--font-display);
+        font-size: 13px;
+        color: var(--accent);
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+      }
+      .ces-steps {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--tx2);
+        line-height: 2;
+      }
+      .ces-steps span {
+        display: block;
+      }
+      .ces-key {
+        display: inline-block;
+        background: rgba(0, 229, 160, 0.1);
+        border: 1px solid var(--br2);
+        border-radius: 3px;
+        padding: 1px 6px;
+        color: var(--accent);
+        font-size: 10px;
+      }
+
+      /* ═══════════════════════════════════════════════════ STATUS BAR */
       .statusbar {
-        padding: 5px 12px;
-        border-top: 1px solid var(--border);
+        padding: 0 14px;
+        min-height: 32px;
+        border-top: 1px solid var(--br1);
         display: flex;
         align-items: center;
         gap: 10px;
         font-family: var(--font-mono);
-        font-size: 9px;
+        font-size: 12px;
         background: var(--panel);
         flex-shrink: 0;
         flex-wrap: wrap;
         row-gap: 3px;
+        position: relative;
+        z-index: 6;
       }
-
       .status-dot {
-        width: 7px;
-        height: 7px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
-        background: var(--text3);
+        background: var(--tx3);
         flex-shrink: 0;
         transition: background 0.3s;
         position: relative;
       }
-
       .status-dot.running {
         background: var(--accent);
         box-shadow: 0 0 8px rgba(0, 229, 160, 0.6);
       }
-
       .status-dot.running::after {
         content: "";
         position: absolute;
@@ -932,7 +1451,6 @@
         border: 1px solid var(--accent);
         animation: ping 1s ease-out infinite;
       }
-
       @keyframes ping {
         0% {
           transform: scale(1);
@@ -943,26 +1461,29 @@
           opacity: 0;
         }
       }
-
       .status-dot.done {
         background: var(--accent2);
         box-shadow: 0 0 8px rgba(0, 184, 255, 0.6);
       }
-
       .status-dot.error {
         background: var(--accent3);
-        box-shadow: var(--red-glow);
+        box-shadow: var(--glow-red);
       }
-
       #statusText {
-        color: var(--text2);
+        color: var(--tx2);
+        font-size: 12px;
+      }
+      #coordDisplay {
+        margin-left: auto;
+        color: var(--tx3);
+        font-size: 11px;
       }
 
-      /* ── RIGHT PANEL ── */
+      /* ═══════════════════════════════════════════════════ RIGHT PANEL */
       .right-panel {
-        width: 200px;
+        width: var(--rp-w);
         flex-shrink: 0;
-        border-left: 1px solid var(--border);
+        border-left: 1px solid var(--br1);
         display: flex;
         flex-direction: column;
         background: var(--panel);
@@ -970,10 +1491,9 @@
         overflow: hidden;
         transition:
           width 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-          opacity 0.25s ease;
+          opacity var(--t-fast);
         will-change: width;
       }
-
       .right-panel.collapsed {
         width: 0 !important;
         opacity: 0;
@@ -985,10 +1505,10 @@
         top: 50%;
         transform: translateY(-50%);
         z-index: 25;
-        width: 18px;
-        height: 48px;
+        width: 16px;
+        height: 44px;
         background: var(--panel);
-        border: 1px solid var(--border2);
+        border: 1px solid var(--br2);
         border-right: none;
         border-radius: 6px 0 0 6px;
         cursor: pointer;
@@ -997,129 +1517,104 @@
         justify-content: center;
         color: var(--accent);
         font-size: 10px;
-        transition: all 0.2s;
+        transition: all var(--t-fast);
         backdrop-filter: blur(8px);
-        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
-        user-select: none;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.28);
       }
       .rp-toggle:hover {
         background: rgba(0, 229, 160, 0.1);
-        box-shadow: -2px 0 16px rgba(0, 229, 160, 0.2);
       }
-
       .rp-header {
         padding: 10px 12px 8px;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--br1);
         flex-shrink: 0;
       }
-
       .rp-title {
         font-family: var(--font-display);
-        font-size: 9px;
+        font-size: 10px;
         font-weight: 700;
-        letter-spacing: 2px;
+        letter-spacing: 1.8px;
         color: var(--accent);
         text-transform: uppercase;
         display: flex;
         align-items: center;
         justify-content: space-between;
       }
-
+      #stepCounter {
+        font-size: 10px;
+        color: var(--tx3);
+      }
       .log-controls {
         display: flex;
         align-items: center;
         gap: 5px;
         margin-top: 7px;
       }
-
       .log-ctrl-btn {
-        padding: 3px 7px;
+        padding: 4px 8px;
         border-radius: 4px;
-        border: 1px solid var(--border);
+        border: 1px solid var(--br1);
         background: rgba(0, 229, 160, 0.03);
-        color: var(--text2);
+        color: var(--tx2);
         font-family: var(--font-mono);
-        font-size: 8px;
+        font-size: 11px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all var(--t-fast);
         white-space: nowrap;
-        letter-spacing: 0.3px;
       }
-
       .log-ctrl-btn:hover {
-        border-color: var(--border2);
+        border-color: var(--br2);
         color: var(--accent);
       }
-
       .log-ctrl-btn.active {
         background: rgba(0, 229, 160, 0.1);
         color: var(--accent);
         border-color: var(--accent);
       }
-
-      .step-counter {
-        font-family: var(--font-mono);
-        font-size: 8px;
-        color: var(--text3);
-        margin-left: auto;
-        letter-spacing: 0.5px;
-      }
-
-      /* ── LOG ── */
       .log-wrap {
         flex: 1;
         overflow: hidden;
         position: relative;
         min-height: 0;
       }
-
       .log {
         height: 100%;
         overflow-y: auto;
         padding: 6px;
         font-family: var(--font-mono);
-        font-size: 9px;
-        line-height: 1.6;
-        color: var(--text2);
+        font-size: 11px;
+        line-height: 1.65;
+        color: var(--tx2);
         scroll-behavior: smooth;
         scrollbar-width: thin;
-        scrollbar-color: var(--border) transparent;
+        scrollbar-color: var(--br1) transparent;
       }
-
       .log-entry {
         padding: 2px 5px;
         border-radius: 3px;
         margin-bottom: 1px;
         word-break: break-all;
       }
-
       .log-entry.info {
-        color: var(--text2);
+        color: var(--tx2);
       }
-
       .log-entry.explore {
-        color: rgba(0, 229, 160, 0.7);
+        color: rgba(0, 229, 160, 0.72);
       }
-
       .log-entry.path {
         color: var(--accent2);
         font-weight: 600;
       }
-
       .log-entry.warn {
         color: var(--accent4);
       }
-
       .log-entry.success {
         color: var(--accent);
         font-weight: 600;
         background: rgba(0, 229, 160, 0.07);
         border-left: 2px solid var(--accent);
         padding-left: 6px;
-        box-shadow: inset 0 0 10px rgba(0, 229, 160, 0.05);
       }
-
-      /* ── FAB ── */
       .scroll-fab {
         position: absolute;
         bottom: 8px;
@@ -1128,7 +1623,7 @@
         height: 22px;
         border-radius: 50%;
         background: var(--panel);
-        border: 1px solid var(--border2);
+        border: 1px solid var(--br2);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1140,79 +1635,103 @@
         z-index: 10;
         color: var(--accent);
       }
-
       .scroll-fab.visible {
         opacity: 1;
         pointer-events: all;
       }
-
-      /* ── RIGHT PANEL BOTTOM ── */
       .rp-bottom {
         flex-shrink: 0;
-        border-top: 1px solid var(--border);
-        padding: 10px 12px;
+        border-top: 1px solid var(--br1);
+        padding: 10px 12px 14px;
       }
-
       .algo-title {
         font-family: var(--font-display);
-        font-size: 8px;
+        font-size: 10px;
         font-weight: 700;
-        letter-spacing: 1.5px;
-        margin-bottom: 5px;
-        color: var(--text2);
-        text-transform: uppercase;
-      }
-
-      .mini-list {
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 4px;
-        border: 1px solid var(--border);
-        padding: 5px 7px;
+        letter-spacing: 1.2px;
         margin-bottom: 6px;
-        font-family: var(--font-mono);
-        font-size: 8px;
-        max-height: 52px;
-        overflow-y: auto;
-        color: var(--text2);
-        line-height: 1.5;
+        margin-top: 4px;
+        color: var(--accent);
+        text-transform: uppercase;
+        opacity: 0.7;
       }
-
+      .mini-list {
+        background: rgba(0, 0, 0, 0.18);
+        border-radius: 5px;
+        border: 1px solid var(--br1);
+        padding: 6px 8px;
+        margin-bottom: 8px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        max-height: 100px;
+        overflow-y: auto;
+        color: var(--tx2);
+        line-height: 1.65;
+        scrollbar-width: thin;
+        scrollbar-color: var(--br2) transparent;
+      }
       [data-theme="light"] .mini-list {
         background: rgba(0, 0, 0, 0.04);
       }
-
       .list-lbl {
-        font-size: 7px;
-        color: var(--text3);
+        font-size: 10px;
+        color: var(--tx3);
         letter-spacing: 0.5px;
         margin-bottom: 2px;
         text-transform: uppercase;
       }
 
-      /* ── COMPARE MODE ── */
+      /* ═══════════════════════════════════════════════════ COMPARE */
       .compare-overlay {
         position: fixed;
         inset: 0;
         z-index: 200;
-        background: rgba(0, 0, 0, 0.88);
+        background: rgba(0, 0, 0, 0.9);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: flex-start;
-        gap: 12px;
-        padding: 20px 16px 16px;
+        gap: 10px;
+        padding: 16px 14px 14px;
         opacity: 0;
         pointer-events: none;
-        transition: opacity 0.4s;
-        backdrop-filter: blur(8px);
+        transition: opacity 0.35s;
+        backdrop-filter: blur(6px);
         overflow-y: auto;
       }
-
       .compare-overlay.visible {
         opacity: 1;
         pointer-events: all;
       }
-
+      .compare-header {
+        width: 100%;
+        max-width: 1200px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+      }
+      .compare-back {
+        padding: 7px 14px;
+        border-radius: var(--r-md);
+        border: 1px solid var(--br2);
+        background: rgba(0, 229, 160, 0.07);
+        color: var(--accent);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all var(--t-fast);
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+      .compare-back:hover {
+        background: rgba(0, 229, 160, 0.15);
+        box-shadow: var(--glow);
+      }
       .compare-title {
         font-family: var(--font-display);
         font-size: 14px;
@@ -1220,18 +1739,21 @@
         color: var(--accent);
         text-shadow: var(--glow);
         text-transform: uppercase;
-        flex-shrink: 0;
       }
-
+      .compare-progress {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--tx3);
+        margin-left: auto;
+      }
       .compare-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 15px;
+        gap: 12px;
         width: 100%;
         max-width: 1200px;
         flex-shrink: 0;
       }
-
       @media (max-width: 900px) {
         .compare-grid {
           grid-template-columns: repeat(2, 1fr);
@@ -1242,10 +1764,9 @@
           grid-template-columns: 1fr;
         }
       }
-
       .compare-card {
         background: var(--panel);
-        border: 1px solid var(--border2);
+        border: 1px solid var(--br2);
         border-radius: 8px;
         padding: 8px;
         display: flex;
@@ -1266,7 +1787,6 @@
         box-shadow: var(--glow);
         border-color: var(--accent);
       }
-
       .compare-card.maximized {
         position: fixed;
         top: 50%;
@@ -1280,14 +1800,13 @@
         border-color: var(--accent);
         box-shadow:
           0 0 50px rgba(0, 0, 0, 0.9),
-          0 0 0 2000px rgba(0, 0, 0, 0.85);
+          0 0 0 2000px rgba(0, 0, 0, 0.82);
         padding: 20px;
         gap: 15px;
       }
       .compare-card.maximized:hover {
-        transform: translate(-50%, -50%); /* override the hover lift */
+        transform: translate(-50%, -50%);
       }
-
       .compare-card.maximized canvas {
         width: auto !important;
         height: 100% !important;
@@ -1295,799 +1814,85 @@
         max-height: calc(100vh - 120px) !important;
         object-fit: contain;
       }
-
-      .compare-card.maximized .compare-card-title {
-        font-size: 16px;
-        letter-spacing: 4px;
-      }
-      .compare-card.maximized .compare-stats {
-        font-size: 11px;
-        gap: 15px;
-      }
-      .compare-card.maximized .compare-stat b {
-        font-size: 18px;
-      }
-
       .compare-card-title {
         font-family: var(--font-display);
-        font-size: 8px;
+        font-size: 11px;
         letter-spacing: 2px;
         color: var(--accent);
         text-transform: uppercase;
       }
-
       .compare-card canvas {
-        border: 1px solid var(--border);
+        border: 1px solid var(--br1);
         border-radius: 4px;
         image-rendering: pixelated;
         width: 100% !important;
         height: auto !important;
         display: block;
       }
-
       .compare-stats {
         display: flex;
         gap: 6px;
         font-family: var(--font-mono);
-        font-size: 8px;
-        color: var(--text2);
+        font-size: 11px;
+        color: var(--tx2);
         flex-wrap: wrap;
         justify-content: center;
       }
-
       .compare-stat {
         text-align: center;
       }
-
       .compare-stat b {
         display: block;
         color: var(--accent);
-        font-size: 11px;
+        font-size: 12px;
         font-family: var(--font-display);
       }
-
-      .compare-close {
-        font-family: var(--font-mono);
-        font-size: 10px;
-        padding: 8px 24px;
-        border: 1px solid var(--border2);
-        border-radius: 4px;
-        background: rgba(0, 229, 160, 0.07);
-        color: var(--accent);
-        cursor: pointer;
-        transition: all 0.2s;
-        letter-spacing: 1px;
-        flex-shrink: 0;
-      }
-
-      .compare-close:hover {
-        background: rgba(0, 229, 160, 0.15);
-        box-shadow: var(--glow);
-      }
-
-      /* ── TOAST ── */
-      .toast {
-        position: fixed;
-        top: 70px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-10px);
-        background: var(--panel);
-        border: 1px solid var(--accent);
-        border-radius: 6px;
-        padding: 8px 18px;
-        font-family: var(--font-mono);
-        font-size: 10px;
-        color: var(--accent);
-        box-shadow:
-          var(--glow),
-          0 8px 32px rgba(0, 0, 0, 0.5);
-        z-index: 300;
-        opacity: 0;
-        pointer-events: none;
-        transition: all 0.3s;
-        letter-spacing: 0.5px;
-      }
-
-      .toast.show {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
-
-      /* ── ALGO PANEL (algo desc) ── */
-      .algo-desc {
-        font-size: 10px;
-        color: var(--text2);
-        line-height: 1.6;
-        font-family: var(--font-mono);
-      }
-
-      /* ── MINI CHART (efficiency) ── */
-      .mini-chart {
-        height: 36px;
-        position: relative;
-        border-radius: 4px;
-        overflow: hidden;
-        border: 1px solid var(--border);
-        background: rgba(0, 0, 0, 0.2);
-        margin-top: 5px;
-      }
-
-      [data-theme="light"] .mini-chart {
-        background: rgba(0, 0, 0, 0.04);
-      }
-
-      #effChart {
-        width: 100%;
-        height: 100%;
-      }
-
-      /* ── KEYBOARD SHORTCUTS OVERLAY ── */
-      .shortcuts-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 250;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.3s;
-        backdrop-filter: blur(8px);
-      }
-
-      .shortcuts-overlay.visible {
-        opacity: 1;
-        pointer-events: all;
-      }
-
-      .shortcuts-box {
-        background: var(--panel);
-        border: 1px solid var(--border2);
-        border-radius: 8px;
-        padding: 20px 24px;
-        width: 340px;
-        box-shadow:
-          var(--glow),
-          0 20px 60px rgba(0, 0, 0, 0.5);
-      }
-
-      .shortcuts-title {
-        font-family: var(--font-display);
-        font-size: 10px;
-        letter-spacing: 2px;
-        color: var(--accent);
-        margin-bottom: 14px;
-        text-transform: uppercase;
-      }
-
-      .shortcut-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 5px 0;
-        border-bottom: 1px solid var(--border);
-        font-family: var(--font-mono);
-        font-size: 10px;
-        color: var(--text2);
-      }
-
-      .shortcut-row:last-child {
-        border-bottom: none;
-      }
-
-      kbd {
-        background: rgba(0, 229, 160, 0.1);
-        border: 1px solid var(--border2);
-        border-radius: 3px;
-        padding: 2px 6px;
-        font-family: var(--font-mono);
-        font-size: 9px;
-        color: var(--accent);
-      }
-
-      /* ── CHECKBOX ── */
-      .check-label {
-        display: flex;
-        align-items: center;
-        gap: 7px;
-        font-family: var(--font-mono);
-        font-size: 10px;
-        color: var(--text2);
-        cursor: pointer;
-        transition: color 0.2s;
-      }
-
-      .check-label:hover {
-        color: var(--accent);
-      }
-
-      .check-label input[type="checkbox"] {
-        appearance: none;
-        width: 13px;
-        height: 13px;
-        border: 1px solid var(--border2);
-        border-radius: 3px;
-        background: rgba(0, 229, 160, 0.04);
-        cursor: pointer;
-        position: relative;
-        flex-shrink: 0;
-        transition: all 0.2s;
-      }
-
-      .check-label input[type="checkbox"]:checked {
-        background: var(--accent);
-        border-color: var(--accent);
-        box-shadow: 0 0 6px rgba(0, 229, 160, 0.4);
-      }
-
-      .check-label input[type="checkbox"]:checked::after {
-        content: "✓";
-        position: absolute;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 9px;
-        color: #000;
-        font-weight: bold;
-        line-height: 13px;
-        text-align: center;
-      }
-
-      /* scrollbar */
-      ::-webkit-scrollbar {
-        width: 4px;
-        height: 4px;
-      }
-
-      ::-webkit-scrollbar-track {
-        background: transparent;
-      }
-
-      ::-webkit-scrollbar-thumb {
-        background: var(--border2);
-        border-radius: 2px;
-      }
-
-      /* ANIMATIONS */
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(4px);
-        }
-
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .stat-val {
-        animation: none;
-      }
-
-      .stat-val.bump {
-        animation: bump 0.3s ease;
-      }
-
-      @keyframes bump {
-        0% {
-          transform: scale(1);
-        }
-
-        50% {
-          transform: scale(1.15);
-        }
-
-        100% {
-          transform: scale(1);
-        }
-      }
-
-      /* ── COMPARE RUNNING INDICATOR ── */
-      .compare-progress {
-        font-family: var(--font-mono);
-        font-size: 9px;
-        color: var(--accent);
-        letter-spacing: 1px;
-        text-align: center;
-        height: 14px;
-      }
-
-      /* ── TERRAIN TOOLS ── */
-      .tool-btn.terrain-highway {
-        border-color: rgba(0, 220, 255, 0.3);
-      }
-      .tool-btn.terrain-highway.active {
-        border-color: #00dcff;
-        color: #00dcff;
-        background: rgba(0, 220, 255, 0.12);
-      }
-      .tool-btn.terrain-traffic {
-        border-color: rgba(255, 140, 0, 0.3);
-      }
-      .tool-btn.terrain-traffic.active {
-        border-color: #ff8c00;
-        color: #ff8c00;
-        background: rgba(255, 140, 0, 0.12);
-      }
-      .tool-btn.terrain-mud {
-        border-color: rgba(139, 90, 43, 0.4);
-      }
-      .tool-btn.terrain-mud.active {
-        border-color: #a0622a;
-        color: #a0622a;
-        background: rgba(139, 90, 43, 0.15);
-      }
-
-      /* ── HISTORY DEBUG BAR ── */
-      .history-bar {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        padding: 5px 0 0;
-        font-family: var(--font-mono);
-        font-size: 9px;
-        color: var(--text3);
-      }
-      .history-bar .btn {
-        flex: 1;
-        justify-content: center;
-        font-size: 11px;
-        padding: 5px 4px;
-      }
-      #historyPos {
-        min-width: 50px;
-        text-align: center;
-        color: var(--accent);
-      }
-
-      /* ── HEURISTIC SELECTOR ── */
-      .heur-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 4px;
-      }
-      .heur-btn {
-        padding: 5px 4px;
-        border-radius: 4px;
-        border: 1px solid var(--border);
-        background: rgba(0, 184, 255, 0.03);
-        color: var(--text2);
-        font-family: var(--font-mono);
-        font-size: 9px;
-        cursor: pointer;
-        text-align: center;
-        transition: all 0.2s;
-      }
-      .heur-btn:hover {
-        border-color: var(--border2);
-        color: var(--accent2);
-      }
-      .heur-btn.active {
-        border-color: var(--accent2);
-        color: var(--accent2);
-        background: rgba(0, 184, 255, 0.12);
-        font-weight: 600;
-      }
-
-      /* ── EXPORT SECTION ── */
-      .btn.export-btn {
-        border-color: rgba(167, 139, 250, 0.3);
-        background: rgba(167, 139, 250, 0.04);
-        color: var(--accent5);
-      }
-      .btn.export-btn:hover {
-        border-color: var(--accent5);
-        background: rgba(167, 139, 250, 0.1);
-        box-shadow: 0 0 12px rgba(167, 139, 250, 0.2);
-      }
-
-      /* ── TERRAIN LEGEND ── */
-      .terrain-legend {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        margin-top: 6px;
-      }
-      .terrain-item {
-        display: flex;
-        align-items: center;
-        gap: 7px;
-        font-family: var(--font-mono);
-        font-size: 9px;
-        color: var(--text2);
-      }
-      .terrain-swatch {
-        width: 14px;
-        height: 14px;
-        border-radius: 3px;
-        flex-shrink: 0;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      .tw-badge {
-        margin-left: auto;
-        font-size: 8px;
-        color: var(--text3);
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 3px;
-        padding: 1px 5px;
-      }
-
-      /* ══════════════════════════════════════════════════════
-         GLITCH TITLE EFFECT
-      ══════════════════════════════════════════════════════ */
-      @keyframes glitch-clip1 {
-        0%,
-        100% {
-          clip-path: inset(0 0 95% 0);
-        }
-        20% {
-          clip-path: inset(30% 0 50% 0);
-        }
-        40% {
-          clip-path: inset(70% 0 10% 0);
-        }
-        60% {
-          clip-path: inset(10% 0 80% 0);
-        }
-        80% {
-          clip-path: inset(50% 0 30% 0);
-        }
-      }
-      @keyframes glitch-clip2 {
-        0%,
-        100% {
-          clip-path: inset(80% 0 5% 0);
-        }
-        20% {
-          clip-path: inset(10% 0 70% 0);
-        }
-        40% {
-          clip-path: inset(50% 0 30% 0);
-        }
-        60% {
-          clip-path: inset(5% 0 90% 0);
-        }
-        80% {
-          clip-path: inset(65% 0 20% 0);
-        }
-      }
-      .app-title {
-        position: relative;
-      }
-      .app-title::before,
-      .app-title::after {
-        content: attr(data-text);
-        position: absolute;
-        inset: 0;
-        font-family: var(--font-display);
-        font-size: inherit;
-        font-weight: inherit;
-        letter-spacing: inherit;
-        text-transform: inherit;
-        pointer-events: none;
-        opacity: 0;
-      }
-      .app-title.glitching::before {
-        opacity: 0.8;
-        color: #ff4d6d;
-        transform: translateX(-3px);
-        animation: glitch-clip1 0.35s steps(1) forwards;
-      }
-      .app-title.glitching::after {
-        opacity: 0.8;
-        color: #00b8ff;
-        transform: translateX(3px);
-        animation: glitch-clip2 0.35s steps(1) forwards;
-      }
-
-      /* ══════════════════════════════════════════════════════
-         TOAST REDESIGN
-      ══════════════════════════════════════════════════════ */
-      .toast {
-        position: fixed;
-        top: 70px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-16px);
-        background: var(--bg2);
-        border: 1px solid var(--border2);
-        border-radius: 8px;
-        padding: 0;
-        font-family: var(--font-mono);
-        font-size: 10px;
-        z-index: 400;
-        opacity: 0;
-        pointer-events: none;
-        transition:
-          opacity 0.25s,
-          transform 0.25s;
-        min-width: 200px;
-        max-width: 340px;
-        overflow: hidden;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-      }
-      .toast.show {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0);
-      }
-      .toast-inner {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 14px;
-      }
-      .toast-icon {
-        font-size: 14px;
-        flex-shrink: 0;
-      }
-      .toast-msg {
-        color: var(--text);
-        flex: 1;
-      }
-      .toast-bar {
-        height: 2px;
-        background: var(--accent);
-        transform-origin: left;
-        transform: scaleX(1);
-        transition: transform linear;
-      }
-      .toast.t-success {
-        border-color: rgba(0, 229, 160, 0.5);
-      }
-      .toast.t-success .toast-bar {
-        background: var(--accent);
-      }
-      .toast.t-warn {
-        border-color: rgba(247, 183, 49, 0.5);
-      }
-      .toast.t-warn .toast-bar {
-        background: var(--accent4);
-      }
-      .toast.t-error {
-        border-color: rgba(255, 77, 109, 0.5);
-      }
-      .toast.t-error .toast-bar {
-        background: var(--accent3);
-      }
-      .toast.t-info {
-        border-color: rgba(0, 184, 255, 0.4);
-      }
-      .toast.t-info .toast-bar {
-        background: var(--accent2);
-      }
-
-      /* ══════════════════════════════════════════════════════
-         WALL RIPPLE OVERLAY
-      ══════════════════════════════════════════════════════ */
-      #rippleCanvas {
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        z-index: 5;
-        border-radius: 8px;
-      }
-
-      /* ══════════════════════════════════════════════════════
-         DRAG GHOST
-      ══════════════════════════════════════════════════════ */
-      #dragGhost {
-        position: fixed;
-        pointer-events: none;
-        z-index: 500;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        border: 2px solid var(--accent);
-        background: rgba(0, 229, 160, 0.15);
-        box-shadow: 0 0 18px rgba(0, 229, 160, 0.5);
-        transform: translate(-50%, -50%);
-        transition: opacity 0.15s;
-        backdrop-filter: blur(4px);
-      }
-
-      /* ══════════════════════════════════════════════════════
-         PROGRESS RING
-      ══════════════════════════════════════════════════════ */
-      .progress-ring-wrap {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 6px 0 4px;
-      }
-      .progress-ring {
-        transform: rotate(-90deg);
-      }
-      .progress-ring-track {
-        fill: none;
-        stroke: var(--border2);
-        stroke-width: 3;
-      }
-      .progress-ring-fill {
-        fill: none;
-        stroke: var(--accent);
-        stroke-width: 3;
-        stroke-linecap: round;
-        stroke-dasharray: 113; /* 2π×18 */
-        stroke-dashoffset: 113;
-        transition: stroke-dashoffset 0.3s ease;
-        filter: drop-shadow(0 0 4px rgba(0, 229, 160, 0.6));
-      }
-      .progress-ring-label {
-        position: absolute;
-        font-family: var(--font-display);
-        font-size: 9px;
-        color: var(--accent);
-        text-align: center;
-        pointer-events: none;
-      }
-      .progress-ring-container {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      /* ══════════════════════════════════════════════════════
-         ALGORITHM PORTRAIT
-      ══════════════════════════════════════════════════════ */
-      .algo-portrait-wrap {
-        margin-top: 6px;
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        overflow: hidden;
-        background: rgba(0, 0, 0, 0.2);
-        height: 48px;
-        position: relative;
-      }
-      #algoPortrait {
-        display: block;
-        width: 100%;
-        height: 100%;
-      }
-      .algo-portrait-label {
-        position: absolute;
-        bottom: 3px;
-        right: 5px;
-        font-family: var(--font-mono);
-        font-size: 7px;
-        color: var(--text3);
-        pointer-events: none;
-        letter-spacing: 1px;
-      }
-
-      /* ══════════════════════════════════════════════════════
-         STAT SPARKLINES
-      ══════════════════════════════════════════════════════ */
-      .stat-card {
-        position: relative;
-        overflow: hidden;
-      }
-      .stat-spark {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 22px;
-        opacity: 0.35;
-        pointer-events: none;
-      }
-
-      /* ══════════════════════════════════════════════════════
-         FULL-SCREEN MODE
-      ══════════════════════════════════════════════════════ */
-      body.fullscreen .sidebar,
-      body.fullscreen .right-panel {
-        display: none !important;
-      }
-      body.fullscreen .canvas-toolbar {
-        display: none !important;
-      }
-      body.fullscreen .statusbar {
-        display: none !important;
-      }
-      body.fullscreen .header {
-        padding: 6px 10px;
-      }
-
-      #fsHUD {
-        position: fixed;
-        bottom: 18px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 200;
-        background: rgba(5, 11, 20, 0.88);
-        border: 1px solid var(--border2);
-        border-radius: 10px;
-        padding: 8px 18px;
-        display: none;
-        align-items: center;
-        gap: 14px;
-        backdrop-filter: blur(14px);
-        box-shadow:
-          0 4px 30px rgba(0, 0, 0, 0.6),
-          var(--glow);
-        font-family: var(--font-mono);
-        font-size: 10px;
-        color: var(--text2);
-      }
-      body.fullscreen #fsHUD {
-        display: flex;
-      }
-      .hud-stat {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1px;
-      }
-      .hud-val {
-        font-family: var(--font-display);
-        font-size: 13px;
-        color: var(--accent);
-        font-weight: 700;
-      }
-      .hud-lbl {
-        font-size: 7px;
-        color: var(--text3);
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-      .hud-sep {
-        width: 1px;
-        height: 28px;
-        background: var(--border2);
-      }
-      #fsBtn {
-        position: fixed;
-        bottom: 18px;
-        right: 18px;
-        z-index: 210;
-        padding: 6px 10px;
-        border-radius: 6px;
-        border: 1px solid var(--border2);
-        background: var(--panel);
-        color: var(--accent);
-        font-size: 13px;
-        cursor: pointer;
-        backdrop-filter: blur(8px);
-        box-shadow: var(--glow);
-        transition: all 0.2s;
-      }
-      #fsBtn:hover {
-        background: rgba(0, 229, 160, 0.12);
-      }
-
-      /* ══════════════════════════════════════════════════════
-         COMPARE — WINNER + BAR CHART
-      ══════════════════════════════════════════════════════ */
-      .compare-card.winner {
-        border-color: var(--accent4) !important;
-        box-shadow: 0 0 24px rgba(247, 183, 49, 0.4) !important;
-      }
-      .winner-badge {
+      /* Multi-metric winner */
+      .winner-badges {
         position: absolute;
         top: -10px;
-        right: -4px;
-        background: linear-gradient(135deg, var(--accent4), #ff9800);
-        color: #000;
-        font-size: 7px;
-        font-weight: 700;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 3px;
+        white-space: nowrap;
+        z-index: 2;
+      }
+      .win-badge {
         font-family: var(--font-display);
-        letter-spacing: 1px;
-        padding: 2px 6px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        padding: 2px 7px;
         border-radius: 4px;
-        text-transform: uppercase;
+        color: #000;
+      }
+      .win-badge.fast {
+        background: linear-gradient(135deg, #f7b731, #ff9800);
+      }
+      .win-badge.optimal {
+        background: linear-gradient(135deg, #00e5a0, #00b8ff);
+      }
+      .win-badge.balanced {
+        background: linear-gradient(135deg, #a78bfa, #00b8ff);
+      }
+      .compare-card.winner-fast {
+        border-color: #f7b731 !important;
+        box-shadow: 0 0 20px rgba(247, 183, 49, 0.35) !important;
+      }
+      .compare-card.winner-optimal {
+        border-color: #00e5a0 !important;
+        box-shadow: 0 0 20px rgba(0, 229, 160, 0.35) !important;
+      }
+      .compare-card.winner-balanced {
+        border-color: #a78bfa !important;
+        box-shadow: 0 0 20px rgba(167, 139, 250, 0.35) !important;
       }
       #compareBarChart {
         width: 100%;
-        max-width: 900px;
+        max-width: 1200px;
         background: var(--panel);
-        border: 1px solid var(--border);
+        border: 1px solid var(--br1);
         border-radius: 8px;
         padding: 12px 16px;
         flex-shrink: 0;
@@ -2098,18 +1903,18 @@
         gap: 8px;
         margin-bottom: 6px;
         font-family: var(--font-mono);
-        font-size: 8px;
+        font-size: 11px;
       }
       .bar-label {
         width: 70px;
-        color: var(--text2);
+        color: var(--tx2);
         text-align: right;
         flex-shrink: 0;
       }
       .bar-track {
         flex: 1;
         height: 10px;
-        background: var(--border);
+        background: var(--br1);
         border-radius: 5px;
         overflow: hidden;
       }
@@ -2129,215 +1934,475 @@
       }
       .bar-chart-title {
         font-family: var(--font-display);
-        font-size: 8px;
+        font-size: 10px;
         letter-spacing: 2px;
-        color: var(--text3);
+        color: var(--tx3);
         text-transform: uppercase;
         margin-bottom: 8px;
         padding-bottom: 5px;
-        border-bottom: 1px solid var(--border);
+        border-bottom: 1px solid var(--br1);
       }
-      /* ══════════════════════════════════════════════════════
-         RL AGENT DASHBOARD
-      ══════════════════════════════════════════════════════ */
-      .rl-stat-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+
+      /* ═══════════════════════════════════════════════════ TOAST */
+      .toast {
+        position: fixed;
+        top: 66px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-8px);
+        background: var(--panel);
+        border: 1px solid var(--accent);
+        border-radius: var(--r-md);
         font-family: var(--font-mono);
-        font-size: 9px;
-        color: var(--text2);
-        padding: 2px 0;
+        font-size: 12px;
+        color: var(--accent);
+        box-shadow:
+          var(--glow),
+          0 8px 28px rgba(0, 0, 0, 0.5);
+        z-index: 300;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.28s;
+        overflow: hidden;
+        min-width: 200px;
+        max-width: 360px;
       }
-      .rl-stat-val {
-        color: var(--accent5);
-        font-weight: 600;
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      .toast-inner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+      }
+      .toast-icon {
+        font-size: 13px;
+        flex-shrink: 0;
+      }
+      .toast-msg {
+        font-size: 12px;
+      }
+      .toast-bar {
+        height: 2px;
+        background: var(--accent);
+        transform-origin: left;
+        transform: scaleX(1);
+      }
+      .toast.t-success {
+        border-color: var(--accent);
+      }
+      .toast.t-warn {
+        border-color: var(--accent4);
+        color: var(--accent4);
+      }
+      .toast.t-warn .toast-bar {
+        background: var(--accent4);
+      }
+      .toast.t-error {
+        border-color: var(--accent3);
+        color: var(--accent3);
+      }
+      .toast.t-error .toast-bar {
+        background: var(--accent3);
+      }
+      .toast.t-info {
+        border-color: var(--accent2);
+        color: var(--accent2);
+      }
+      .toast.t-info .toast-bar {
+        background: var(--accent2);
+      }
+
+      /* ═══════════════════════════════════════════════════ SHORTCUTS */
+      .shortcuts-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 250;
+        background: rgba(0, 0, 0, 0.76);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.28s;
+        backdrop-filter: blur(8px);
+      }
+      .shortcuts-overlay.visible {
+        opacity: 1;
+        pointer-events: all;
+      }
+      .shortcuts-box {
+        background: var(--panel);
+        border: 1px solid var(--br2);
+        border-radius: 8px;
+        padding: 20px 24px;
+        width: 340px;
+        box-shadow:
+          var(--glow),
+          0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+      .shortcuts-title {
         font-family: var(--font-display);
         font-size: 11px;
-      }
-      .rl-epsilon-bar {
-        height: 3px;
-        background: var(--border);
-        border-radius: 2px;
-        margin-top: 3px;
-        overflow: hidden;
-      }
-      .rl-epsilon-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--accent2), var(--accent5));
-        border-radius: 2px;
-        transition: width 0.2s;
-      }
-      .rl-progress {
-        height: 3px;
-        background: var(--border);
-        border-radius: 2px;
-        margin-top: 5px;
-        overflow: hidden;
-      }
-      .rl-progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--accent5), var(--accent4));
-        border-radius: 2px;
-        transition: width 0.3s;
-      }
-      .rl-convergence {
-        height: 44px;
-        border: 1px solid var(--border);
-        border-radius: 4px;
-        background: rgba(0, 0, 0, 0.2);
-        margin-top: 6px;
-        overflow: hidden;
-        position: relative;
-      }
-      [data-theme="light"] .rl-convergence {
-        background: rgba(0, 0, 0, 0.04);
-      }
-      #rlConvergenceChart {
-        width: 100%;
-        height: 100%;
-      }
-      .rl-conv-label {
-        position: absolute;
-        top: 2px;
-        right: 4px;
-        font-family: var(--font-mono);
-        font-size: 6px;
-        color: var(--text3);
-        pointer-events: none;
-        letter-spacing: 0.5px;
+        letter-spacing: 2px;
+        color: var(--accent);
+        margin-bottom: 14px;
         text-transform: uppercase;
       }
-      .rl-badge {
-        display: inline-block;
+      .shortcut-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 5px 0;
+        border-bottom: 1px solid var(--br1);
         font-family: var(--font-mono);
-        font-size: 7px;
-        padding: 1px 5px;
-        border-radius: 3px;
-        background: rgba(167, 139, 250, 0.12);
-        color: var(--accent5);
-        border: 1px solid rgba(167, 139, 250, 0.3);
-        letter-spacing: 0.5px;
+        font-size: 11px;
+        color: var(--tx2);
       }
-      .rl-divider {
+      .shortcut-row:last-child {
+        border-bottom: none;
+      }
+      kbd {
+        background: rgba(0, 229, 160, 0.1);
+        border: 1px solid var(--br2);
+        border-radius: 3px;
+        padding: 2px 6px;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent);
+      }
+
+      /* ═══════════════════════════════════════════════════ ONBOARDING */
+      .onboarding-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 350;
+        background: rgba(0, 0, 0, 0.84);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+      }
+      .onboarding-overlay.visible {
+        opacity: 1;
+        pointer-events: all;
+      }
+      .onboarding-box {
+        background: var(--bg2);
+        border: 1px solid var(--br2);
+        border-radius: var(--r-lg);
+        padding: 28px 32px;
+        width: 420px;
+        max-width: calc(100vw - 32px);
+        box-shadow:
+          var(--glow),
+          0 24px 64px rgba(0, 0, 0, 0.7);
+        position: relative;
+      }
+      .onboarding-box::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
         height: 1px;
         background: linear-gradient(
           90deg,
           transparent,
-          var(--border2),
+          var(--accent),
           transparent
         );
-        margin: 6px 0;
       }
-      .btn.rl-btn {
-        border-color: rgba(167, 139, 250, 0.3);
-        background: rgba(167, 139, 250, 0.04);
-        color: var(--accent5);
+      .onboarding-logo {
+        font-size: 32px;
+        text-align: center;
+        margin-bottom: 12px;
       }
-      .btn.rl-btn:hover {
-        border-color: var(--accent5);
-        background: rgba(167, 139, 250, 0.1);
-        box-shadow: 0 0 12px rgba(167, 139, 250, 0.2);
+      .onboarding-title {
+        font-family: var(--font-display);
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 3px;
+        color: var(--accent);
+        text-align: center;
+        text-transform: uppercase;
+        text-shadow: var(--glow);
+        margin-bottom: 6px;
       }
-      .btn.rl-btn.primary {
-        background: linear-gradient(
-          135deg,
-          rgba(167, 139, 250, 0.15),
-          rgba(0, 184, 255, 0.1)
-        );
-        border-color: var(--accent5);
-        color: var(--accent5);
-        font-weight: 600;
-        box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+      .onboarding-sub {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--tx3);
+        text-align: center;
+        margin-bottom: 22px;
+        letter-spacing: 0.5px;
+      }
+      .onboarding-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 22px;
+      }
+      .ob-step {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        background: rgba(0, 229, 160, 0.04);
+        border: 1px solid var(--br1);
+        border-radius: var(--r-md);
+        padding: 10px 12px;
+      }
+      .ob-num {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: var(--accent);
+        display: flex;
+        align-items: center;
         justify-content: center;
-        letter-spacing: 1px;
+        font-family: var(--font-display);
+        font-size: 11px;
+        font-weight: 700;
+        color: #000;
       }
-      .btn.rl-btn.primary:hover {
+      .ob-text {
+        flex: 1;
+      }
+      .ob-text strong {
+        display: block;
+        font-family: var(--font-display);
+        font-size: 11px;
+        letter-spacing: 1px;
+        color: var(--accent);
+        margin-bottom: 3px;
+      }
+      .ob-text span {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--tx2);
+        line-height: 1.5;
+      }
+      .ob-keys {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        margin-top: 5px;
+      }
+      .ob-key {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--accent2);
+        background: rgba(0, 184, 255, 0.1);
+        border: 1px solid rgba(0, 184, 255, 0.3);
+        border-radius: 3px;
+        padding: 1px 6px;
+      }
+      .onboarding-start {
+        width: 100%;
+        padding: 10px;
+        border-radius: var(--r-md);
+        border: 1px solid var(--accent);
         background: linear-gradient(
           135deg,
-          rgba(167, 139, 250, 0.25),
+          rgba(0, 229, 160, 0.18),
+          rgba(0, 184, 255, 0.12)
+        );
+        color: var(--accent);
+        font-family: var(--font-display);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        cursor: pointer;
+        transition: all var(--t-fast);
+        box-shadow: var(--glow);
+      }
+      .onboarding-start:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(0, 229, 160, 0.28),
           rgba(0, 184, 255, 0.2)
         );
-        box-shadow: 0 0 25px rgba(167, 139, 250, 0.5);
+        box-shadow: 0 0 28px rgba(0, 229, 160, 0.5);
       }
-      .btn.rl-btn.primary.training {
-        background: linear-gradient(
-          135deg,
-          rgba(247, 183, 49, 0.15),
-          rgba(167, 139, 250, 0.1)
-        );
-        border-color: var(--accent4);
-        color: var(--accent4);
-        box-shadow: 0 0 15px rgba(247, 183, 49, 0.3);
-        animation: rlPulse 1.5s ease-in-out infinite;
-      }
-      @keyframes rlPulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.7;
-        }
-      }
-      .rl-heatmap-legend {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        margin-top: 4px;
+      .ob-skip {
+        margin-top: 10px;
+        text-align: center;
         font-family: var(--font-mono);
-        font-size: 7px;
-        color: var(--text3);
-      }
-      .rl-heatmap-gradient {
-        flex: 1;
-        height: 6px;
-        border-radius: 3px;
-        background: linear-gradient(90deg, #0055ff, #00e5a0, #f7b731);
-        border: 1px solid var(--border);
-      }
-      .rl-slider-row {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-family: var(--font-mono);
-        font-size: 8px;
-        color: var(--text3);
-      }
-      .rl-slider-row input[type="range"] {
-        flex: 1;
-        appearance: none;
-        height: 2px;
-        border-radius: 1px;
-        background: var(--border2);
-        outline: none;
+        font-size: 11px;
+        color: var(--tx3);
         cursor: pointer;
       }
-      .rl-slider-row input[type="range"]::-webkit-slider-thumb {
-        appearance: none;
-        width: 10px;
-        height: 10px;
+      .ob-skip:hover {
+        color: var(--tx2);
+      }
+
+      /* ═══════════════════════════════════════════════════ FULLSCREEN */
+      #fsHUD {
+        position: fixed;
+        bottom: 18px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 200;
+        background: rgba(5, 11, 20, 0.9);
+        border: 1px solid var(--br2);
+        border-radius: 10px;
+        padding: 8px 18px;
+        display: none;
+        align-items: center;
+        gap: 14px;
+        backdrop-filter: blur(14px);
+        box-shadow:
+          0 4px 30px rgba(0, 0, 0, 0.6),
+          var(--glow);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--tx2);
+      }
+      body.fullscreen #fsHUD {
+        display: flex;
+      }
+      .hud-stat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1px;
+      }
+      .hud-val {
+        font-family: var(--font-display);
+        font-size: 13px;
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .hud-lbl {
+        font-size: 10px;
+        color: var(--tx3);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .hud-sep {
+        width: 1px;
+        height: 28px;
+        background: var(--br2);
+      }
+      #fsBtn {
+        position: fixed;
+        bottom: 18px;
+        right: 18px;
+        z-index: 210;
+        padding: 6px 10px;
+        border-radius: var(--r-md);
+        border: 1px solid var(--br2);
+        background: var(--panel);
+        color: var(--accent);
+        font-size: 13px;
+        cursor: pointer;
+        backdrop-filter: blur(8px);
+        box-shadow: var(--glow);
+        transition: all var(--t-fast);
+      }
+      #fsBtn:hover {
+        background: rgba(0, 229, 160, 0.12);
+      }
+      body.fullscreen .sidebar,
+      body.fullscreen .right-panel {
+        display: none !important;
+      }
+      body.fullscreen .canvas-toolbar,
+      body.fullscreen .statusbar {
+        display: none !important;
+      }
+
+      /* ═══════════════════════════════════════════════════ MISC */
+      #dragGhost {
+        position: fixed;
+        pointer-events: none;
+        z-index: 9999;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
-        background: var(--accent5);
-        box-shadow: 0 0 6px rgba(167, 139, 250, 0.6);
-        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 2px solid var(--accent);
+        transform: translate(-50%, -50%);
+        backdrop-filter: blur(4px);
       }
-      .rl-slider-val {
-        min-width: 28px;
-        text-align: right;
-        font-size: 8px;
-        color: var(--accent5);
-        font-weight: 500;
+      @keyframes glitch1 {
+        0% {
+          clip-path: inset(15% 0 80% 0);
+        }
+        20% {
+          clip-path: inset(60% 0 20% 0);
+        }
+        40% {
+          clip-path: inset(40% 0 50% 0);
+        }
+        60% {
+          clip-path: inset(80% 0 5% 0);
+        }
+        80% {
+          clip-path: inset(5% 0 90% 0);
+        }
+        100% {
+          clip-path: inset(30% 0 60% 0);
+        }
+      }
+      @keyframes glitch2 {
+        0% {
+          clip-path: inset(70% 0 10% 0);
+        }
+        20% {
+          clip-path: inset(10% 0 70% 0);
+        }
+        40% {
+          clip-path: inset(50% 0 30% 0);
+        }
+        60% {
+          clip-path: inset(20% 0 60% 0);
+        }
+        80% {
+          clip-path: inset(90% 0 2% 0);
+        }
+        100% {
+          clip-path: inset(45% 0 45% 0);
+        }
+      }
+      .app-title.glitching::before {
+        content: attr(data-text);
+        position: absolute;
+        left: 2px;
+        top: 0;
+        color: var(--accent2);
+        animation: glitch1 0.35s steps(1) forwards;
+        opacity: 0.75;
+      }
+      .app-title.glitching::after {
+        content: attr(data-text);
+        position: absolute;
+        left: -2px;
+        top: 0;
+        color: var(--accent3);
+        animation: glitch2 0.35s steps(1) forwards;
+        opacity: 0.75;
+      }
+      .export-btn {
+        color: var(--tx2);
+      }
+      .export-btn:hover {
+        color: var(--accent);
       }
     </style>
   </head>
-
   <body>
-    <!-- Drag ghost -->
     <div id="dragGhost"></div>
-
-    <!-- Fullscreen floating HUD -->
-    <div id="fsHUD">
+    <div id="fsHUD" role="status">
       <div class="hud-stat">
         <div class="hud-val" id="hudAlgo">A*</div>
         <div class="hud-lbl">Algorithm</div>
@@ -2364,7 +2429,7 @@
           border: none;
           color: var(--accent);
           cursor: pointer;
-          font-size: 11px;
+          font-size: 12px;
           font-family: var(--font-mono);
         "
         onclick="toggleFullscreen()"
@@ -2372,29 +2437,102 @@
         ✕ EXIT
       </button>
     </div>
-    <!-- Fullscreen toggle button -->
     <button
       id="fsBtn"
       onclick="toggleFullscreen()"
       title="Full-screen mode (G)"
+      aria-label="Toggle fullscreen"
     >
       ⛶
     </button>
-
-    <!-- Animated background -->
-    <canvas id="bgCanvas"></canvas>
-
-    <!-- Toast notification -->
-    <div class="toast" id="toast">
+    <canvas id="bgCanvas" aria-hidden="true"></canvas>
+    <div class="toast" id="toast" role="status" aria-live="polite">
       <div class="toast-inner">
-        <span class="toast-icon" id="toastIcon">ℹ</span>
-        <span class="toast-msg" id="toastMsg"></span>
+        <span class="toast-icon" id="toastIcon">ℹ</span
+        ><span class="toast-msg" id="toastMsg"></span>
       </div>
       <div class="toast-bar" id="toastBar"></div>
     </div>
 
-    <!-- Keyboard shortcuts overlay -->
-    <div class="shortcuts-overlay" id="shortcutsOverlay">
+    <!-- ═══ ONBOARDING OVERLAY ═══ -->
+    <div
+      class="onboarding-overlay"
+      id="onboardingOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Welcome to MetroMind AI"
+    >
+      <div class="onboarding-box">
+        <div class="onboarding-logo">🏙</div>
+        <div class="onboarding-title">MetroMind AI</div>
+        <div class="onboarding-sub">
+          Advanced Pathfinding &amp; RL Simulator · v11
+        </div>
+        <div class="onboarding-steps">
+          <div class="ob-step">
+            <div class="ob-num">1</div>
+            <div class="ob-text">
+              <strong>Draw Your City</strong>
+              <span
+                >Click or drag on the grid to place walls. Paint terrain types
+                to change movement costs.</span
+              >
+              <div class="ob-keys">
+                <span class="ob-key">1</span> Wall
+                <span class="ob-key">5</span> Hwy
+                <span class="ob-key">6</span> Traffic
+                <span class="ob-key">7</span> Mud
+                <span class="ob-key">4</span> Erase
+              </div>
+            </div>
+          </div>
+          <div class="ob-step">
+            <div class="ob-num">2</div>
+            <div class="ob-text">
+              <strong>Place Start &amp; Goal</strong>
+              <span
+                >Select the Start or Goal tool then click any free cell on the
+                grid to place it.</span
+              >
+              <div class="ob-keys">
+                <span class="ob-key">2</span> Start &nbsp;
+                <span class="ob-key">3</span> Goal
+              </div>
+            </div>
+          </div>
+          <div class="ob-step">
+            <div class="ob-num">3</div>
+            <div class="ob-text">
+              <strong>Find a Path</strong>
+              <span
+                >Choose an algorithm in the
+                <strong style="color: var(--accent2)">Algo</strong> tab, then
+                press Find Path — or compare all 8 at once.</span
+              >
+              <div class="ob-keys">
+                <span class="ob-key">Space</span> Run &nbsp;
+                <span class="ob-key">X</span> Compare All
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="onboarding-start" onclick="dismissOnboarding(false)">
+          ▶ START EXPLORING
+        </button>
+        <div class="ob-skip" onclick="dismissOnboarding(true)">
+          Don't show again
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SHORTCUTS ═══ -->
+    <div
+      class="shortcuts-overlay"
+      id="shortcutsOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Keyboard shortcuts"
+    >
       <div class="shortcuts-box">
         <div class="shortcuts-title">⌨ Keyboard Shortcuts</div>
         <div class="shortcut-row">
@@ -2404,54 +2542,70 @@
           <span>Play / Pause</span><kbd>Space</kbd>
         </div>
         <div class="shortcut-row"><span>Step once</span><kbd>S</kbd></div>
-        <div class="shortcut-row">
-          <span>Step backward (history)</span><kbd>B</kbd>
-        </div>
-        <div class="shortcut-row">
-          <span>Step forward (history)</span><kbd>F</kbd>
-        </div>
+        <div class="shortcut-row"><span>Step backward</span><kbd>B</kbd></div>
+        <div class="shortcut-row"><span>Step forward</span><kbd>F</kbd></div>
         <div class="shortcut-row"><span>Reset path</span><kbd>R</kbd></div>
         <div class="shortcut-row"><span>Clear all</span><kbd>C</kbd></div>
-        <div class="shortcut-row"><span>Wall tool</span><kbd>1</kbd></div>
-        <div class="shortcut-row"><span>Start tool</span><kbd>2</kbd></div>
-        <div class="shortcut-row"><span>Goal tool</span><kbd>3</kbd></div>
-        <div class="shortcut-row"><span>Erase tool</span><kbd>4</kbd></div>
-        <div class="shortcut-row"><span>Highway terrain</span><kbd>5</kbd></div>
-        <div class="shortcut-row"><span>Traffic terrain</span><kbd>6</kbd></div>
-        <div class="shortcut-row"><span>Mud terrain</span><kbd>7</kbd></div>
         <div class="shortcut-row">
-          <span>Compare all algos</span><kbd>X</kbd>
+          <span>Wall / Start / Goal / Erase</span><kbd>1</kbd><kbd>2</kbd
+          ><kbd>3</kbd><kbd>4</kbd>
         </div>
+        <div class="shortcut-row">
+          <span>Highway / Traffic / Mud</span><kbd>5</kbd><kbd>6</kbd
+          ><kbd>7</kbd>
+        </div>
+        <div class="shortcut-row">
+          <span>Compare algorithms</span><kbd>X</kbd>
+        </div>
+        <div class="shortcut-row"><span>Fullscreen</span><kbd>G</kbd></div>
         <div class="shortcut-row"><span>This panel</span><kbd>?</kbd></div>
-        <div class="shortcut-row"><span>Close</span><kbd>Esc</kbd></div>
+        <div class="shortcut-row">
+          <span>Close overlays</span><kbd>Esc</kbd>
+        </div>
       </div>
     </div>
 
-    <!-- Compare overlay -->
-    <div class="compare-overlay" id="compareOverlay">
-      <div class="compare-title">⚡ Algorithm Comparison</div>
-      <div class="compare-progress" id="compareProgress">Initializing...</div>
+    <!-- ═══ COMPARE ═══ -->
+    <div
+      class="compare-overlay"
+      id="compareOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Algorithm Comparison"
+    >
+      <div class="compare-header">
+        <button
+          class="compare-back"
+          onclick="closeCompare()"
+          aria-label="Close comparison and return to editor"
+        >
+          ← Back to Editor
+        </button>
+        <div class="compare-title">⚡ Algorithm Comparison</div>
+        <div class="compare-progress" id="compareProgress" aria-live="polite">
+          Initializing…
+        </div>
+      </div>
       <div class="compare-grid" id="compareGrid"></div>
       <div id="compareBarChart" style="display: none"></div>
-      <button class="compare-close" onclick="closeCompare()">✕ CLOSE</button>
     </div>
 
     <!-- ═══ HEADER ═══ -->
-    <div class="header">
+    <header class="header" role="banner">
       <div class="logo-wrap">
         <button
           class="icon-btn"
           id="sidebarToggleBtn"
           onclick="toggleSidebar()"
           title="Toggle sidebar (Tab)"
-          style="font-size: 15px; padding: 5px 7px"
+          aria-label="Toggle sidebar"
         >
           ☰
         </button>
-        <div class="logo">🏙</div>
+        <div class="logo" aria-hidden="true">🏙</div>
         <div class="title-block">
           <div class="app-title">MetroMind AI</div>
-          <div class="app-sub">AI Pathfinding Visualization v9</div>
+          <div class="app-sub">AI Pathfinding Visualization v11</div>
         </div>
       </div>
       <div class="header-right">
@@ -2459,6 +2613,7 @@
           class="icon-btn"
           onclick="openCompare()"
           title="Compare all algorithms (X)"
+          aria-label="Compare all algorithms"
         >
           ⚡
         </button>
@@ -2466,6 +2621,7 @@
           class="icon-btn"
           onclick="showShortcuts()"
           title="Keyboard shortcuts (?)"
+          aria-label="Show shortcuts"
         >
           ⌨
         </button>
@@ -2474,6 +2630,7 @@
           id="rpToggleBtn"
           onclick="toggleRightPanel()"
           title="Toggle log panel"
+          aria-label="Toggle log panel"
         >
           📋
         </button>
@@ -2482,35 +2639,91 @@
           onclick="toggleTheme()"
           id="themeBtn"
           title="Toggle theme"
+          aria-label="Toggle theme"
         >
           🌙
         </button>
-        <span class="hbadge" id="algoBadge">A* Search</span>
-        <span class="hbadge blue" id="heurBadge">Manhattan</span>
+        <span class="hbadge" id="algoBadge" aria-live="polite">A* Search</span>
+        <span class="hbadge blue" id="heurBadge" aria-live="polite"
+          >Manhattan</span
+        >
       </div>
-    </div>
+    </header>
 
     <!-- ═══ MAIN ═══ -->
-    <div class="main" id="mainArea">
-      <!-- Mobile sidebar backdrop -->
+    <main class="main" id="mainArea" role="main">
       <div
         class="sidebar-backdrop"
         id="sidebarBackdrop"
         onclick="closeSidebarMobile()"
+        aria-hidden="true"
       ></div>
-      <!-- ═══ SIDEBAR ═══ -->
-      <div class="sidebar" id="sidebar">
-        <div class="sidebar-section" id="sec-controls">
-          <div class="sec-label" onclick="toggleSection('sec-controls')">
-            Controls
-            <span class="sec-chevron">▾</span>
-          </div>
-          <div class="sec-body">
-            <div style="display: flex; flex-direction: column; gap: 6px">
+
+      <!-- SIDEBAR -->
+      <aside
+        class="sidebar"
+        id="sidebar"
+        role="complementary"
+        aria-label="Controls"
+      >
+        <nav class="sb-tabs" role="tablist" aria-label="Control panels">
+          <button
+            class="sb-tab active"
+            id="tbtn-tools"
+            role="tab"
+            aria-selected="true"
+            aria-controls="tab-tools"
+            onclick="switchSbTab('tools', this)"
+          >
+            Tools
+          </button>
+          <button
+            class="sb-tab"
+            id="tbtn-algo"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tab-algo"
+            onclick="switchSbTab('algo', this)"
+          >
+            Algo
+          </button>
+          <button
+            class="sb-tab"
+            id="tbtn-rl"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tab-rl"
+            onclick="switchSbTab('rl', this)"
+          >
+            RL
+          </button>
+          <button
+            class="sb-tab"
+            id="tbtn-stats"
+            role="tab"
+            aria-selected="false"
+            aria-controls="tab-stats"
+            onclick="switchSbTab('stats', this)"
+          >
+            Stats
+          </button>
+        </nav>
+
+        <!-- TAB: Tools -->
+        <div
+          class="sb-panel"
+          id="tab-tools"
+          role="tabpanel"
+          aria-labelledby="tbtn-tools"
+        >
+          <div class="sb-section">
+            <div class="sb-label">Controls</div>
+            <div style="display: flex; flex-direction: column; gap: 7px">
               <button
                 class="btn primary"
                 id="playBtn"
                 onclick="togglePlayPause()"
+                aria-label="Find path or pause"
               >
                 ▶ FIND PATH
               </button>
@@ -2520,12 +2733,21 @@
                   onclick="stepSearch()"
                   id="stepBtn"
                   disabled
+                  aria-label="Step once"
                 >
                   ▷ Step
                 </button>
-                <button class="btn danger" onclick="clearAll()">✕ Clear</button>
+                <button
+                  class="btn danger"
+                  onclick="clearAll()"
+                  aria-label="Clear grid"
+                >
+                  ✕ Clear
+                </button>
               </div>
-              <button class="btn" onclick="resetPath()">↺ Reset Path</button>
+              <button class="btn" onclick="resetPath()" aria-label="Reset path">
+                ↺ Reset Path
+              </button>
               <div class="history-bar">
                 <button
                   class="btn"
@@ -2533,6 +2755,7 @@
                   onclick="stepBackward()"
                   disabled
                   title="Step Backward (B)"
+                  aria-label="History back"
                 >
                   ◀ Back
                 </button>
@@ -2543,19 +2766,15 @@
                   onclick="stepForward()"
                   disabled
                   title="Step Forward (F)"
+                  aria-label="History forward"
                 >
                   Fwd ▶
                 </button>
               </div>
             </div>
           </div>
-        </div>
-
-        <div class="sidebar-section" id="sec-speed">
-          <div class="sec-label" onclick="toggleSection('sec-speed')">
-            Speed <span class="sec-chevron">▾</span>
-          </div>
-          <div class="sec-body">
+          <div class="sb-section">
+            <div class="sb-label">Speed</div>
             <div class="slider-row">
               <span>Slow</span>
               <input
@@ -2565,21 +2784,19 @@
                 max="100"
                 value="50"
                 oninput="updateSpeed(this.value)"
+                aria-label="Animation speed"
               />
               <span class="slider-val" id="speedLabel">60ms</span>
-              <span>Fast</span>
             </div>
           </div>
-        </div>
-
-        <div class="sidebar-section" id="sec-pathopts">
-          <div class="sec-label" onclick="toggleSection('sec-pathopts')">
-            Path Options <span class="sec-chevron">▾</span>
-          </div>
-          <div class="sec-body">
+          <div class="sb-section">
+            <div class="sb-label">Path Options</div>
             <div style="display: flex; flex-direction: column; gap: 8px">
               <div class="slider-row">
-                <span>Weight</span>
+                <span
+                  title="Heuristic weight — higher = faster but less optimal"
+                  >Weight</span
+                >
                 <input
                   type="range"
                   id="weightSlider"
@@ -2588,99 +2805,60 @@
                   step="0.1"
                   value="1"
                   oninput="updateWeight(this.value)"
+                  aria-label="Heuristic weight"
                 />
                 <span class="slider-val" id="weightLabel">1.0×</span>
               </div>
-              <label class="check-label">
-                <input
+              <label class="check-label"
+                ><input
                   type="checkbox"
                   id="allowDiagonals"
                   onchange="toggleDiagonals()"
                 />
-                8-Way Diagonals
-              </label>
-              <label class="check-label">
-                <input
+                8-Way Diagonals</label
+              >
+              <label class="check-label"
+                ><input
                   type="checkbox"
                   id="showCost"
                   checked
                   onchange="drawGrid()"
                 />
-                Show f-cost labels
-              </label>
+                Show f-cost labels</label
+              >
             </div>
           </div>
-        </div>
-
-        <div class="sidebar-section" id="sec-gridsize">
-          <div class="sec-label" onclick="toggleSection('sec-gridsize')">
-            Grid Size <span class="sec-chevron">▾</span>
-          </div>
-          <div class="sec-body">
-            <div
-              style="
-                display: flex;
-                gap: 6px;
-                align-items: center;
-                margin-bottom: 4px;
-              "
-            >
+          <div class="sb-section">
+            <div class="sb-label">Grid Size</div>
+            <div class="grid-size-inputs">
               <input
                 type="number"
                 id="mazeCols"
                 value="50"
                 min="10"
                 max="60"
-                style="
-                  width: 40%;
-                  background: rgba(0, 229, 160, 0.04);
-                  border: 1px solid var(--border2);
-                  color: var(--text);
-                  padding: 4px;
-                  font-family: var(--font-mono);
-                  font-size: 10px;
-                  border-radius: 3px;
-                  outline: none;
-                "
                 onchange="updateGridSize()"
+                aria-label="Columns"
               />
-              <span style="color: var(--text3); font-size: 10px">×</span>
+              <span>×</span>
               <input
                 type="number"
                 id="mazeRows"
                 value="30"
                 min="10"
                 max="60"
-                style="
-                  width: 40%;
-                  background: rgba(0, 229, 160, 0.04);
-                  border: 1px solid var(--border2);
-                  color: var(--text);
-                  padding: 4px;
-                  font-family: var(--font-mono);
-                  font-size: 10px;
-                  border-radius: 3px;
-                  outline: none;
-                "
                 onchange="updateGridSize()"
+                aria-label="Rows"
               />
             </div>
-            <!-- Quick-size presets -->
-            <div
-              style="
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 4px;
-                margin-top: 6px;
-              "
-            >
+            <div class="grid-presets">
               <button class="maze-btn" onclick="applyPreset(20, 15)">
                 20×15
               </button>
               <button
                 class="maze-btn"
                 onclick="applyPreset(35, 22)"
-                style="border-color: var(--border2)"
+                style="border-color: var(--br2)"
               >
                 35×22
               </button>
@@ -2697,24 +2875,10 @@
                 10×10
               </button>
             </div>
-            <div
-              style="
-                font-family: var(--font-mono);
-                font-size: 8px;
-                color: var(--text3);
-                margin-top: 4px;
-              "
-            >
-              Range: 10 – 60 · Cell size auto-scales
-            </div>
+            <div class="grid-note">Range: 10–60 · Cell size auto-scales</div>
           </div>
-        </div>
-
-        <div class="sidebar-section" id="sec-mazes">
-          <div class="sec-label" onclick="toggleSection('sec-mazes')">
-            Maze Templates <span class="sec-chevron">▾</span>
-          </div>
-          <div class="sec-body">
+          <div class="sb-section">
+            <div class="sb-label">Maze Templates</div>
             <div class="maze-grid">
               <button class="maze-btn" onclick="loadMaze('empty')">
                 Empty
@@ -2746,7 +2910,7 @@
                 onclick="generatePerlinTerrain()"
                 style="
                   border-color: rgba(0, 220, 255, 0.3);
-                  color: rgba(0, 220, 255, 0.7);
+                  color: rgba(0, 220, 255, 0.75);
                 "
                 title="Organic terrain with weighted cells"
               >
@@ -2754,18 +2918,43 @@
               </button>
             </div>
           </div>
+          <div class="sb-section">
+            <div class="sb-label">Export</div>
+            <div style="display: flex; flex-direction: column; gap: 5px">
+              <button
+                class="btn export-btn"
+                onclick="exportStatsCSV()"
+                title="Download run statistics as CSV"
+              >
+                📊 Export Stats CSV
+              </button>
+              <button
+                class="btn export-btn"
+                onclick="exportGridJSON()"
+                title="Download grid layout as JSON"
+              >
+                🗂 Export Grid JSON
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="sidebar-section" id="sec-heuristic">
-          <div class="sec-label" onclick="toggleSection('sec-heuristic')">
-            Heuristic <span class="sec-chevron">▾</span>
-          </div>
-          <div class="sec-body">
+        <!-- TAB: Algo -->
+        <div
+          class="sb-panel"
+          id="tab-algo"
+          role="tabpanel"
+          aria-labelledby="tbtn-algo"
+          hidden
+        >
+          <div class="sb-section">
+            <div class="sb-label">Heuristic</div>
             <div class="heur-grid">
               <button
                 class="heur-btn active"
                 id="heur-manhattan"
                 onclick="setHeuristic('manhattan')"
+                title="Manhattan: |Δr|+|Δc| — best for 4-way grids"
               >
                 Manhattan
               </button>
@@ -2773,6 +2962,7 @@
                 class="heur-btn"
                 id="heur-euclidean"
                 onclick="setHeuristic('euclidean')"
+                title="Euclidean: √(Δr²+Δc²) — straight-line distance"
               >
                 Euclidean
               </button>
@@ -2780,6 +2970,7 @@
                 class="heur-btn"
                 id="heur-chebyshev"
                 onclick="setHeuristic('chebyshev')"
+                title="Chebyshev: max(|Δr|,|Δc|) — 8-way movement"
               >
                 Chebyshev
               </button>
@@ -2787,6 +2978,7 @@
                 class="heur-btn"
                 id="heur-octile"
                 onclick="setHeuristic('octile')"
+                title="Octile: optimal for 8-directional movement"
               >
                 Octile
               </button>
@@ -2794,8 +2986,8 @@
             <div
               style="
                 font-family: var(--font-mono);
-                font-size: 8px;
-                color: var(--text3);
+                font-size: 11px;
+                color: var(--tx3);
                 margin-top: 5px;
               "
               id="heurFormula"
@@ -2803,58 +2995,454 @@
               |Δr|+|Δc|
             </div>
           </div>
-        </div>
-
-        <div class="sidebar-section" id="sec-terrain">
-          <div class="sec-label" onclick="toggleSection('sec-terrain')">
-            Terrain Legend <span class="sec-chevron">▾</span>
+          <div class="sb-section">
+            <div class="sb-label">Algorithm</div>
+            <div class="algo-grid">
+              <button
+                class="algo-btn active"
+                id="btn-algo-astar"
+                onclick="changeAlgorithm('astar')"
+                title="A*: Optimal heuristic search. Best general-purpose algorithm."
+              >
+                A* Search
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-bidirectional"
+                onclick="changeAlgorithm('bidirectional')"
+                title="Bidirectional A*: Searches from both ends — ~2× faster."
+              >
+                Bidir. A*
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-dijkstra"
+                onclick="changeAlgorithm('dijkstra')"
+                title="Dijkstra: Guaranteed shortest path. Explores radially from start."
+              >
+                Dijkstra's
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-greedy"
+                onclick="changeAlgorithm('greedy')"
+                title="Greedy BFS: Fast but NOT optimal. Ignores actual cost."
+              >
+                Greedy BFS
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-bfs"
+                onclick="changeAlgorithm('bfs')"
+                title="BFS: Optimal in unweighted grids. Expands layer by layer."
+              >
+                Breadth-First
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-dfs"
+                onclick="changeAlgorithm('dfs')"
+                title="DFS: Deep exploration. Not optimal — good for demos."
+              >
+                Depth-First
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-jps"
+                onclick="changeAlgorithm('jps')"
+                title="Jump Point Search: Up to 10× faster than A* on open grids."
+                style="border-color: rgba(0, 229, 160, 0.22)"
+              >
+                JPS ⚡
+              </button>
+              <button
+                class="algo-btn"
+                id="btn-algo-thetastar"
+                onclick="changeAlgorithm('thetastar')"
+                title="Theta*: Any-angle paths via line-of-sight. Smoother routes."
+                style="border-color: rgba(167, 139, 250, 0.22)"
+              >
+                Theta* ∠
+              </button>
+            </div>
           </div>
-          <div class="sec-body">
-            <div class="terrain-legend">
-              <div class="terrain-item">
-                <div class="terrain-swatch" style="background: #1a3a50"></div>
-                <span>Wall</span><span class="tw-badge">blocked</span>
-              </div>
-              <div class="terrain-item">
-                <div
-                  class="terrain-swatch"
-                  style="
-                    background: rgba(0, 220, 255, 0.25);
-                    border-color: rgba(0, 220, 255, 0.5);
-                  "
-                ></div>
-                <span>🛣 Highway</span><span class="tw-badge">0.5×</span>
-              </div>
-              <div class="terrain-item">
-                <div
-                  class="terrain-swatch"
-                  style="
-                    background: rgba(255, 140, 0, 0.25);
-                    border-color: rgba(255, 140, 0, 0.5);
-                  "
-                ></div>
-                <span>🚦 Traffic</span><span class="tw-badge">3×</span>
-              </div>
-              <div class="terrain-item">
-                <div
-                  class="terrain-swatch"
-                  style="
-                    background: rgba(120, 72, 30, 0.35);
-                    border-color: rgba(120, 72, 30, 0.6);
-                  "
-                ></div>
-                <span>🌿 Mud</span><span class="tw-badge">10×</span>
+          <div class="sb-section">
+            <div class="sb-label">Description</div>
+            <div class="algo-desc" id="algoDesc">
+              A* uses f(n)=g(n)+h(n) balancing actual cost and heuristic
+              estimate to find optimal paths efficiently.
+            </div>
+            <div class="formula" id="algoFormula">
+              <div><span class="fvar">f(n)</span> = g(n) + h(n)</div>
+              <div><span class="fvar">g(n)</span> = cost from start</div>
+              <div><span class="fvar">h(n)</span> = Manhattan dist</div>
+            </div>
+            <div class="algo-portrait-wrap">
+              <canvas id="algoPortrait"></canvas>
+              <div class="algo-portrait-label" id="portraitLabel">
+                VISUALIZER
               </div>
             </div>
           </div>
         </div>
 
-        <div class="sidebar-section" id="sec-stats">
-          <div class="sec-label" onclick="toggleSection('sec-stats')">
-            Statistics <span class="sec-chevron">▾</span>
+        <!-- TAB: RL -->
+        <div
+          class="sb-panel"
+          id="tab-rl"
+          role="tabpanel"
+          aria-labelledby="tbtn-rl"
+          hidden
+        >
+          <div class="sb-section">
+            <div class="sb-label">
+              Q-Learning Agent <span class="rl-badge">Q-LEARNING</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <button
+                class="btn rl-btn primary"
+                id="rlTrainBtn"
+                onclick="startRLTraining()"
+              >
+                🧠 TRAIN AGENT
+              </button>
+              <div class="btn-row">
+                <button
+                  class="btn rl-btn"
+                  onclick="runLearnedPolicy()"
+                  title="Run the learned policy on the current grid"
+                >
+                  ▶ Run Policy
+                </button>
+                <button
+                  class="btn rl-btn"
+                  onclick="resetRLAgent()"
+                  style="
+                    border-color: rgba(255, 77, 109, 0.3);
+                    color: var(--accent3);
+                  "
+                  title="Clear Q-table and reset all training data"
+                >
+                  ↺ Reset
+                </button>
+              </div>
+              <div
+                class="rl-progress"
+                role="progressbar"
+                aria-label="Training progress"
+              >
+                <div
+                  class="rl-progress-fill"
+                  id="rlProgressFill"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
           </div>
-          <div class="sec-body">
-            <!-- Progress ring -->
+          <div class="sb-section">
+            <div class="sb-label">Training Stats</div>
+            <div class="rl-stat-row">
+              <span>Episode</span
+              ><span class="rl-stat-val" id="rlEpisodeCount">0</span>
+            </div>
+            <div class="rl-stat-row">
+              <span>Epsilon (ε)</span
+              ><span class="rl-stat-val" id="rlEpsilonVal">1.000</span>
+            </div>
+            <div class="rl-epsilon-bar">
+              <div
+                class="rl-epsilon-fill"
+                id="rlEpsilonFill"
+                style="width: 100%"
+              ></div>
+            </div>
+            <div class="rl-stat-row" style="margin-top: 5px">
+              <span>Best Reward</span
+              ><span class="rl-stat-val" id="rlBestRewardVal">—</span>
+            </div>
+            <div class="rl-stat-row">
+              <span>Avg (last 50)</span
+              ><span class="rl-stat-val" id="rlAvgRewardVal">—</span>
+            </div>
+            <div class="rl-stat-row">
+              <span>Best Path</span
+              ><span class="rl-stat-val" id="rlBestPathLen">—</span>
+            </div>
+            <div class="rl-stat-row">
+              <span>Q-table size</span
+              ><span class="rl-stat-val" id="rlQTableSize">0</span>
+            </div>
+            <div class="rl-convergence" aria-label="Reward convergence chart">
+              <canvas id="rlConvergenceChart"></canvas>
+              <div class="rl-conv-label">REWARD / EPISODE</div>
+            </div>
+          </div>
+          <div class="sb-section">
+            <div class="sb-label">Hyperparameters</div>
+            <div style="display: flex; flex-direction: column; gap: 9px">
+              <div>
+                <div class="rl-slider-label">
+                  <span
+                    title="α — Learning rate: how quickly Q-values update. Low=stable, High=fast but noisy."
+                    style="cursor: help; border-bottom: 1px dotted var(--tx3)"
+                    >α Learning Rate</span
+                  >
+                  <span class="rl-slider-val" id="rlAlphaVal">0.1</span>
+                </div>
+                <input
+                  type="range"
+                  id="rlAlpha"
+                  min="0.01"
+                  max="0.5"
+                  step="0.01"
+                  value="0.1"
+                  oninput="
+                    document.getElementById('rlAlphaVal').textContent =
+                      this.value
+                  "
+                  title="Learning rate α: 0.01=slow/stable, 0.5=fast/unstable"
+                  aria-label="Learning rate alpha"
+                />
+              </div>
+              <div>
+                <div class="rl-slider-label">
+                  <span
+                    title="γ — Discount factor: how much future rewards matter. High=far-sighted."
+                    style="cursor: help; border-bottom: 1px dotted var(--tx3)"
+                    >γ Discount</span
+                  >
+                  <span class="rl-slider-val" id="rlGammaVal">0.95</span>
+                </div>
+                <input
+                  type="range"
+                  id="rlGamma"
+                  min="0.5"
+                  max="0.99"
+                  step="0.01"
+                  value="0.95"
+                  oninput="
+                    document.getElementById('rlGammaVal').textContent =
+                      this.value
+                  "
+                  title="Discount γ: 0=greedy, 1=fully long-term"
+                  aria-label="Discount factor gamma"
+                />
+              </div>
+              <div>
+                <div class="rl-slider-label">
+                  <span
+                    title="ε decay — Exploration reduction rate per episode. Higher=more exploitation sooner."
+                    style="cursor: help; border-bottom: 1px dotted var(--tx3)"
+                    >ε Decay Rate</span
+                  >
+                  <span class="rl-slider-val" id="rlDecayVal">0.997</span>
+                </div>
+                <input
+                  type="range"
+                  id="rlEpsilonDecay"
+                  min="0.990"
+                  max="0.999"
+                  step="0.001"
+                  value="0.997"
+                  oninput="
+                    document.getElementById('rlDecayVal').textContent =
+                      parseFloat(this.value).toFixed(3)
+                  "
+                  title="Epsilon decay: how fast exploration→exploitation"
+                  aria-label="Epsilon decay rate"
+                />
+              </div>
+              <div>
+                <div class="rl-slider-label">
+                  <span>Episodes</span
+                  ><span class="rl-slider-val" id="rlMaxEpVal">2000</span>
+                </div>
+                <input
+                  type="range"
+                  id="rlMaxEpisodes"
+                  min="100"
+                  max="5000"
+                  step="100"
+                  value="2000"
+                  oninput="
+                    document.getElementById('rlMaxEpVal').textContent =
+                      this.value
+                  "
+                  title="Total training episodes"
+                  aria-label="Max episodes"
+                />
+              </div>
+              <div>
+                <div class="rl-slider-label">
+                  <span>Steps/ep</span
+                  ><span class="rl-slider-val" id="rlMaxStepsVal">1000</span>
+                </div>
+                <input
+                  type="range"
+                  id="rlMaxSteps"
+                  min="100"
+                  max="2000"
+                  step="50"
+                  value="1000"
+                  oninput="
+                    document.getElementById('rlMaxStepsVal').textContent =
+                      this.value
+                  "
+                  title="Max steps per episode before resetting"
+                  aria-label="Max steps per episode"
+                />
+              </div>
+              <div>
+                <div class="rl-slider-label">
+                  <span
+                    title="Batch — Episodes computed per animation frame. Higher=faster training."
+                    style="cursor: help; border-bottom: 1px dotted var(--tx3)"
+                    >Batch Size</span
+                  >
+                  <span class="rl-slider-val" id="rlBatchVal">20</span>
+                </div>
+                <input
+                  type="range"
+                  id="rlBatchSize"
+                  min="1"
+                  max="50"
+                  step="1"
+                  value="20"
+                  oninput="
+                    document.getElementById('rlBatchVal').textContent =
+                      this.value
+                  "
+                  title="Episodes per frame: higher=faster training"
+                  aria-label="Batch size"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="sb-section">
+            <div class="sb-label">Visualization</div>
+            <div style="display: flex; flex-direction: column; gap: 7px">
+              <label class="check-label"
+                ><input
+                  type="checkbox"
+                  id="rlHeatmapToggle"
+                  onchange="toggleRLHeatmap()"
+                />
+                Q-Value Heatmap</label
+              >
+              <label class="check-label"
+                ><input
+                  type="checkbox"
+                  id="rlArrowsToggle"
+                  onchange="toggleRLArrows()"
+                />
+                Policy Arrows</label
+              >
+              <div class="rl-heatmap-legend">
+                <span>Low Q</span>
+                <div class="rl-heatmap-gradient"></div>
+                <span>High Q</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Stats -->
+        <div
+          class="sb-panel"
+          id="tab-stats"
+          role="tabpanel"
+          aria-labelledby="tbtn-stats"
+          hidden
+        >
+          <div class="sb-section">
+            <div class="sb-label">Terrain Legend</div>
+            <div class="terrain-legend">
+              <div class="terrain-item">
+                <div
+                  class="terrain-swatch"
+                  style="
+                    background: #1a3a50;
+                    border-color: rgba(100, 160, 200, 0.3);
+                  "
+                ></div>
+                <div style="flex: 1">
+                  <div style="font-size: 11px; color: var(--tx1)">Wall</div>
+                  <div class="tw-badge" style="margin-top: 2px">blocked</div>
+                </div>
+              </div>
+              <div class="terrain-item">
+                <div
+                  class="terrain-swatch"
+                  style="
+                    background: rgba(0, 220, 255, 0.3);
+                    border-color: rgba(0, 220, 255, 0.6);
+                  "
+                ></div>
+                <div style="flex: 1">
+                  <div style="font-size: 11px; color: var(--tx1)">Highway</div>
+                  <div
+                    class="tw-badge"
+                    style="
+                      margin-top: 2px;
+                      color: rgba(0, 220, 255, 0.9);
+                      border-color: rgba(0, 220, 255, 0.4);
+                      background: rgba(0, 220, 255, 0.1);
+                    "
+                  >
+                    0.5×
+                  </div>
+                </div>
+              </div>
+              <div class="terrain-item">
+                <div
+                  class="terrain-swatch"
+                  style="
+                    background: rgba(255, 140, 0, 0.3);
+                    border-color: rgba(255, 140, 0, 0.6);
+                  "
+                ></div>
+                <div style="flex: 1">
+                  <div style="font-size: 11px; color: var(--tx1)">Traffic</div>
+                  <div
+                    class="tw-badge"
+                    style="
+                      margin-top: 2px;
+                      color: rgba(255, 140, 0, 0.9);
+                      border-color: rgba(255, 140, 0, 0.4);
+                      background: rgba(255, 140, 0, 0.1);
+                    "
+                  >
+                    3×
+                  </div>
+                </div>
+              </div>
+              <div class="terrain-item">
+                <div
+                  class="terrain-swatch"
+                  style="
+                    background: rgba(120, 72, 30, 0.4);
+                    border-color: rgba(140, 90, 40, 0.7);
+                  "
+                ></div>
+                <div style="flex: 1">
+                  <div style="font-size: 11px; color: var(--tx1)">Mud</div>
+                  <div
+                    class="tw-badge"
+                    style="
+                      margin-top: 2px;
+                      color: rgba(180, 120, 60, 0.9);
+                      border-color: rgba(140, 90, 40, 0.4);
+                      background: rgba(120, 72, 30, 0.15);
+                    "
+                  >
+                    10×
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sb-section">
+            <div class="sb-label">Statistics</div>
             <div class="progress-ring-wrap">
               <div class="progress-ring-container">
                 <svg
@@ -2862,6 +3450,7 @@
                   width="44"
                   height="44"
                   viewBox="0 0 44 44"
+                  aria-hidden="true"
                 >
                   <circle class="progress-ring-track" cx="22" cy="22" r="18" />
                   <circle
@@ -2874,398 +3463,132 @@
                 </svg>
                 <div class="progress-ring-label" id="progressLabel">0%</div>
               </div>
-              <div
-                style="
-                  margin-left: 10px;
-                  font-family: var(--font-mono);
-                  font-size: 8px;
-                  color: var(--text3);
-                "
-              >
-                <div
-                  style="color: var(--text2); font-size: 9px"
-                  id="progressStatus"
-                >
-                  Ready
-                </div>
-                <div style="margin-top: 2px">Search coverage</div>
+              <div class="progress-status">
+                <div id="progressStatus">Ready</div>
+                <div class="progress-sub">Search coverage</div>
               </div>
             </div>
             <div class="stats">
               <div class="stat-card" id="cardNodes">
                 <div class="stat-val" id="statNodes">0</div>
                 <div class="stat-lbl">Explored</div>
-                <canvas class="stat-spark" id="sparkNodes"></canvas>
+                <canvas
+                  class="stat-spark"
+                  id="sparkNodes"
+                  aria-hidden="true"
+                ></canvas>
               </div>
               <div class="stat-card" id="cardPath">
                 <div class="stat-val" id="statPath">—</div>
                 <div class="stat-lbl">Path Len</div>
-                <canvas class="stat-spark" id="sparkPath"></canvas>
+                <canvas
+                  class="stat-spark"
+                  id="sparkPath"
+                  aria-hidden="true"
+                ></canvas>
               </div>
               <div class="stat-card" id="cardOpen">
                 <div class="stat-val" id="statOpen">0</div>
                 <div class="stat-lbl">Open List</div>
-                <canvas class="stat-spark" id="sparkOpen"></canvas>
+                <canvas
+                  class="stat-spark"
+                  id="sparkOpen"
+                  aria-hidden="true"
+                ></canvas>
               </div>
               <div class="stat-card" id="cardCost">
                 <div class="stat-val" id="statCost">—</div>
                 <div class="stat-lbl">Cost</div>
-                <canvas class="stat-spark" id="sparkCost"></canvas>
+                <canvas
+                  class="stat-spark"
+                  id="sparkCost"
+                  aria-hidden="true"
+                ></canvas>
               </div>
             </div>
-            <div class="mini-chart"><canvas id="effChart"></canvas></div>
-          </div>
-        </div>
-
-        <div class="sidebar-section" id="sec-rl">
-          <div class="sec-label" onclick="toggleSection('sec-rl')">
-            🧠 RL Agent <span class="rl-badge">Q-Learning</span>
-            <span class="sec-chevron">▾</span>
-          </div>
-          <div class="sec-body">
-            <div style="display: flex; flex-direction: column; gap: 6px">
-              <button
-                class="btn rl-btn primary"
-                id="rlTrainBtn"
-                onclick="startRLTraining()"
-              >
-                🧠 TRAIN AGENT
-              </button>
-              <div class="btn-row">
-                <button class="btn rl-btn" onclick="runLearnedPolicy()">
-                  ▶ Run Policy
-                </button>
-                <button
-                  class="btn rl-btn"
-                  onclick="resetRLAgent()"
-                  style="
-                    border-color: rgba(255, 77, 109, 0.3);
-                    color: var(--accent3);
-                  "
-                >
-                  ↺ Reset
-                </button>
-              </div>
-              <div class="rl-progress">
-                <div
-                  class="rl-progress-fill"
-                  id="rlProgressFill"
-                  style="width: 0%"
-                ></div>
-              </div>
-              <div class="rl-stat-row">
-                <span>Episode</span
-                ><span class="rl-stat-val" id="rlEpisodeCount">0</span>
-              </div>
-              <div class="rl-stat-row">
-                <span>Epsilon (ε)</span
-                ><span class="rl-stat-val" id="rlEpsilonVal">1.000</span>
-              </div>
-              <div class="rl-epsilon-bar">
-                <div
-                  class="rl-epsilon-fill"
-                  id="rlEpsilonFill"
-                  style="width: 100%"
-                ></div>
-              </div>
-              <div class="rl-stat-row">
-                <span>Best Reward</span
-                ><span class="rl-stat-val" id="rlBestRewardVal">—</span>
-              </div>
-              <div class="rl-stat-row">
-                <span>Avg (last 50)</span
-                ><span class="rl-stat-val" id="rlAvgRewardVal">—</span>
-              </div>
-              <div class="rl-stat-row">
-                <span>Best Path</span
-                ><span class="rl-stat-val" id="rlBestPathLen">—</span>
-              </div>
-              <div class="rl-stat-row">
-                <span>Q-table size</span
-                ><span class="rl-stat-val" id="rlQTableSize">0</span>
-              </div>
-              <div class="rl-divider"></div>
-              <div class="rl-slider-row">
-                <span>α</span>
-                <input
-                  type="range"
-                  id="rlAlpha"
-                  min="0.01"
-                  max="0.5"
-                  step="0.01"
-                  value="0.1"
-                  oninput="
-                    document.getElementById('rlAlphaVal').textContent =
-                      this.value
-                  "
-                />
-                <span class="rl-slider-val" id="rlAlphaVal">0.1</span>
-              </div>
-              <div class="rl-slider-row">
-                <span>γ</span>
-                <input
-                  type="range"
-                  id="rlGamma"
-                  min="0.5"
-                  max="0.99"
-                  step="0.01"
-                  value="0.95"
-                  oninput="
-                    document.getElementById('rlGammaVal').textContent =
-                      this.value
-                  "
-                />
-                <span class="rl-slider-val" id="rlGammaVal">0.95</span>
-              </div>
-              <div class="rl-slider-row">
-                <span>ε decay</span>
-                <input
-                  type="range"
-                  id="rlEpsilonDecay"
-                  min="0.990"
-                  max="0.999"
-                  step="0.001"
-                  value="0.997"
-                  oninput="
-                    document.getElementById('rlDecayVal').textContent =
-                      parseFloat(this.value).toFixed(3)
-                  "
-                />
-                <span class="rl-slider-val" id="rlDecayVal">0.997</span>
-              </div>
-              <div class="rl-slider-row">
-                <span>Episodes</span>
-                <input
-                  type="range"
-                  id="rlMaxEpisodes"
-                  min="100"
-                  max="5000"
-                  step="100"
-                  value="2000"
-                  oninput="
-                    document.getElementById('rlMaxEpVal').textContent =
-                      this.value
-                  "
-                />
-                <span class="rl-slider-val" id="rlMaxEpVal">2000</span>
-              </div>
-              <div class="rl-slider-row">
-                <span>Steps/ep</span>
-                <input
-                  type="range"
-                  id="rlMaxSteps"
-                  min="100"
-                  max="2000"
-                  step="50"
-                  value="1000"
-                  oninput="
-                    document.getElementById('rlMaxStepsVal').textContent =
-                      this.value
-                  "
-                />
-                <span class="rl-slider-val" id="rlMaxStepsVal">1000</span>
-              </div>
-              <div class="rl-slider-row">
-                <span>Batch</span>
-                <input
-                  type="range"
-                  id="rlBatchSize"
-                  min="1"
-                  max="50"
-                  step="1"
-                  value="20"
-                  oninput="
-                    document.getElementById('rlBatchVal').textContent =
-                      this.value
-                  "
-                />
-                <span class="rl-slider-val" id="rlBatchVal">20</span>
-              </div>
-              <div class="rl-divider"></div>
-              <label class="check-label">
-                <input
-                  type="checkbox"
-                  id="rlHeatmapToggle"
-                  onchange="toggleRLHeatmap()"
-                />
-                Q-Value Heatmap
-              </label>
-              <label class="check-label">
-                <input
-                  type="checkbox"
-                  id="rlArrowsToggle"
-                  onchange="toggleRLArrows()"
-                />
-                Policy Arrows
-              </label>
-              <div class="rl-heatmap-legend">
-                <span>Low Q</span>
-                <div class="rl-heatmap-gradient"></div>
-                <span>High Q</span>
-              </div>
-              <div class="rl-convergence">
-                <canvas id="rlConvergenceChart"></canvas>
-                <div class="rl-conv-label">REWARD / EPISODE</div>
-              </div>
+            <div class="mini-chart" aria-label="Search efficiency chart">
+              <canvas id="effChart"></canvas>
             </div>
           </div>
         </div>
+      </aside>
 
-        <div
-          class="sidebar-section"
-          id="sec-algo"
-          style="margin-top: auto; border-bottom: none"
-        >
-          <div class="sec-label" onclick="toggleSection('sec-algo')">
-            Algorithm <span class="sec-chevron">▾</span>
-          </div>
-          <div class="sec-body">
-            <div class="algo-grid">
-              <button
-                class="algo-btn active"
-                id="btn-algo-astar"
-                onclick="changeAlgorithm('astar')"
-              >
-                A* Search
-              </button>
-              <button
-                class="algo-btn"
-                id="btn-algo-bidirectional"
-                onclick="changeAlgorithm('bidirectional')"
-              >
-                Bidir. A*
-              </button>
-              <button
-                class="algo-btn"
-                id="btn-algo-dijkstra"
-                onclick="changeAlgorithm('dijkstra')"
-              >
-                Dijkstra's
-              </button>
-              <button
-                class="algo-btn"
-                id="btn-algo-greedy"
-                onclick="changeAlgorithm('greedy')"
-              >
-                Greedy BFS
-              </button>
-              <button
-                class="algo-btn"
-                id="btn-algo-bfs"
-                onclick="changeAlgorithm('bfs')"
-              >
-                Breadth-First
-              </button>
-              <button
-                class="algo-btn"
-                id="btn-algo-dfs"
-                onclick="changeAlgorithm('dfs')"
-              >
-                Depth-First
-              </button>
-              <button
-                class="algo-btn"
-                id="btn-algo-jps"
-                onclick="changeAlgorithm('jps')"
-                title="Jump Point Search"
-                style="border-color: rgba(0, 229, 160, 0.25)"
-              >
-                JPS ⚡
-              </button>
-              <button
-                class="algo-btn"
-                id="btn-algo-thetastar"
-                onclick="changeAlgorithm('thetastar')"
-                title="Theta* any-angle"
-                style="border-color: rgba(167, 139, 250, 0.25)"
-              >
-                Theta* ∠
-              </button>
-            </div>
-            <div class="algo-desc" id="algoDesc" style="margin-top: 8px">
-              A* uses f(n)=g(n)+h(n) balancing cost and heuristic estimate.
-            </div>
-            <div class="formula" id="algoFormula">
-              <div><span class="fvar">f(n)</span> = g(n) + h(n)</div>
-              <div><span class="fvar">g(n)</span> = cost from start</div>
-              <div><span class="fvar">h(n)</span> = Manhattan dist</div>
-            </div>
-            <!-- Algorithm portrait -->
-            <div class="algo-portrait-wrap">
-              <canvas id="algoPortrait"></canvas>
-              <div class="algo-portrait-label" id="portraitLabel">
-                VISUALIZER
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          class="sidebar-section"
-          id="sec-export"
-          style="border-bottom: none"
-        >
-          <div class="sec-label" onclick="toggleSection('sec-export')">
-            Export <span class="sec-chevron">▾</span>
-          </div>
-          <div class="sec-body">
-            <div style="display: flex; flex-direction: column; gap: 5px">
-              <button class="btn export-btn" onclick="exportStatsCSV()">
-                📊 Export Stats CSV
-              </button>
-              <button class="btn export-btn" onclick="exportGridJSON()">
-                🗂 Export Grid JSON
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- /sidebar -->
-
-      <!-- ═══ CANVAS ═══ -->
+      <!-- CANVAS WRAP -->
       <div class="canvas-wrap">
-        <!-- Sidebar edge tab (always visible) -->
         <div
           class="sidebar-toggle"
           id="sidebarTab"
           onclick="toggleSidebar()"
           title="Toggle sidebar (Tab)"
+          role="button"
+          tabindex="0"
+          aria-label="Toggle sidebar"
+          onkeydown="if (event.key === 'Enter') toggleSidebar();"
         >
           ‹
         </div>
-        <!-- Right panel edge tab -->
         <div
           class="rp-toggle"
           id="rpToggle"
           onclick="toggleRightPanel()"
           title="Toggle log panel"
+          role="button"
+          tabindex="0"
+          aria-label="Toggle log panel"
+          onkeydown="if (event.key === 'Enter') toggleRightPanel();"
         >
           ›
         </div>
-        <div class="canvas-toolbar" id="canvasToolbar">
+        <div
+          class="canvas-toolbar"
+          id="canvasToolbar"
+          role="toolbar"
+          aria-label="Drawing tools"
+        >
           <span class="toolbar-label">Tool:</span>
           <button
             class="tool-btn active"
             id="toolWall"
             onclick="setTool('wall')"
+            title="Draw walls (1)"
+            aria-pressed="true"
           >
             🧱 Wall
           </button>
-          <button class="tool-btn" id="toolStart" onclick="setTool('start')">
+          <button
+            class="tool-btn"
+            id="toolStart"
+            onclick="setTool('start')"
+            title="Place start node (2)"
+            aria-pressed="false"
+          >
             🟢 Start
           </button>
-          <button class="tool-btn" id="toolGoal" onclick="setTool('goal')">
+          <button
+            class="tool-btn"
+            id="toolGoal"
+            onclick="setTool('goal')"
+            title="Place goal node (3)"
+            aria-pressed="false"
+          >
             🔴 Goal
           </button>
-          <button class="tool-btn" id="toolErase" onclick="setTool('erase')">
+          <button
+            class="tool-btn"
+            id="toolErase"
+            onclick="setTool('erase')"
+            title="Erase cells (4)"
+            aria-pressed="false"
+          >
             ✏ Erase
           </button>
-          <div class="toolbar-sep"></div>
+          <div class="toolbar-sep" role="separator"></div>
           <button
             class="tool-btn terrain-highway"
             id="toolHighway"
             onclick="setTool('highway')"
-            title="Highway — 0.5× cost"
+            title="Highway — 0.5× cost (5)"
+            aria-pressed="false"
           >
             🛣 Hwy
           </button>
@@ -3273,7 +3596,8 @@
             class="tool-btn terrain-traffic"
             id="toolTraffic"
             onclick="setTool('traffic')"
-            title="Heavy Traffic — 3× cost"
+            title="Heavy Traffic — 3× cost (6)"
+            aria-pressed="false"
           >
             🚦 Traffic
           </button>
@@ -3281,84 +3605,114 @@
             class="tool-btn terrain-mud"
             id="toolMud"
             onclick="setTool('mud')"
-            title="Mud / Rough terrain — 10× cost"
+            title="Mud / Rough terrain — 10× cost (7)"
+            aria-pressed="false"
           >
             🌿 Mud
           </button>
-          <div class="toolbar-sep"></div>
-          <button class="tool-btn" onclick="openCompare()">
+          <div class="toolbar-sep" role="separator"></div>
+          <button
+            class="tool-btn"
+            onclick="openCompare()"
+            title="Compare all 8 algorithms (X)"
+          >
             ⚡ Compare All
           </button>
-          <div
-            style="
-              margin-left: auto;
-              font-family: var(--font-mono);
-              font-size: 9px;
-              color: var(--text3);
-            "
-          >
+          <div class="toolbar-hint">
             Click/drag ·
             <kbd
-              style="
-                background: rgba(0, 229, 160, 0.07);
-                border: 1px solid var(--border2);
-                border-radius: 3px;
-                padding: 1px 5px;
-                font-family: var(--font-mono);
-                font-size: 8px;
-                color: var(--accent);
-              "
+              onclick="showShortcuts()"
+              style="cursor: pointer"
+              title="Show keyboard shortcuts"
               >?</kbd
             >
             for shortcuts
           </div>
         </div>
         <div class="grid-container">
+          <!-- Empty state overlay -->
+          <div
+            class="canvas-empty-state"
+            id="canvasEmptyState"
+            aria-hidden="true"
+          >
+            <div class="ces-inner">
+              <div class="ces-title">START EXPLORING</div>
+              <div class="ces-steps">
+                <span
+                  >① Click grid to draw
+                  <strong style="color: var(--tx1)">walls</strong></span
+                >
+                <span
+                  >② Place <span class="ces-key">Start</span> &amp;
+                  <span class="ces-key">Goal</span> nodes</span
+                >
+                <span
+                  >③ Press <span class="ces-key">Space</span> to find a
+                  path</span
+                >
+              </div>
+            </div>
+          </div>
           <canvas
             id="grid"
             role="img"
             aria-label="Pathfinding grid — click or drag to place walls, start, and goal nodes"
           ></canvas>
-          <canvas id="rippleCanvas"></canvas>
+          <canvas id="rippleCanvas" aria-hidden="true"></canvas>
         </div>
-        <div class="statusbar">
-          <div class="status-dot" id="statusDot"></div>
+        <div class="statusbar" role="status" aria-live="polite">
+          <div class="status-dot" id="statusDot" aria-hidden="true"></div>
           <span id="statusText">Ready — draw walls then click ▶ FIND PATH</span>
-          <span
-            style="margin-left: auto; color: var(--text3)"
-            id="coordDisplay"
-          ></span>
+          <span id="coordDisplay" aria-label="Grid coordinates"></span>
         </div>
       </div>
 
-      <!-- ═══ RIGHT PANEL ═══ -->
-      <div class="right-panel" id="rightPanel">
+      <!-- RIGHT PANEL -->
+      <aside
+        class="right-panel"
+        id="rightPanel"
+        role="complementary"
+        aria-label="Algorithm log"
+      >
         <div class="rp-header">
           <div class="rp-title">
-            <span>Algorithm Log</span>
-            <span style="font-size: 8px; color: var(--text3)" id="stepCounter"
-              >step 0</span
-            >
+            <span>Algorithm Log</span><span id="stepCounter">step 0</span>
           </div>
           <div class="log-controls">
             <button
               class="log-ctrl-btn active"
               id="btnAutoScroll"
               onclick="toggleAutoScroll()"
+              aria-label="Toggle auto-scroll"
             >
               ⬇ Auto
             </button>
-            <button class="log-ctrl-btn" onclick="clearLog()">Clear</button>
-            <button class="log-ctrl-btn" onclick="exportLog()">Export</button>
+            <button
+              class="log-ctrl-btn"
+              onclick="clearLog()"
+              aria-label="Clear log"
+            >
+              Clear
+            </button>
+            <button
+              class="log-ctrl-btn"
+              onclick="exportLog()"
+              title="Download log as .txt file"
+              aria-label="Export log"
+            >
+              Export
+            </button>
           </div>
         </div>
         <div class="log-wrap">
-          <div class="log" id="algoLog"></div>
+          <div class="log" id="algoLog" role="log" aria-live="polite"></div>
           <div
             class="scroll-fab"
             id="scrollFab"
             onclick="jumpToBottom()"
             role="button"
+            tabindex="0"
             aria-label="Scroll to bottom"
           >
             ↓
@@ -3368,17 +3722,16 @@
           <div class="algo-title">Open List — Top Candidates</div>
           <div class="mini-list">
             <div class="list-lbl">By F-Score</div>
-            <div id="openListItems" style="color: var(--text3)">—</div>
+            <div id="openListItems" style="color: var(--tx3)">—</div>
           </div>
           <div class="algo-title">Closed List</div>
           <div class="mini-list">
             <div class="list-lbl">Visited Nodes</div>
-            <div id="closedCount" style="color: var(--text3)">0 nodes</div>
+            <div id="closedCount" style="color: var(--tx3)">0 nodes</div>
           </div>
         </div>
-      </div>
-    </div>
-    <!-- /main -->
+      </aside>
+    </main>
 
     <script>
       // ═══════════════════════════════════════════════════════
@@ -3964,12 +4317,12 @@
       // FULL-SCREEN MODE
       // ═══════════════════════════════════════════════════════
       let isFullscreen = false;
-      function toggleFullscreen() {
+      window.toggleFullscreen = function toggleFullscreen() {
         isFullscreen = !isFullscreen;
         document.body.classList.toggle("fullscreen", isFullscreen);
         document.getElementById("fsBtn").textContent = isFullscreen ? "⛶" : "⛶";
         setTimeout(resizeCanvas, 50);
-      }
+      };
 
       // ─── Dynamic canvas sizing ───────────────────────────
       function computeCellSize() {
@@ -3995,7 +4348,7 @@
 
       // ─── Sidebar toggle ──────────────────────────────────
       let sidebarOpen = true;
-      function toggleSidebar() {
+      window.toggleSidebar = function toggleSidebar() {
         const sb = document.getElementById("sidebar");
         const tab = document.getElementById("sidebarTab");
         const bd = document.getElementById("sidebarBackdrop");
@@ -4008,29 +4361,53 @@
         }
         // After CSS transition completes, recalculate canvas
         setTimeout(resizeCanvas, 310);
-      }
-      function closeSidebarMobile() {
+      };
+      window.closeSidebarMobile = function closeSidebarMobile() {
         if (sidebarOpen) toggleSidebar();
-      }
-      // On mobile, start with sidebar closed
-      if (window.innerWidth <= 768) {
-        sidebarOpen = true; // toggleSidebar flips it
-        toggleSidebar();
-      }
+        if (rpOpen) toggleRightPanel();
+      };
 
+      // On mobile, start with sidebar closed
       // ─── Right panel toggle ──────────────────────────────
       let rpOpen = true;
-      function toggleRightPanel() {
+      window.toggleRightPanel = function toggleRightPanel() {
         const rp = document.getElementById("rightPanel");
         const tab = document.getElementById("rpToggle");
+        const bd = document.getElementById("sidebarBackdrop");
+        const isMobile = window.innerWidth <= 768;
+
         rpOpen = !rpOpen;
         rp.classList.toggle("collapsed", !rpOpen);
         tab.textContent = rpOpen ? "›" : "‹";
-        document.getElementById("rpToggleBtn").textContent = rpOpen
-          ? "📋"
-          : "📋";
+        document.getElementById("rpToggleBtn").textContent = rpOpen ? "📋" : "📋";
+
+        if (isMobile) {
+          bd.classList.toggle("visible", rpOpen);
+          if (rpOpen && sidebarOpen) {
+            toggleSidebar(); // Auto-close left sidebar
+          }
+        }
         setTimeout(resizeCanvas, 310);
+      };
+
+      // ─── Modified toggleSidebar to auto-close right on mobile ───
+      const originalToggleSidebar = window.toggleSidebar;
+      window.toggleSidebar = function () {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile && !sidebarOpen && rpOpen) {
+          toggleRightPanel(); // Auto-close right panel
+        }
+        originalToggleSidebar();
+      };
+
+      // Initialize mobile state
+      if (window.innerWidth <= 768) {
+        sidebarOpen = true;
+        window.toggleSidebar();
+        rpOpen = true;
+        window.toggleRightPanel();
       }
+
 
       // ─── Collapsible sidebar sections ───────────────────
       function toggleSection(id) {
@@ -4039,11 +4416,11 @@
       }
 
       // ─── Quick grid size presets ─────────────────────────
-      function applyPreset(cols, rows) {
+      window.applyPreset = function applyPreset(cols, rows) {
         document.getElementById("mazeCols").value = cols;
         document.getElementById("mazeRows").value = rows;
         updateGridSize();
-      }
+      };
 
       const EMPTY = 0,
         WALL = 1,
@@ -4134,7 +4511,7 @@
       /** Mirror of solved route so the main canvas keeps a line even if searchState.finalPath is out of sync */
       let lastSolutionPath = null;
 
-      function updateGridSize() {
+      window.updateGridSize = function updateGridSize() {
         const cInput = document.getElementById("mazeCols");
         const rInput = document.getElementById("mazeRows");
         let c = parseInt(cInput.value);
@@ -4156,7 +4533,7 @@
         resizeCanvas(); // computes new CELL and sets canvas.width/height
         logEntry("info", `Grid resized to ${c}×${r} (cell: ${CELL}px)`);
         setStatus("", `Grid resized to ${c}×${r}`);
-      }
+      };
 
       function initGrid() {
         grid = [];
@@ -4179,7 +4556,7 @@
       // DRAW
       // ═══════════════════════════════════════════════════════
       let animFrame = null;
-      function drawGrid() {
+      window.drawGrid = function drawGrid() {
         const routeOverlay =
           searchState &&
           searchState.finalPath &&
@@ -4204,7 +4581,7 @@
         }
         if (animFrame) cancelAnimationFrame(animFrame);
         animFrame = requestAnimationFrame(_drawGrid);
-      }
+      };
       function _drawGrid() {
         const C = getColors();
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -4559,6 +4936,10 @@
         }
         // only reset path state if a search result exists; avoid overhead on every wall drag
         if (searchState) resetPath(true);
+        // Hide canvas empty-state on first interaction
+        const ces = document.getElementById("canvasEmptyState");
+        if (ces && !ces.classList.contains("hidden"))
+          ces.classList.add("hidden");
         drawGrid();
       }
       canvas.addEventListener("mousedown", (e) => {
@@ -4675,7 +5056,7 @@
         }
       }
 
-      function setHeuristic(h) {
+      window.setHeuristic = function setHeuristic(h) {
         currentHeuristic = h;
         document
           .querySelectorAll(".heur-btn")
@@ -4692,7 +5073,7 @@
         document.getElementById("heurBadge").textContent =
           h[0].toUpperCase() + h.slice(1);
         if (searchState) resetPath(true);
-      }
+      };
 
       function getCellTerrainCost(r, c, tg) {
         const t = (tg || terrainGrid)[r] && (tg || terrainGrid)[r][c];
@@ -4963,18 +5344,18 @@
         document.getElementById("btnFwd").disabled = idx >= total - 1;
       }
 
-      function stepBackward() {
+      window.stepBackward = function stepBackward() {
         if (historyIdx <= 0) return;
         historyMode = true;
         historyIdx--;
         restoreSnapshot(searchHistory[historyIdx]);
-      }
+      };
 
-      function stepForward() {
+      window.stepForward = function stepForward() {
         if (historyIdx >= searchHistory.length - 1) return;
         historyIdx++;
         restoreSnapshot(searchHistory[historyIdx]);
-      }
+      };
 
       function restoreSnapshot(snap) {
         stopAnim();
@@ -5627,7 +6008,7 @@
         }, tickMs);
       }
 
-      function togglePlayPause() {
+      window.togglePlayPause = function togglePlayPause() {
         if (!searchState || searchState.done) {
           startSearch();
           return;
@@ -5678,14 +6059,14 @@
           document.getElementById("playBtn").classList.add("running");
           document.getElementById("stepBtn").disabled = true;
         }
-      }
+      };
       function stopAnim() {
         if (animTimer) {
           clearInterval(animTimer);
           animTimer = null;
         }
       }
-      function stepSearch() {
+      window.stepSearch = function stepSearch() {
         if (!searchState) {
           searchState = initSearch();
           if (!searchState) return;
@@ -5697,12 +6078,12 @@
           document.getElementById("stepBtn").disabled = false;
         }
         if (!searchState.done) searchStep(searchState);
-      }
+      };
 
       // ═══════════════════════════════════════════════════════
       // RESET / CLEAR
       // ═══════════════════════════════════════════════════════
-      function resetPath(silent) {
+      window.resetPath = function resetPath(silent) {
         stopAnim();
         stopAgentAnimation();
         if (pathAnimInterval) clearInterval(pathAnimInterval);
@@ -5732,15 +6113,15 @@
           logEntry("info", "↺ Path reset");
         }
         drawGrid();
-      }
-      function clearAll() {
+      };
+      window.clearAll = function clearAll() {
         resetPath(true);
         if (typeof rlAgent !== "undefined" && rlAgent) resetRLAgent();
         initGrid();
         drawGrid();
         setStatus("", "Canvas cleared");
         logEntry("info", "✕ Grid cleared");
-      }
+      };
 
       // ═══════════════════════════════════════════════════════
       // STATS & CHARTS
@@ -5863,27 +6244,27 @@
           logEl.removeChild(logEl.firstChild);
         if (autoScroll) logEl.scrollTop = logEl.scrollHeight;
       }
-      function clearLog() {
+      window.clearLog = function clearLog() {
         logEl.innerHTML = "";
         fab.classList.remove("visible");
-      }
-      function toggleAutoScroll() {
+      };
+      window.toggleAutoScroll = function toggleAutoScroll() {
         autoScroll = !autoScroll;
         syncAutoScrollBtn();
         if (autoScroll) logEl.scrollTop = logEl.scrollHeight;
-      }
+      };
       function syncAutoScrollBtn() {
         const btn = document.getElementById("btnAutoScroll");
         btn.textContent = autoScroll ? "⬇ Auto" : "⏸ Auto";
         btn.classList.toggle("active", autoScroll);
       }
-      function jumpToBottom() {
+      window.jumpToBottom = function jumpToBottom() {
         logEl.scrollTop = logEl.scrollHeight;
         fab.classList.remove("visible");
         autoScroll = true;
         syncAutoScrollBtn();
-      }
-      function exportLog() {
+      };
+      window.exportLog = function exportLog() {
         const text = Array.from(logEl.children)
           .map((e) => e.textContent)
           .join("\n");
@@ -5894,8 +6275,8 @@
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        showToast("Log exported");
-      }
+        showToast("✓ Log exported as algo-log.txt", "success");
+      };
       function updateListDisplays(state) {
         // Fix #11: sort a copy for correct top-f display (heap order isn't fully sorted)
         const topItems = [...state.openSet.heap]
@@ -5912,8 +6293,18 @@
       // ═══════════════════════════════════════════════════════
       // UI HELPERS
       // ═══════════════════════════════════════════════════════
-      function setTool(t) {
+      window.setTool = function setTool(t) {
         currentTool = t;
+        // Update aria-pressed for toolbar
+        ["wall", "start", "goal", "erase", "highway", "traffic", "mud"].forEach(
+          (id) => {
+            const el = document.getElementById(
+              "tool" + id[0].toUpperCase() + id.slice(1),
+            );
+            if (el)
+              el.setAttribute("aria-pressed", id === t ? "true" : "false");
+          },
+        );
         const allTools = [
           "wall",
           "start",
@@ -5929,8 +6320,8 @@
           );
           if (el) el.classList.toggle("active", id === t);
         });
-      }
-      function toggleTheme() {
+      };
+      window.toggleTheme = function toggleTheme() {
         const cur = document.documentElement.getAttribute("data-theme");
         const next = cur === "dark" ? "light" : "dark";
         document.documentElement.setAttribute("data-theme", next);
@@ -5938,18 +6329,18 @@
           next === "dark" ? "🌙" : "☀️";
         drawGrid();
         drawEffChart();
-      }
+      };
       function setStatus(type, msg) {
         document.getElementById("statusDot").className =
           "status-dot" + (type ? " " + type : "");
         document.getElementById("statusText").textContent = msg;
       }
-      function updateSpeed(v) {
+      window.updateSpeed = function updateSpeed(v) {
         animSpeed = +v;
         document.getElementById("speedLabel").textContent =
           Math.max(5, MAX_DELAY - v) + "ms";
-      }
-      function updateWeight(v) {
+      };
+      window.updateWeight = function updateWeight(v) {
         heuristicWeight = parseFloat(v);
         document.getElementById("weightLabel").textContent =
           heuristicWeight.toFixed(1) + "×";
@@ -5959,8 +6350,8 @@
           searchState.done
         )
           resetPath();
-      }
-      function toggleDiagonals() {
+      };
+      window.toggleDiagonals = function toggleDiagonals() {
         allowDiagonals = document.getElementById("allowDiagonals").checked;
         document.getElementById("heurBadge").textContent = allowDiagonals
           ? "Euclidean"
@@ -5979,8 +6370,8 @@
           }
         }
         resetPath();
-      }
-      function changeAlgorithm(newAlgo) {
+      };
+      window.changeAlgorithm = function changeAlgorithm(newAlgo) {
         if (!newAlgo) return;
         currentAlgorithm = newAlgo;
 
@@ -6045,17 +6436,22 @@
         document.getElementById("algoFormula").innerHTML = i.formula;
         document.getElementById("algoBadge").textContent = i.badge;
         logEntry("info", `→ Switched to ${i.badge} — auto-running…`);
+        // Auto-switch to algo tab
+        const algoTab = document.getElementById("tbtn-algo");
+        if (algoTab && !algoTab.classList.contains("active")) {
+          algoTab.click();
+        }
         startPortrait(currentAlgorithm);
         const hudAlgoEl = document.getElementById("hudAlgo");
         if (hudAlgoEl) hudAlgoEl.textContent = i.badge;
         // Live search: immediately run when algorithm changes so user sees results instantly
         startSearch();
-      }
+      };
 
       // ═══════════════════════════════════════════════════════
       // MAZE GENERATORS
       // ═══════════════════════════════════════════════════════
-      function loadMaze(type) {
+      window.loadMaze = function loadMaze(type) {
         resetPath(true);
         initGrid();
         if (type === "maze1") {
@@ -6162,10 +6558,10 @@
         grid[goalNode.r][goalNode.c] = GOAL;
         logEntry("info", `Template "${type}" loaded`);
         drawGrid();
-      }
+      };
 
       // Recursive backtracker maze
-      function generateRecursive() {
+      window.generateRecursive = function generateRecursive() {
         resetPath(true);
         initGrid();
         // fill with walls
@@ -6206,12 +6602,12 @@
         grid[goalNode.r][goalNode.c] = GOAL;
         logEntry("info", "Recursive maze generated");
         drawGrid();
-      }
+      };
 
       // ═══════════════════════════════════════════════════════
       // PERLIN NOISE TERRAIN GENERATOR
       // ═══════════════════════════════════════════════════════
-      function generatePerlinTerrain() {
+      window.generatePerlinTerrain = function generatePerlinTerrain() {
         resetPath(true);
         initGrid();
 
@@ -6346,12 +6742,12 @@
         logEntry("info", "🗺 Perlin terrain generated — try A* vs Dijkstra!");
         showToast("Perlin terrain: highways 0.5×, traffic 3×, mud 10×");
         drawGrid();
-      }
+      };
 
       // ═══════════════════════════════════════════════════════
       // EXPORT FUNCTIONS
       // ═══════════════════════════════════════════════════════
-      function exportStatsCSV() {
+      window.exportStatsCSV = function exportStatsCSV() {
         const rows = [
           ["Metric", "Value"],
           ["Algorithm", currentAlgorithm.toUpperCase()],
@@ -6378,9 +6774,9 @@
         document.body.removeChild(a);
         showToast("📊 Stats exported as CSV");
         logEntry("info", "Stats exported to CSV");
-      }
+      };
 
-      function exportGridJSON() {
+      window.exportGridJSON = function exportGridJSON() {
         const data = {
           version: 9,
           timestamp: new Date().toISOString(),
@@ -6407,12 +6803,12 @@
         document.body.removeChild(a);
         showToast("🗂 Grid exported as JSON");
         logEntry("info", `Grid exported: ${COLS}x${ROWS} with terrain`);
-      }
+      };
 
       // ═══════════════════════════════════════════════════════
       // COMPARE MODE
       // ═══════════════════════════════════════════════════════
-      function openCompare() {
+      window.openCompare = function openCompare() {
         const overlay = document.getElementById("compareOverlay");
         const cGrid = document.getElementById("compareGrid");
         overlay.classList.add("visible");
@@ -6604,25 +7000,53 @@
           document.getElementById("compareProgress").textContent =
             "All algorithms complete";
 
-          // ── Find winner (fewest explored + valid path) ──
+          // ── Multi-metric winner badges ──
           const valid = results.filter((r) => r.pathLen);
           if (valid.length) {
             const minExplored = Math.min(...valid.map((r) => r.explored));
-            const winner = valid.find((r) => r.explored === minExplored);
-            if (winner) {
-              const card = [...document.querySelectorAll(".compare-card")].find(
+            const validCost = valid.filter((r) => r.cost != null);
+            const minCost = validCost.length
+              ? Math.min(...validCost.map((r) => r.cost))
+              : null;
+            const balancedEntry = valid.reduce((best, r) => {
+              const score = r.pathLen / (r.explored || 1);
+              if (!best || score < best.score) return { r, score };
+              return best;
+            }, null);
+            const winnerFast = valid.find((r) => r.explored === minExplored);
+            const winnerOpt = validCost.find((r) => r.cost === minCost);
+            const winnerBal = balancedEntry ? balancedEntry.r : null;
+            const allCards = [...document.querySelectorAll(".compare-card")];
+            function findCard(name) {
+              return allCards.find(
                 (el) =>
-                  el.querySelector(".compare-card-title")?.textContent ===
-                  winner.name,
+                  el.querySelector(".compare-card-title")?.textContent === name,
               );
-              if (card) {
-                card.classList.add("winner");
-                const badge = document.createElement("div");
-                badge.className = "winner-badge";
-                badge.textContent = "🏆 WINNER";
-                card.appendChild(badge);
-              }
             }
+            function addWinBadge(result, cls, label) {
+              if (!result) return;
+              const card = findCard(result.name);
+              if (!card) return;
+              card.classList.add("winner-" + cls);
+              let bgroup = card.querySelector(".winner-badges");
+              if (!bgroup) {
+                bgroup = document.createElement("div");
+                bgroup.className = "winner-badges";
+                card.appendChild(bgroup);
+              }
+              const b = document.createElement("span");
+              b.className = "win-badge " + cls;
+              b.textContent = label;
+              bgroup.appendChild(b);
+            }
+            addWinBadge(winnerFast, "fast", "⚡ Fastest");
+            addWinBadge(winnerOpt, "optimal", "★ Optimal");
+            if (
+              winnerBal &&
+              winnerBal.name !== (winnerFast && winnerFast.name) &&
+              winnerBal.name !== (winnerOpt && winnerOpt.name)
+            )
+              addWinBadge(winnerBal, "balanced", "⚖ Balanced");
           }
 
           // ── Bar chart ──
@@ -6669,20 +7093,20 @@
             });
           }, 80);
         }, 50);
-      }
-      function closeCompare() {
+      };
+      window.closeCompare = function closeCompare() {
         document.getElementById("compareOverlay").classList.remove("visible");
         document
           .querySelectorAll(".compare-card.maximized")
           .forEach((c) => c.classList.remove("maximized"));
-      }
+      };
 
       // ═══════════════════════════════════════════════════════
       // KEYBOARD SHORTCUTS
       // ═══════════════════════════════════════════════════════
-      function showShortcuts() {
+      window.showShortcuts = function showShortcuts() {
         document.getElementById("shortcutsOverlay").classList.add("visible");
-      }
+      };
       function hideShortcuts() {
         document.getElementById("shortcutsOverlay").classList.remove("visible");
       }
@@ -6915,7 +7339,7 @@
       }
 
       // ── Training Loop (non-blocking via rAF) ──
-      function startRLTraining() {
+      window.startRLTraining = function startRLTraining() {
         if (rlTraining) {
           stopRLTraining();
           return;
@@ -7003,7 +7427,7 @@
         }
 
         rlTrainTimer = requestAnimationFrame(trainFrame);
-      }
+      };
 
       function stopRLTraining() {
         rlTraining = false;
@@ -7019,7 +7443,7 @@
         updateRLStats();
       }
 
-      function resetRLAgent() {
+      window.resetRLAgent = function resetRLAgent() {
         stopRLTraining();
         rlAgent = null;
         rlEpisode = 0;
@@ -7033,10 +7457,10 @@
         if (rlShowHeatmap || rlShowArrows) drawGrid();
         showToast("Q-table cleared", "info");
         logEntry("info", "🧠 RL agent reset — Q-table cleared");
-      }
+      };
 
       // ── Run Learned Policy (greedy, ε=0) ──
-      function runLearnedPolicy() {
+      window.runLearnedPolicy = function runLearnedPolicy() {
         if (!rlAgent || rlAgent.qTable.size === 0) {
           showToast("⚠ Train the agent first", "warn");
           return;
@@ -7134,7 +7558,7 @@
 
         drawGrid();
         startAgentAnimation(path);
-      }
+      };
 
       // ── RL UI Updates ──
       function updateRLStats() {
@@ -7243,16 +7667,16 @@
       }
 
       // ── RL Visualization Toggles ──
-      function toggleRLHeatmap() {
+      window.toggleRLHeatmap = function toggleRLHeatmap() {
         rlShowHeatmap =
           document.getElementById("rlHeatmapToggle")?.checked || false;
         drawGrid();
-      }
-      function toggleRLArrows() {
+      };
+      window.toggleRLArrows = function toggleRLArrows() {
         rlShowArrows =
           document.getElementById("rlArrowsToggle")?.checked || false;
         drawGrid();
-      }
+      };
 
       // ── RL Overlay Drawing (called from _drawGrid) ──
       function drawRLOverlay(ctx, CELL, ROWS, COLS) {
@@ -7385,6 +7809,34 @@
       }
 
       // ═══════════════════════════════════════════════════════
+      // SIDEBAR TABS
+      // ═══════════════════════════════════════════════════════
+      window.switchSbTab = function switchSbTab(name, btn) {
+        document
+          .querySelectorAll(".sb-panel")
+          .forEach((p) => (p.hidden = true));
+        document.querySelectorAll(".sb-tab").forEach((b) => {
+          b.classList.remove("active");
+          b.setAttribute("aria-selected", "false");
+        });
+        const panel = document.getElementById("tab-" + name);
+        if (panel) panel.hidden = false;
+        if (btn) {
+          btn.classList.add("active");
+          btn.setAttribute("aria-selected", "true");
+        }
+      };
+
+      // ═══════════════════════════════════════════════════════
+      // ONBOARDING
+      // ═══════════════════════════════════════════════════════
+      window.dismissOnboarding = function dismissOnboarding(neverShow) {
+        if (neverShow) localStorage.setItem("mm_ob_skip", "1");
+        const o = document.getElementById("onboardingOverlay");
+        if (o) o.classList.remove("visible");
+      };
+
+      // ═══════════════════════════════════════════════════════
       // INIT
       // ═══════════════════════════════════════════════════════
       initGrid();
@@ -7397,10 +7849,16 @@
         startPortrait("astar");
         updateProgressRing(0, 1, "Ready");
       }, 60);
-      logEntry("info", "System initialized — 50×30 grid · v9");
+      logEntry("info", "System initialized — 50×30 grid · v11");
       logEntry("info", "Algorithm: A* · Manhattan heuristic");
       logEntry("info", "Sidebar: ☰ or Tab · Fullscreen: G");
       logEntry("info", "Press ? for keyboard shortcuts · X to compare");
+      // Show onboarding on first visit
+      setTimeout(() => {
+        if (!localStorage.getItem("mm_ob_skip")) {
+          document.getElementById("onboardingOverlay").classList.add("visible");
+        }
+      }, 400);
     </script>
   </body>
 </html>

@@ -1,80 +1,105 @@
-# MetroMind AI — Advanced Pathfinding & RL Simulator (v9.0)
+# MetroMind AI — Advanced Pathfinding & RL Simulator (v11.0)
 
-![MetroMind AI](https://img.shields.io/badge/Status-Modularization%20Complete-success?style=for-the-badge) ![Version](https://img.shields.io/badge/Version-9.0--Modular-blue?style=for-the-badge) ![AI Project](https://img.shields.io/badge/AI%20Paradigm-Classical%20%2B%20RL-purple?style=for-the-badge)
+![MetroMind AI](https://img.shields.io/badge/Status-Full%20Feature%20Release-success?style=for-the-badge) ![Version](https://img.shields.io/badge/Version-11.0--Standalone-blue?style=for-the-badge) ![AI Project](https://img.shields.io/badge/AI%20Paradigm-Classical%20%2B%20RL-purple?style=for-the-badge)
 
 **MetroMind AI** is a premium, high-performance simulation platform designed to explore and visualize the intersection of classical pathfinding algorithms and modern Reinforcement Learning. Built with a sleek cyberpunk aesthetic, it provides an interactive playground for urban routing optimization, weighted terrain analysis, and autonomous agent training.
 
 ---
 
-## 📖 Table of Contents
+## Table of Contents
 
 - [Overview](#overview)
-- [Key Features](#key-features)
-- [Reinforcement Learning Dashboard](#reinforcement-learning-dashboard)
-- [Algorithms & Logic](#algorithms--logic)
-- [Modern Architecture](#modern-architecture)
-- [Usage Guide](#usage-guide)
+- [Key Features](#key-features-v110)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [Reinforcement Learning Suite](#reinforcement-learning-suite)
 - [Technical Implementation](#technical-implementation)
+- [Quick Start](#quick-start)
+- [Roadmap](#roadmap)
 
 ---
 
-## 🌟 Overview
+## Overview
 
-MetroMind AI transforms traditional grid-search visualization into a comprehensive **AI learning platform**. Version 9.0 introduces a modular engine that separates search logic from UI rendering, alongside a sophisticated **Q-Learning** module where agents learn to navigate complex urban landscapes through trial-and-error.
-
----
-
-## ✨ Key Features (v9.0)
-
-1. **🧠 Reinforcement Learning Dashboard**: Watch a Q-Learning agent evolve. Featuring live Q-value heatmaps, policy arrow overlays, and reward convergence charts.
-2. **Modular ES6+ Architecture**: Fully refactored codebase for maximum maintainability and performance. Separation of concerns between UI, Grid, Logic, and Algorithms.
-3. **Advanced Pathfinding**: Includes 8+ state-of-the-art algorithms:
-   - **Optimized**: Jump Point Search (JPS) ⚡ & Theta* (Any-Angle) ∠.
-   - **Classical**: A*, Dijkstra, Bidirectional A*, BFS, DFS, Greedy BFS.
-4. **Weighted Urban Terrain**: Paint the city with Highways (0.5x), Traffic (3.0x), and Mud (10.0x) to observe how cost-sensitive AI makes decisions.
-5. **Interactive System Log & Step History**: Frame-by-frame debug capability with the ability to step backward (B) and forward (F) through the search history.
-6. **Comparison Mode**: Snapshots of 4 algorithms running simultaneously with real-time performance analytics and "Winner" badges.
-7. **Organis Generation**: Perlin Noise integration for organic city/maze layouts.
+MetroMind AI transforms traditional grid-search visualization into a comprehensive **AI learning platform**. Version 11 introduces a highly optimized, **all-in-one standalone engine** that packs advanced pathfinding logic, a Q-Learning agent, and real-time performance analytics into a single high-performance file.
 
 ---
 
-## 🧠 Reinforcement Learning Dashboard
+## Key Features (v11.0)
 
-The RL suite provides a deep dive into autonomous learning:
+1. **Q-Learning Reinforcement Learning**: Train an autonomous agent to navigate complex grids. Featuring live Q-value heatmaps, policy arrow overlays, and reward convergence sparklines.
+2. **Algorithm Comparison Mode**: Run and compare 8 different algorithms simultaneously with real-time performance tracking and "Winner" badges for Speed and Optimality.
+3. **Advanced Pathfinding Suite**: Includes 8 state-of-the-art algorithms:
+    - **Optimized**: Jump Point Search (JPS) & Theta* (Any-Angle).
+    - **Classical**: A*, Dijkstra, Bidirectional A*, BFS, DFS, Greedy BFS.
+4. **Weighted Urban Terrain**: Simulate realistic city conditions with **Highways (0.5x)**, **Heavy Traffic (3.0x)**, and **Mud (10.0x)**.
+5. **📊 Export & Analytics**: Download full run statistics as **CSV** or grid layouts as **JSON** for external analysis.
+6. **🌌 Premium Visuals**: Cyberpunk dark mode with glassmorphism, scanlines, and reactive background animations that pulse with search intensity.
+7. **🖥️ Full-Screen HUD**: Immersive full-screen mode with an integrated telemetry HUD for focused experiments.
+8. **📱 Full Mobile Support**: Fully responsive design with intelligent sidebar drawers and touch-optimized controls. Panels auto-collapse on smaller screens to maximize grid real estate.
+
+---
+
+## Keyboard Shortcuts
+
+| Key | Action |
+| :--- | :--- |
+| `Space` | Play / Pause Search |
+| `X` | Algorithm Comparison Mode |
+| `Tab` | Toggle Sidebar Panels |
+| `G` | Toggle Fullscreen Mode |
+| `1` - `4` | Select Tools (Wall, Start, Goal, Erase) |
+| `5` - `7` | Select Terrain (Highway, Traffic, Mud) |
+| `S` / `F` | Step Search / Fast Forward |
+| `B` | Step Backward through History |
+| `R` | Reset Current Path |
+| `C` | Clear Grid Entirely |
+| `?` | Show Shortcuts Panel |
+
+---
+
+## Reinforcement Learning Suite
+
+The RL dashboard provides a deep dive into autonomous learning:
+
 - **Heatmap Overlay**: Real-time coloring of cells based on maximum predicted Q-values.
-- **Policy Arrows**: Visualizes the agent's preferred direction for every single cell (confidence-based opacity).
-- **Training Controls**: Adjustable Alpha (Learning Rate), Gamma (Discount Factor), and Epsilon (Exploration) decay.
-- **Convergence Charts**: Live sparklines tracking average rewards across thousands of training episodes.
+- **Policy Arrows**: Visualizes the agent's preferred direction for every cell with confidence-based opacity.
+- **Hyperparameter Control**: Adjust Learning Rate (α), Discount Factor (γ), and Epsilon Decay live.
+- **Convergence Tracking**: Multi-metric sparklines tracking episodes, epsilon decay, and average rewards.
 
 ---
 
-## 🏗️ Technical Implementation
+## Technical Implementation
 
-### Modern Architecture
-The project is organized into a modular structure to support future scale:
-- `js/main.js`: Main entry point and event orchestration.
-- `js/grid.js`: Core canvas rendering and cell state management.
-- `js/ui.js`: HUD animations, theme logic, and sidebar interactions.
-- `js/pathfinding/`: Dedicated implementations for classical search and RL agents.
-- `js/maze.js`: Procedural generation and layout templates.
+### All-in-One Engine
 
-### Performance & Style
-- **Engine**: Vanilla ES6+ JS with `requestAnimationFrame` for stutter-free 60FPS+ visualization.
-- **Styling**: Premium CSS3 variables for "Neon-Dark" and "Clinical-Light" aesthetics, featuring glassmorphism and scanline overlays.
-- **Optimization**: O(log n) Priority Queues (Min-Heaps) for frontier management.
+Version 11 consolidates the project into a high-performance standalone HTML file for easier deployment and portability, while maintaining the modular architecture internally.
 
----
+- **Core Engine**: Vanilla ES6+ JS with `requestAnimationFrame` for smooth 60FPS+ rendering.
+- **Data Structures**: Optimized Min-Heaps (Priority Queues) for O(log n) frontier management.
+- **Styling**: Extensive use of CSS3 variables and backdrop filters for a premium UI feel.
 
-## 🛠️ Quick Start
+### Multi-Platform & Mobile Optimization
 
-1. Open `MetroMind_AI_v9.html` in any modern web browser.
-   > [!NOTE]
-   > Due to the modular architecture (ES6 Imports), this requires running via a local server (e.g., `python -m http.server 8000` or VS Code Live Server).
-2. Use the **Tool Selection** (top bar) to draw walls or terrains.
-3. Select an **Algorithm** or switch to the **RL Agent** tab to begin training.
-4. Use **Keyboard Shortcuts**: `Space` (Play/Pause), `C` (Clear), `Tab` (Toggle Sidebar).
+- **Responsive Architecture**: Adaptive layouts using advanced CSS Grid/Flexbox and media queries.
+- **Mobile UX**: Custom drawer-style sidebars with `position: absolute` on small screens, featuring auto-closing logic and touch-backdrop support.
+- **Standalone HUD**: `MetroMind_AI_v11.html` (Full cross-device feature set).
+- **Modular**: Found in the `/modular_version` directory for extension.
 
 ---
 
-## 🗺️ Roadmap
-Check out [future.md](future.md) for details on Multi-Agent coordination, GIS integration, and D* Lite dynamic replanning.
+## Quick Start
+
+1. Open `MetroMind_AI_v11.html` in any modern web browser.
+2. Use the **Tool Selection** (top bar or `1-7`) to draw walls or terrains.
+3. Choose an algorithm in the **Algo** tab or switch to the **RL** tab.
+4. Press `Space` to solve or click **Train Agent** to begin the RL training loop.
+5. **Pro Tip**: Press `X` to watch all 8 algorithms race to the goal!
+
+---
+
+## Roadmap
+
+- [ ] D* Lite for dynamic replanning in changing environments.
+- [ ] Multi-agent coordination and collision avoidance.
+- [ ] 3D visualization mode using Three.js.
+- [ ] GIS data ingestion for real-world city map simulation.
