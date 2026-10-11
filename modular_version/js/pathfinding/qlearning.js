@@ -1,4 +1,4 @@
-import { WALL, START, GOAL } from '../config.js';
+import { WALL, START, GOAL, HIGHWAY, TRAFFIC, MUD } from '../config.js';
 import { getCellTerrainCost } from './algorithms.js';
 
 export class QAgent {
@@ -145,7 +145,7 @@ export function runRLEpisode(agent, config, startNode, goalNode, grid, terrainGr
         reachedGoal: true,
       };
     } else {
-      const terrainCost = getCellTerrainCost(nr, nc, terrainGrid);
+      const terrainCost = getCellTerrainCost(nr, nc, ROWS, COLS, terrainGrid);
       const distBefore =
         Math.abs(r - goalNode.r) + Math.abs(c - goalNode.c);
       const distAfter =
@@ -276,8 +276,7 @@ export function resetRLAgent() {
   rlBestReward = -Infinity;
   rlBestPath = null;
   rlLastPath = null;
-  // UI updates handled by caller or via side effects if we had a proper UI bridge
-  // For now let's hope the main.js calls updateRLStats
+  clearRLConvergenceChart();
 }
 
 export function runLearnedPolicy(startNode, goalNode, grid, terrainGrid, allowDiagonals, ROWS, COLS, callbacks) {
@@ -311,7 +310,7 @@ export function runLearnedPolicy(startNode, goalNode, grid, terrainGrid, allowDi
       const nk = `${nr},${nc}`;
       if (visited.has(nk) && !(nr === goalNode.r && nc === goalNode.c)) continue;
 
-      totalCost += getCellTerrainCost(nr, nc, terrainGrid);
+      totalCost += getCellTerrainCost(nr, nc, ROWS, COLS, terrainGrid);
       r = nr; c = nc;
       path.push({ r, c });
       visited.add(nk);
@@ -345,16 +344,79 @@ export function runLearnedPolicy(startNode, goalNode, grid, terrainGrid, allowDi
   startAgentAnimation(path);
 }
 
+export function drawRLConvergenceChart() {
+  const cvs = document.getElementById("rlConvergenceChart");
+  if (!cvs) return;
+  const w = cvs.parentElement.clientWidth,
+    h = 48;
+  cvs.width = w;
+  cvs.height = h;
+  const sctx = cvs.getContext("2d");
+  sctx.clearRect(0, 0, w, h);
+  if (rlRewardHistory.length < 2) return;
+
+  let data = rlRewardHistory;
+  if (data.length > 200) {
+    const step = Math.ceil(data.length / 200);
+    data = data.filter((_, i) => i % step === 0);
+  }
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const isDark = document.documentElement.getAttribute("data-theme") !== "light";
+
+  sctx.beginPath();
+  sctx.moveTo(0, h);
+  data.forEach((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / range) * (h - 4) - 2;
+    sctx.lineTo(x, y);
+  });
+  sctx.lineTo(w, h);
+  sctx.closePath();
+  const grd = sctx.createLinearGradient(0, 0, 0, h);
+  grd.addColorStop(0, "rgba(167,139,250,0.35)");
+  grd.addColorStop(1, "rgba(167,139,250,0)");
+  sctx.fillStyle = grd;
+  sctx.fill();
+
+  sctx.beginPath();
+  data.forEach((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / range) * (h - 4) - 2;
+    i === 0 ? sctx.moveTo(x, y) : sctx.lineTo(x, y);
+  });
+  sctx.strokeStyle = isDark ? "rgba(167,139,250,0.9)" : "rgba(120,80,220,0.9)";
+  sctx.lineWidth = 1.5;
+  sctx.stroke();
+
+  if (min < 0 && max > 0) {
+    const zeroY = h - ((0 - min) / range) * (h - 4) - 2;
+    sctx.beginPath();
+    sctx.moveTo(0, zeroY);
+    sctx.lineTo(w, zeroY);
+    sctx.strokeStyle = isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.1)";
+    sctx.lineWidth = 0.5;
+    sctx.setLineDash([3, 3]);
+    sctx.stroke();
+    sctx.setLineDash([]);
+  }
+}
+
+export function clearRLConvergenceChart() {
+  const cvs = document.getElementById("rlConvergenceChart");
+  if (cvs) {
+    const sctx = cvs.getContext("2d");
+    sctx.clearRect(0, 0, cvs.width, cvs.height);
+  }
+}
 
 export function drawRLOverlay(ctx, CELL, ROWS, COLS, grid) {
   if (!rlAgent || rlAgent.qTable.size === 0) return;
-  const actions = getRLActions(false); // Default to 4 for overlay? or check diagonals?
-  // We should pass allowDiagonals if needed. For now let's assume 4 or check.
-  const isDark =
-    document.documentElement.getAttribute("data-theme") !== "light";
+  const actions = getRLActions(false); 
+  const isDark = document.documentElement.getAttribute("data-theme") !== "light";
 
-  let qMin = Infinity,
-    qMax = -Infinity;
+  let qMin = Infinity, qMax = -Infinity;
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       if (grid[r][c] === WALL) continue;
@@ -370,19 +432,12 @@ export function drawRLOverlay(ctx, CELL, ROWS, COLS, grid) {
   if (rlShowHeatmap) {
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
-        if (
-          grid[r][c] === WALL ||
-          grid[r][c] === START ||
-          grid[r][c] === GOAL
-        )
-          continue;
+        if (grid[r][c] === WALL || grid[r][c] === START || grid[r][c] === GOAL) continue;
         const k = `${r},${c}`;
         if (!rlAgent.qTable.has(k)) continue;
         const mq = rlAgent.getMaxQ(r, c);
         const norm = (mq - qMin) / qRange;
-        const x = c * CELL,
-          y = r * CELL;
-
+        const x = c * CELL, y = r * CELL;
         let cr, cg, cb;
         if (norm < 0.5) {
           const t = norm * 2;
@@ -404,64 +459,36 @@ export function drawRLOverlay(ctx, CELL, ROWS, COLS, grid) {
   if (rlShowArrows) {
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
-        if (
-          grid[r][c] === WALL ||
-          grid[r][c] === START ||
-          grid[r][c] === GOAL
-        )
-          continue;
+        if (grid[r][c] === WALL || grid[r][c] === START || grid[r][c] === GOAL) continue;
         const k = `${r},${c}`;
         if (!rlAgent.qTable.has(k)) continue;
-
         const bestAction = rlAgent.getBestAction(r, c);
         const dir = actions[bestAction];
         if (!dir) continue;
-
         const cx = c * CELL + CELL / 2;
         const cy = r * CELL + CELL / 2;
         const arrowLen = CELL * 0.3;
         const ax = cx + dir.dc * arrowLen;
         const ay = cy + dir.dr * arrowLen;
-
         const q = rlAgent._getQ(r, c);
         const sorted = [...q].sort((a, b) => b - a);
-        const confidence =
-          q.length > 1
-            ? Math.min(
-                1,
-                (sorted[0] - sorted[1]) / (Math.abs(sorted[0]) + 0.1),
-              )
-            : 0.5;
+        const confidence = q.length > 1 ? Math.min(1, (sorted[0] - sorted[1]) / (Math.abs(sorted[0]) + 0.1)) : 0.5;
         const alpha = 0.3 + confidence * 0.5;
-
         ctx.save();
-        ctx.strokeStyle = isDark
-          ? `rgba(167,139,250,${alpha})`
-          : `rgba(100,60,200,${alpha})`;
+        ctx.strokeStyle = isDark ? `rgba(167,139,250,${alpha})` : `rgba(100,60,200,${alpha})`;
         ctx.lineWidth = Math.max(1, CELL * 0.08);
         ctx.lineCap = "round";
-
         ctx.beginPath();
-        ctx.moveTo(
-          cx - dir.dc * arrowLen * 0.5,
-          cy - dir.dr * arrowLen * 0.5,
-        );
+        ctx.moveTo(cx - dir.dc * arrowLen * 0.5, cy - dir.dr * arrowLen * 0.5);
         ctx.lineTo(ax, ay);
         ctx.stroke();
-
         const headLen = CELL * 0.13;
         const angle = Math.atan2(dir.dr, dir.dc);
         ctx.beginPath();
         ctx.moveTo(ax, ay);
-        ctx.lineTo(
-          ax - headLen * Math.cos(angle - 0.6),
-          ay - headLen * Math.sin(angle - 0.6),
-        );
+        ctx.lineTo(ax - headLen * Math.cos(angle - 0.6), ay - headLen * Math.sin(angle - 0.6));
         ctx.moveTo(ax, ay);
-        ctx.lineTo(
-          ax - headLen * Math.cos(angle + 0.6),
-          ay - headLen * Math.sin(angle + 0.6),
-        );
+        ctx.lineTo(ax - headLen * Math.cos(angle + 0.6), ay - headLen * Math.sin(angle + 0.6));
         ctx.stroke();
         ctx.restore();
       }

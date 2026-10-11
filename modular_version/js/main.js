@@ -12,16 +12,14 @@ import * as History from './history.js';
 // ═══════════════════════════════════════════════════════
 let currentAlgorithm = "astar";
 let currentTool = "wall";
-let currentHeuristic = "manhattan";
 let allowDiagonals = false;
 let animSpeed = 50;
 let heuristicWeight = 1.0;
-
 let searchState = null;
 let animTimer = null;
 let lastSolutionPath = null;
 let stepCount = 0;
-let results = []; // For comparison mode if needed
+let pathAnimInterval = null;
 
 // ═══════════════════════════════════════════════════════
 // INITIALIZATION
@@ -34,7 +32,7 @@ function init() {
   
   UI.triggerGlitch();
   UI.startPortrait(currentAlgorithm);
-  UI.showToast("🚀 MetroMind AI v9 Loaded");
+  UI.showToast("🚀 MetroMind AI v11 Modular Loaded", "success");
   UI.logEntry("success", "System online. Neural grid initialized.");
   
   setupEventListeners();
@@ -43,6 +41,8 @@ function init() {
   // Initial UI sync
   updateSpeed(animSpeed);
   updateWeight(heuristicWeight);
+  changeAlgorithm(currentAlgorithm);
+  setTool(currentTool);
 }
 
 function draw() {
@@ -53,20 +53,20 @@ function draw() {
 }
 
 // ═══════════════════════════════════════════════════════
-// CORE LOGIC
+// CORE SEARCH LOGIC
 // ═══════════════════════════════════════════════════════
 function startSearch() {
   if (Grid.startNode.r === Grid.goalNode.r && Grid.startNode.c === Grid.goalNode.c) {
-    UI.showToast("⚠ Start and goal cannot overlap");
+    UI.showToast("⚠ Start and goal cannot overlap", "warn");
     return;
   }
   if (Grid.grid[Grid.startNode.r][Grid.startNode.c] === Config.WALL || Grid.grid[Grid.goalNode.r][Grid.goalNode.c] === Config.WALL) {
-    UI.showToast("⚠ Start or goal placed on wall");
+    UI.showToast("⚠ Start or goal placed on wall", "warn");
     return;
   }
 
   stopAnim();
-  resetPath(false);
+  resetPath(true);
   
   searchState = Algorithms.initSearch(
     currentAlgorithm,
@@ -75,8 +75,7 @@ function startSearch() {
     Grid.grid,
     Grid.terrainGrid,
     allowDiagonals,
-    heuristicWeight,
-    currentHeuristic
+    heuristicWeight
   );
   
   if (!searchState) return;
@@ -87,31 +86,57 @@ function startSearch() {
   UI.updateProgressRing(0, Grid.ROWS * Grid.COLS * 0.7, "Searching…");
   
   const btn = document.getElementById("playBtn");
-  btn.textContent = "⏸ PAUSE";
-  btn.classList.add("running");
+  if (btn) {
+    btn.textContent = "⏸ PAUSE";
+    btn.classList.add("running");
+  }
   
   UI.setStatus("running", "Searching…");
   UI.logEntry("info", `▶ Starting ${currentAlgorithm.toUpperCase()} search…`);
+  Grid.canvas.classList.add("running");
   
-  document.getElementById("stepBtn").disabled = false;
+  const stepBtn = document.getElementById("stepBtn");
+  if (stepBtn) stepBtn.disabled = false;
   
-  const tickMs = Math.max(5, Config.MAX_DELAY - (animSpeed * 1.1));
+  const tickMs = Math.max(5, Config.MAX_DELAY - animSpeed);
   animTimer = setInterval(() => {
     if (!searchState || searchState.done) {
       stopAnim();
       onSearchComplete();
       return;
     }
-    const batch = Math.max(1, Math.floor(animSpeed / 10));
-    for (let i = 0; i < batch && searchState && !searchState.done; i++) {
-      stepSearch();
+    const batchSize = Math.max(1, Math.floor(animSpeed / 10));
+    for (let i = 0; i < batchSize && searchState && !searchState.done; i++) {
+      Algorithms.searchStep(
+        searchState,
+        Grid.grid,
+        Grid.terrainGrid,
+        Grid.COLS,
+        Grid.ROWS,
+        allowDiagonals,
+        Grid.goalNode,
+        Grid.startNode,
+        heuristicWeight,
+        currentAlgorithm,
+        UI.logEntry,
+        UI.setStatus,
+        UI.showToast,
+        onSearchComplete
+      );
+      stepCount++;
+      const counterEl = document.getElementById("stepCounter");
+      if (counterEl) counterEl.textContent = "step " + stepCount;
+      if (stepCount % 5 === 0) History.snapshotHistory(searchState, Grid.grid);
+      updateStatsUI();
     }
+    draw();
   }, tickMs);
 }
 
 function resetPath(silent = false) {
   stopAnim();
   Grid.stopAgentAnimation();
+  if (pathAnimInterval) clearInterval(pathAnimInterval);
   searchState = null;
   lastSolutionPath = null;
   stepCount = 0;
@@ -135,12 +160,16 @@ function resetPath(silent = false) {
     UI.updateProgressRing(0, 1, "Ready");
   }
   
-  document.getElementById("stepBtn").disabled = true;
+  const stepBtn = document.getElementById("stepBtn");
+  if (stepBtn) stepBtn.disabled = true;
   const playBtn = document.getElementById("playBtn");
-  playBtn.textContent = "▶ FIND PATH";
-  playBtn.classList.remove("running");
+  if (playBtn) {
+    playBtn.textContent = "▶ FIND PATH";
+    playBtn.classList.remove("running");
+  }
+  Grid.canvas.classList.remove("running", "done");
   
-  updateStats(0, "—", 0, "—");
+  UI.updateStats(0, "—", 0, "—");
   draw();
 }
 
@@ -161,26 +190,55 @@ function togglePlayPause() {
   if (animTimer) {
     stopAnim();
     UI.setStatus("running", "Paused");
-    document.getElementById("playBtn").textContent = "▶ RESUME";
-    document.getElementById("playBtn").classList.remove("running");
-    document.getElementById("stepBtn").disabled = false;
+    const playBtn = document.getElementById("playBtn");
+    if (playBtn) {
+      playBtn.textContent = "▶ RESUME";
+      playBtn.classList.remove("running");
+    }
+    const stepBtn = document.getElementById("stepBtn");
+    if (stepBtn) stepBtn.disabled = false;
   } else {
-    const tickMs = Math.max(5, Config.MAX_DELAY - (animSpeed * 1.1));
+    const tickMs = Math.max(5, Config.MAX_DELAY - animSpeed);
     animTimer = setInterval(() => {
       if (!searchState || searchState.done) {
         stopAnim();
         onSearchComplete();
         return;
       }
-      const batch = Math.max(1, Math.floor(animSpeed / 10));
-      for (let i = 0; i < batch && searchState && !searchState.done; i++) {
-        stepSearch();
+      const batchSize = Math.max(1, Math.floor(animSpeed / 10));
+      for (let i = 0; i < batchSize && searchState && !searchState.done; i++) {
+        Algorithms.searchStep(
+          searchState,
+          Grid.grid,
+          Grid.terrainGrid,
+          Grid.COLS,
+          Grid.ROWS,
+          allowDiagonals,
+          Grid.goalNode,
+          Grid.startNode,
+          heuristicWeight,
+          currentAlgorithm,
+          UI.logEntry,
+          UI.setStatus,
+          UI.showToast,
+          onSearchComplete
+        );
+        stepCount++;
+        const counterEl = document.getElementById("stepCounter");
+        if (counterEl) counterEl.textContent = "step " + stepCount;
+        if (stepCount % 5 === 0) History.snapshotHistory(searchState, Grid.grid);
+        updateStatsUI();
       }
+      draw();
     }, tickMs);
     UI.setStatus("running", "Searching…");
-    document.getElementById("playBtn").textContent = "⏸ PAUSE";
-    document.getElementById("playBtn").classList.add("running");
-    document.getElementById("stepBtn").disabled = true;
+    const playBtn = document.getElementById("playBtn");
+    if (playBtn) {
+      playBtn.textContent = "⏸ PAUSE";
+      playBtn.classList.add("running");
+    }
+    const stepBtn = document.getElementById("stepBtn");
+    if (stepBtn) stepBtn.disabled = true;
   }
 }
 
@@ -194,7 +252,7 @@ function stopAnim() {
 function stepSearch() {
   if (!searchState) {
     startSearch();
-    stopAnim(); // Don't auto-run in step mode
+    stopAnim(); 
     return;
   }
   if (searchState.done) return;
@@ -209,66 +267,62 @@ function stepSearch() {
     Grid.goalNode,
     Grid.startNode,
     heuristicWeight,
-    currentHeuristic,
+    currentAlgorithm,
     UI.logEntry,
     UI.setStatus,
-    UI.showToast
+    UI.showToast,
+    onSearchComplete
   );
   
   stepCount++;
-  document.getElementById("stepCounter").textContent = "step " + stepCount;
+  const counterEl = document.getElementById("stepCounter");
+  if (counterEl) counterEl.textContent = "step " + stepCount;
 
   if (stepCount % 5 === 0) {
     History.snapshotHistory(searchState, Grid.grid);
   }
 
-  if (searchState.done) {
-    onSearchComplete();
-  }
   draw();
-  updateStats();
+  updateStatsUI();
 }
 
 function onSearchComplete() {
   stopAnim();
   const playBtn = document.getElementById("playBtn");
-  playBtn.textContent = "▶ FIND PATH";
-  playBtn.classList.remove("running");
-  document.getElementById("stepBtn").disabled = true;
+  if (playBtn) {
+    playBtn.textContent = "▶ FIND PATH";
+    playBtn.classList.remove("running");
+  }
+  const stepBtn = document.getElementById("stepBtn");
+  if (stepBtn) stepBtn.disabled = true;
   
   if (searchState && searchState.finalPath) {
     lastSolutionPath = searchState.finalPath;
     UI.updateProgressRing(1, 1, "Path found!");
+    UI.logEntry("success", `✓ Path found: ${lastSolutionPath.length} steps, cost ${Math.round(searchState.solutionCost)}`);
+    UI.showToast(`✓ Path found: ${lastSolutionPath.length} steps`, "success");
+    Grid.canvas.classList.add("done");
     Grid.startAgentAnimation(lastSolutionPath);
+  } else {
+    UI.setStatus("error", "No path found");
+    UI.logEntry("error", "✕ No path possible!");
+    UI.showToast("✕ No path possible!", "error");
   }
 }
 
-function updateStats() {
+function updateStatsUI() {
   if (!searchState) return;
   const n = searchState.explored;
   const p = searchState.finalPath ? searchState.finalPath.length : "—";
-  const o = searchState.openSet ? (searchState.openSet.size || searchState.openSet.length || 0) : 0;
+  const o = searchState.openSet ? (searchState.openSet.size || 0) : 0;
   const c = searchState.solutionCost ? Math.round(searchState.solutionCost) : "—";
   
-  document.getElementById("statNodes").textContent = n;
-  document.getElementById("statPath").textContent = p;
-  document.getElementById("statOpen").textContent = o;
-  document.getElementById("statCost").textContent = c;
-  
-  // HUD
-  const hn = document.getElementById("hudNodes"),
-        hp = document.getElementById("hudPath"),
-        hc = document.getElementById("hudCost");
-  if (hn) hn.textContent = n;
-  if (hp) hp.textContent = p;
-  if (hc) hc.textContent = c;
-
+  UI.updateStats(n, p, o, c);
   UI.updateProgressRing(n, Grid.ROWS * Grid.COLS * 0.7, "Searching…");
-  UI.updateSparklines(n, p === "—" ? 0 : p, o, c === "—" ? 0 : c);
 }
 
 // ═══════════════════════════════════════════════════════
-// UI HELPERS
+// UI HANDLERS
 // ═══════════════════════════════════════════════════════
 function changeAlgorithm(algo) {
   currentAlgorithm = algo;
@@ -284,46 +338,37 @@ function changeAlgorithm(algo) {
   resetPath(true);
 }
 
-function setHeuristic(h) {
-  currentHeuristic = h;
-  document.querySelectorAll(".heur-btn").forEach(b => b.classList.remove("active"));
-  document.getElementById(`heur-${h}`)?.classList.add("active");
-  
-  const badge = document.getElementById("heurBadge");
-  if (badge) badge.textContent = h.charAt(0).toUpperCase() + h.slice(1);
-  
-  const formulas = {
-    manhattan: "|Δr|+|Δc|",
-    euclidean: "√(Δr²+Δc²)",
-    chebyshev: "max(|Δr|,|Δc|)",
-    octile: "min(|Δ|)+(√2-1)max(|Δ|)"
-  };
-  document.getElementById("heurFormula").textContent = formulas[h] || "";
-  
-  UI.logEntry("info", `Heuristic: ${h}`);
-  resetPath(true);
-}
-
 function setTool(tool) {
   currentTool = tool;
   document.querySelectorAll(".tool-btn").forEach(b => b.classList.remove("active"));
-  document.getElementById(`tool${tool.charAt(0).toUpperCase() + tool.slice(1)}`)?.classList.add("active");
+  const btnId = "tool" + tool.charAt(0).toUpperCase() + tool.slice(1);
+  document.getElementById(btnId)?.classList.add("active");
+  
+  ["wall", "start", "goal", "erase", "highway", "traffic", "mud"].forEach(id => {
+    const el = document.getElementById("tool" + id.charAt(0).toUpperCase() + id.slice(1));
+    if (el) el.setAttribute("aria-pressed", id === tool ? "true" : "false");
+  });
 }
 
 function updateSpeed(val) {
   animSpeed = parseInt(val);
-  document.getElementById("speedLabel").textContent = (110 - animSpeed) + "ms";
+  const label = document.getElementById("speedLabel");
+  if (label) label.textContent = Math.max(5, Config.MAX_DELAY - animSpeed) + "ms";
 }
 
 function updateWeight(val) {
   heuristicWeight = parseFloat(val);
-  document.getElementById("weightLabel").textContent = heuristicWeight.toFixed(1) + "×";
+  const label = document.getElementById("weightLabel");
+  if (label) label.textContent = heuristicWeight.toFixed(1) + "×";
+  if ((currentAlgorithm === "astar" || currentAlgorithm === "greedy") && searchState && searchState.done) {
+    resetPath(true);
+  }
 }
 
 function updateGridSize() {
   const cols = parseInt(document.getElementById("mazeCols").value);
   const rows = parseInt(document.getElementById("mazeRows").value);
-  if (cols >= 10 && cols <= 60 && rows >= 10 && rows <= 60) {
+  if (cols >= 10 && cols <= 100 && rows >= 10 && rows <= 100) {
     Grid.setGridDims(cols, rows);
     Grid.initGrid();
     Grid.resizeCanvas(draw);
@@ -333,8 +378,10 @@ function updateGridSize() {
 }
 
 function applyPreset(c, r) {
-  document.getElementById("mazeCols").value = c;
-  document.getElementById("mazeRows").value = r;
+  const cInput = document.getElementById("mazeCols");
+  const rInput = document.getElementById("mazeRows");
+  if (cInput) cInput.value = c;
+  if (rInput) rInput.value = r;
   updateGridSize();
 }
 
@@ -342,14 +389,15 @@ function applyPreset(c, r) {
 // EXPORTS
 // ═══════════════════════════════════════════════════════
 function exportStatsCSV() {
+  const n = document.getElementById("statNodes")?.textContent || "0";
+  const p = document.getElementById("statPath")?.textContent || "0";
+  const c = document.getElementById("statCost")?.textContent || "0";
   const csv = [
     ["Metric", "Value"],
     ["Algorithm", currentAlgorithm],
-    ["Heuristic", currentHeuristic],
-    ["Weight", heuristicWeight],
-    ["Nodes Explored", document.getElementById("statNodes").textContent],
-    ["Path Length", document.getElementById("statPath").textContent],
-    ["Cost", document.getElementById("statCost").textContent],
+    ["Nodes Explored", n],
+    ["Path Length", p],
+    ["Cost", c],
     ["Timestamp", new Date().toLocaleString()]
   ].map(r => r.join(",")).join("\n");
   
@@ -359,7 +407,7 @@ function exportStatsCSV() {
   a.href = url;
   a.download = `MetroMind_Stats_${Date.now()}.csv`;
   a.click();
-  UI.showToast("📊 Stats exported");
+  UI.showToast("📊 Stats exported", "success");
 }
 
 function exportGridJSON() {
@@ -377,11 +425,13 @@ function exportGridJSON() {
   a.href = url;
   a.download = `MetroMind_Grid_${Date.now()}.json`;
   a.click();
-  UI.showToast("🗂 Grid exported");
+  UI.showToast("🗂 Grid exported", "success");
 }
 
 function exportLog() {
-  const text = Array.from(document.getElementById("algoLog").children)
+  const logEl = document.getElementById("algoLog");
+  if (!logEl) return;
+  const text = Array.from(logEl.children)
     .map(el => `[${el.className.split(' ')[1]}] ${el.textContent}`)
     .join("\n");
   const blob = new Blob([text], { type: 'text/plain' });
@@ -390,175 +440,176 @@ function exportLog() {
   a.href = url;
   a.download = `MetroMind_Log_${Date.now()}.txt`;
   a.click();
+  UI.showToast("✓ Log exported", "success");
 }
 
 // ═══════════════════════════════════════════════════════
 // EVENT LISTENERS
 // ═══════════════════════════════════════════════════════
 function setupEventListeners() {
-  // Navigation & UI Panels
-  document.getElementById("sidebarToggleBtn").addEventListener("click", () => UI.toggleSidebar(() => Grid.resizeCanvas(draw)));
-  document.getElementById("sidebarTab").addEventListener("click", () => UI.toggleSidebar(() => Grid.resizeCanvas(draw)));
-  document.getElementById("sidebarBackdrop").addEventListener("click", UI.closeSidebarMobile);
-  document.getElementById("rpToggleBtn").addEventListener("click", () => UI.toggleRightPanel(() => Grid.resizeCanvas(draw)));
-  document.getElementById("rpToggle").addEventListener("click", () => UI.toggleRightPanel(() => Grid.resizeCanvas(draw)));
-  document.getElementById("themeBtn").addEventListener("click", () => UI.toggleTheme(draw));
+  // Navigation
+  document.getElementById("sidebarToggleBtn")?.addEventListener("click", () => UI.toggleSidebar(() => Grid.resizeCanvas(draw)));
+  document.getElementById("sidebarTab")?.addEventListener("click", () => UI.toggleSidebar(() => Grid.resizeCanvas(draw)));
+  document.getElementById("sidebarBackdrop")?.addEventListener("click", UI.closeSidebarMobile);
+  document.getElementById("rpToggleBtn")?.addEventListener("click", () => UI.toggleRightPanel(() => Grid.resizeCanvas(draw)));
+  document.getElementById("rpToggle")?.addEventListener("click", () => UI.toggleRightPanel(() => Grid.resizeCanvas(draw)));
+  document.getElementById("themeBtn")?.addEventListener("click", () => UI.toggleTheme(draw));
   
+  // Onboarding
+  document.getElementById("btnOnboardingStart")?.addEventListener("click", () => UI.dismissOnboarding(false));
+  document.getElementById("btnOnboardingSkip")?.addEventListener("click", () => UI.dismissOnboarding(true));
+  
+  // Overlays
+  document.getElementById("btnOpenCompare")?.addEventListener("click", UI.openCompare);
+  document.getElementById("btnCompareBack")?.addEventListener("click", UI.closeCompare);
+  document.getElementById("btnShowShortcuts")?.addEventListener("click", UI.showShortcuts);
+  document.getElementById("btnExitFS")?.addEventListener("click", () => UI.toggleFullscreen(() => Grid.resizeCanvas(draw)));
+  document.getElementById("fsBtn")?.addEventListener("click", () => UI.toggleFullscreen(() => Grid.resizeCanvas(draw)));
+
+  // Sidebar Tabs
+  document.querySelectorAll(".sb-tab").forEach(btn => {
+    const id = btn.id.replace("tbtn-", "");
+    btn.addEventListener("click", () => UI.switchSbTab(id, btn));
+  });
+
   // Section Toggles
   ["controls", "speed", "pathopts", "gridsize", "mazes", "heuristic", "terrain", "stats", "rl", "algo", "export"].forEach(id => {
     const el = document.querySelector(`#sec-${id} .sec-label`);
     if (el) el.addEventListener("click", () => UI.toggleSection(`sec-${id}`));
   });
 
-  // Compare & Overlay
-  document.getElementById("btnCompare")?.addEventListener("click", () => UI.openCompare());
-  document.querySelectorAll("button[title*='Compare']").forEach(btn => {
-    btn.onclick = null;
-    btn.addEventListener("click", () => UI.openCompare());
-  });
-  document.querySelector(".compare-close")?.addEventListener("click", () => UI.closeCompare());
-  document.querySelectorAll("button[title*='shortcuts']").forEach(btn => {
-      btn.onclick = null;
-      btn.addEventListener("click", UI.showShortcuts);
-  });
-
   // Main Controls
-  document.getElementById("playBtn").addEventListener("click", togglePlayPause);
-  document.getElementById("stepBtn").addEventListener("click", stepSearch);
+  document.getElementById("playBtn")?.addEventListener("click", togglePlayPause);
+  document.getElementById("stepBtn")?.addEventListener("click", stepSearch);
   document.getElementById("btnClearAll")?.addEventListener("click", clearAll);
   document.getElementById("btnResetPath")?.addEventListener("click", () => resetPath());
 
+  // History Controls
+  document.getElementById("btnBack")?.addEventListener("click", () => {
+    History.stepBackward((snap) => {
+      Grid.setGrid(snap.grid.map(r => [...r]));
+      draw();
+      UI.setStatus("running", `History: snapshot ${History.historyIdx + 1}`);
+    });
+  });
+  document.getElementById("btnFwd")?.addEventListener("click", () => {
+    History.stepForward((snap) => {
+      Grid.setGrid(snap.grid.map(r => [...r]));
+      draw();
+      UI.setStatus("running", `History: snapshot ${History.historyIdx + 1}`);
+    });
+  });
+
   // Sliders
-  document.getElementById("speedSlider").addEventListener("input", e => updateSpeed(e.target.value));
-  document.getElementById("weightSlider").addEventListener("input", e => updateWeight(e.target.value));
+  document.getElementById("speedSlider")?.addEventListener("input", e => updateSpeed(e.target.value));
+  document.getElementById("weightSlider")?.addEventListener("input", e => updateWeight(e.target.value));
   
   // Checkboxes
-  document.getElementById("allowDiagonals").addEventListener("change", e => {
+  document.getElementById("allowDiagonals")?.addEventListener("change", e => {
     allowDiagonals = e.target.checked;
-    UI.showToast(`Diagonals: ${allowDiagonals ? "ON" : "OFF"}`);
+    const heurBadge = document.getElementById("heurBadge");
+    if (heurBadge) heurBadge.textContent = allowDiagonals ? "Euclidean" : "Manhattan";
+    
+    const jpsBtn = document.getElementById("btn-algo-jps");
+    if (jpsBtn) {
+      if (allowDiagonals) {
+        jpsBtn.style.opacity = "0.4";
+        jpsBtn.style.pointerEvents = "none";
+        if (currentAlgorithm === "jps") changeAlgorithm("astar");
+      } else {
+        jpsBtn.style.opacity = "1";
+        jpsBtn.style.pointerEvents = "auto";
+      }
+    }
     resetPath(true);
   });
   
-  document.getElementById("showCost").addEventListener("change", e => {
-    draw();
-  });
+  document.getElementById("showCost")?.addEventListener("change", () => draw());
   
   // Grid size
-  document.getElementById("mazeCols").addEventListener("change", updateGridSize);
-  document.getElementById("mazeRows").addEventListener("change", updateGridSize);
+  document.getElementById("mazeCols")?.addEventListener("change", updateGridSize);
+  document.getElementById("mazeRows")?.addEventListener("change", updateGridSize);
   
-  // Grid Presets (data-preset="cols,rows")
+  // Grid Presets
   document.querySelectorAll(".maze-btn[data-preset]").forEach(btn => {
     const [c, r] = btn.getAttribute("data-preset").split(",").map(Number);
     btn.addEventListener("click", () => applyPreset(c, r));
   });
 
-  // Maze Logic (data-type="...")
+  // Maze Logic
   document.querySelectorAll(".maze-btn[data-type]").forEach(btn => {
     const type = btn.getAttribute("data-type");
-    if (type === "recursive") {
-      btn.addEventListener("click", () => {
-        Maze.generateRecursive(Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode);
-        resetPath(true);
-        draw();
-      });
-    } else if (type === "perlin") {
-      btn.addEventListener("click", () => {
-        Maze.generatePerlinTerrain(Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, Grid.terrainGrid);
-        resetPath(true);
-        draw();
-      });
-    } else {
-      btn.addEventListener("click", () => {
-        Maze.loadMaze(type, Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, Grid.terrainGrid);
-        resetPath(true);
-        draw();
-      });
-    }
+    btn.addEventListener("click", () => {
+      if (type === "recursive") {
+        Maze.generateRecursive(Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, UI.logEntry);
+      } else if (type === "perlin") {
+        Maze.generatePerlinTerrain(Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, Grid.terrainGrid, UI.logEntry);
+      } else {
+        Maze.loadMaze(type, Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, Grid.terrainGrid, UI.logEntry);
+      }
+      resetPath(true);
+      draw();
+    });
   });
 
-  // Algorithm Buttons (extracted from ID or text)
+  // Algorithm Buttons
   document.querySelectorAll(".algo-btn").forEach(btn => {
-    const id = btn.id;
-    const algo = id.replace("btn-algo-", "");
-    btn.addEventListener("click", () => changeAlgorithm(algo));
+    const algo = btn.getAttribute("data-algo");
+    if (algo) {
+      btn.addEventListener("click", () => changeAlgorithm(algo));
+    }
   });
 
   // Heuristic Buttons
   document.querySelectorAll(".heur-btn").forEach(btn => {
-    const id = btn.id;
-    const h = id.replace("heur-", "");
-    btn.addEventListener("click", () => setHeuristic(h));
-  });
-
-  // Tool Buttons - updated to check ID first or data-tool or similar
-  document.querySelectorAll(".tool-btn").forEach(btn => {
-    const id = btn.id.toLowerCase();
-    let toolName = "";
-    if (id.includes("wall")) toolName = "wall";
-    else if (id.includes("start")) toolName = "start";
-    else if (id.includes("goal")) toolName = "goal";
-    else if (id.includes("erase")) toolName = "erase";
-    else if (id.includes("highway")) toolName = "highway";
-    else if (id.includes("traffic")) toolName = "traffic";
-    else if (id.includes("mud")) toolName = "mud";
-
-    if (toolName) {
-      btn.addEventListener("click", () => setTool(toolName));
+    const heur = btn.getAttribute("data-heur");
+    if (heur) {
+      btn.addEventListener("click", () => {
+        UI.setHeuristicUI(heur);
+        resetPath(true);
+      });
     }
   });
+
+  // Tool Buttons
+  ["wall", "start", "goal", "erase", "highway", "traffic", "mud"].forEach(id => {
+    const btnId = "tool" + id.charAt(0).toUpperCase() + id.slice(1);
+    document.getElementById(btnId)?.addEventListener("click", () => setTool(id));
+  });
+
+  document.getElementById("btnCompareAll")?.addEventListener("click", UI.openCompare);
 
   // Export Buttons
   document.getElementById("exportCSV")?.addEventListener("click", exportStatsCSV);
   document.getElementById("exportJSON")?.addEventListener("click", exportGridJSON);
+  document.getElementById("btnExportLog")?.addEventListener("click", exportLog);
 
-  // RL Buttons & Toggles
-  document.getElementById("rlTrainBtn").addEventListener("click", handleRLTrain);
+  // RL Buttons
+  document.getElementById("rlTrainBtn")?.addEventListener("click", handleRLTrain);
   document.getElementById("rlPolicyBtn")?.addEventListener("click", handleRLPolicy);
-  document.getElementById("rlResetBtn")?.addEventListener("click", QLearning.resetRLAgent);
-  // RL Sliders
-  document.getElementById("rlAlpha").addEventListener("input", e => {
-    document.getElementById("rlAlphaVal").textContent = e.target.value;
-  });
-  document.getElementById("rlGamma").addEventListener("input", e => {
-    document.getElementById("rlGammaVal").textContent = e.target.value;
-  });
-  document.getElementById("rlEpsilonDecay").addEventListener("input", e => {
-    document.getElementById("rlDecayVal").textContent = parseFloat(e.target.value).toFixed(3);
-  });
-  document.getElementById("rlMaxEpisodes").addEventListener("input", e => {
-    document.getElementById("rlMaxEpVal").textContent = e.target.value;
-  });
-  document.getElementById("rlMaxSteps").addEventListener("input", e => {
-    document.getElementById("rlMaxStepsVal").textContent = e.target.value;
-  });
-  document.getElementById("rlBatchSize").addEventListener("input", e => {
-    document.getElementById("rlBatchVal").textContent = e.target.value;
+  document.getElementById("rlResetBtn")?.addEventListener("click", () => {
+    QLearning.resetRLAgent();
+    UI.logEntry("info", "🧠 RL Agent reset");
+    UI.showToast("🧠 RL Agent reset", "info");
+    draw();
   });
 
   // RL Overlays
-  document.getElementById("rlHeatmapToggle").addEventListener("change", (e) => {
+  document.getElementById("rlHeatmapToggle")?.addEventListener("change", (e) => {
     QLearning.setHeatmap(e.target.checked);
     draw();
   });
-  document.getElementById("rlArrowsToggle").addEventListener("change", (e) => {
+  document.getElementById("rlArrowsToggle")?.addEventListener("change", (e) => {
     QLearning.setArrows(e.target.checked);
     draw();
   });
 
-  // History / Logs
-  document.getElementById("btnBack").addEventListener("click", stepBackward);
-  document.getElementById("btnFwd").addEventListener("click", stepForward);
-  document.getElementById("btnAutoScroll").addEventListener("click", UI.toggleAutoScroll);
+  // Log Controls
+  document.getElementById("btnAutoScroll")?.addEventListener("click", UI.toggleAutoScroll);
   document.getElementById("btnClearLog")?.addEventListener("click", UI.clearLog);
-  document.getElementById("btnExportLog")?.addEventListener("click", exportLog);
-  document.getElementById("scrollFab").addEventListener("click", UI.jumpToBottom);
+  document.getElementById("scrollFab")?.addEventListener("click", UI.jumpToBottom);
 
-  // Fullscreen
-  document.getElementById("fsBtn").addEventListener("click", () => UI.toggleFullscreen(() => Grid.resizeCanvas(draw)));
-  document.querySelector("#fsHUD button").addEventListener("click", () => UI.toggleFullscreen(() => Grid.resizeCanvas(draw)));
-
-  // Canvas
+  // Canvas interaction
   Grid.canvas.addEventListener("mousedown", handleMouseDown);
   window.addEventListener("mousemove", handleMouseMove);
   window.addEventListener("mouseup", handleMouseUp);
@@ -569,18 +620,18 @@ function setupEventListeners() {
 
   // Keyboard Shortcuts
   document.addEventListener("keydown", handleKeydown);
-  document.getElementById("shortcutsOverlay").addEventListener("click", (e) => {
-    if (e.target === e.currentTarget) UI.hideShortcuts();
-  });
 }
 
+// ═══════════════════════════════════════════════════════
+// MOUSE INTERACTION
+// ═══════════════════════════════════════════════════════
 function handleMouseDown(e) {
   const { r, c } = Grid.getCellFromEvent(e);
   if (r < 0 || r >= Grid.ROWS || c < 0 || c >= Grid.COLS) return;
   
   if (Grid.grid[r][c] === Config.START || Grid.grid[r][c] === Config.GOAL) {
     Grid.setDrawing(Grid.grid[r][c]); 
-    Grid.showGhost(Grid.grid[r][c] === Config.START ? "🚀" : "🎯", "var(--accent)");
+    Grid.showGhost(Grid.grid[r][c] === Config.START ? "🚀" : "🎯");
   } else {
     Grid.setDrawing(true);
     paintCell(r, c);
@@ -638,6 +689,14 @@ function paintCell(r, c) {
   } else if (currentTool === "mud") {
     Grid.grid[r][c] = Config.EMPTY;
     Grid.terrainGrid[r][c] = Config.MUD;
+  } else if (currentTool === "start") {
+    Grid.grid[Grid.startNode.r][Grid.startNode.c] = Config.EMPTY;
+    Grid.updateStartNode(r, c);
+    Grid.grid[r][c] = Config.START;
+  } else if (currentTool === "goal") {
+    Grid.grid[Grid.goalNode.r][Grid.goalNode.c] = Config.EMPTY;
+    Grid.updateGoalNode(r, c);
+    Grid.grid[r][c] = Config.GOAL;
   }
   
   Grid.spawnRipple(c, r);
@@ -646,7 +705,6 @@ function paintCell(r, c) {
 
 function handleKeydown(e) {
   if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
-  
   if (e.code === "Tab") {
     e.preventDefault();
     UI.toggleSidebar(() => Grid.resizeCanvas(draw));
@@ -666,48 +724,26 @@ function handleKeydown(e) {
   else if (e.code === "Digit5") setTool("highway");
   else if (e.code === "Digit6") setTool("traffic");
   else if (e.code === "Digit7") setTool("mud");
-  else if (e.code === "KeyG") {
-    UI.toggleFullscreen(() => Grid.resizeCanvas(draw));
-  } else if (e.key === "?") {
-    UI.showShortcuts();
-  } else if (e.code === "Escape") {
-    UI.hideShortcuts();
-    // closeCompare(); // To be implemented
-  } else if (e.code === "KeyB") {
-    stepBackward();
-  } else if (e.code === "KeyF") {
-    stepForward();
-  }
 }
 
-function stepBackward() {
-  if (History.historyIdx > 0) {
-    History.setHistoryIdx(History.historyIdx - 1);
-    restoreHistoryState();
-  }
-}
-
-function stepForward() {
-  if (History.historyIdx < History.searchHistory.length - 1) {
-    History.setHistoryIdx(History.historyIdx + 1);
-    restoreHistoryState();
-  }
-}
-
-function restoreHistoryState() {
-  const snap = History.searchHistory[History.historyIdx];
-  if (!snap) return;
-  Grid.setGrid(snap.grid.map(r => [...r]));
-  searchState = snap.state;
-  History.updateHistoryUI();
-  draw();
-}
-
+// ═══════════════════════════════════════════════════════
+// RL COORDINATION
+// ═══════════════════════════════════════════════════════
 function handleRLTrain() {
   if (QLearning.rlTraining) {
     QLearning.stopRLTraining();
     return;
   }
+  const config = {
+    alpha: parseFloat(document.getElementById("rlAlpha")?.value || 0.1),
+    gamma: parseFloat(document.getElementById("rlGamma")?.value || 0.9),
+    epsilon: 1.0,
+    epsilonDecay: parseFloat(document.getElementById("rlEpsilonDecay")?.value || 0.995),
+    maxEpisodes: parseInt(document.getElementById("rlMaxEpisodes")?.value || 1000),
+    maxSteps: parseInt(document.getElementById("rlMaxSteps")?.value || 100),
+    batchSize: parseInt(document.getElementById("rlBatchSize")?.value || 20)
+  };
+
   QLearning.startRLTraining(
     Grid.startNode,
     Grid.goalNode,
@@ -718,19 +754,26 @@ function handleRLTrain() {
     Grid.COLS,
     {
       onStep: () => {
-        QLearning.updateRLStats();
+        UI.updateSparklines(QLearning.rlEpisode, 0, QLearning.rlAgent.qTable.size, 0);
         draw();
       },
-      onComplete: (ep, reward, path) => {
-         UI.showToast(`✓ RL Done: ep ${ep}`, "success");
+      onComplete: (ep, reward) => {
+         UI.showToast(`✓ RL Training Complete: ${ep} episodes`, "success");
          UI.logEntry("success", `✓ RL done: best reward=${Math.round(reward)}`);
+         document.getElementById("rlTrainBtn").textContent = "🧠 TRAIN AGENT";
+         document.getElementById("rlTrainBtn").classList.remove("training");
       },
       log: UI.logEntry,
       showToast: UI.showToast,
-      drawGrid: draw,
-      triggerGlitch: UI.triggerGlitch
+      config: config
     }
   );
+  
+  const trainBtn = document.getElementById("rlTrainBtn");
+  if (trainBtn) {
+    trainBtn.textContent = "⏹ STOP TRAINING";
+    trainBtn.classList.add("training");
+  }
 }
 
 function handleRLPolicy() {
@@ -750,14 +793,77 @@ function handleRLPolicy() {
       stopAgentAnimation: Grid.stopAgentAnimation,
       startAgentAnimation: Grid.startAgentAnimation,
       resetPath: resetPath,
-      updateStats: (qSize, pLen, openLen, cost) => {
-         document.getElementById("statNodes").textContent = qSize;
-         document.getElementById("statPath").textContent = pLen;
-         document.getElementById("statOpen").textContent = openLen;
-         document.getElementById("statCost").textContent = cost;
+      updateStats: (nodes, pathLen, open, cost) => {
+        UI.updateStats(nodes, pathLen, open, cost);
       }
     }
   );
 }
+
+// ═══════════════════════════════════════════════════════
+// GLOBAL EXPOSURE (for legacy HTML compatibility)
+// ═══════════════════════════════════════════════════════
+window.togglePlayPause = togglePlayPause;
+window.stepSearch = stepSearch;
+window.clearAll = clearAll;
+window.resetPath = resetPath;
+window.updateSpeed = updateSpeed;
+window.updateWeight = updateWeight;
+window.updateGridSize = updateGridSize;
+window.applyPreset = applyPreset;
+window.changeAlgorithm = (algo) => changeAlgorithm(algo);
+window.setTool = (tool) => setTool(tool);
+window.exportStatsCSV = exportStatsCSV;
+window.exportGridJSON = exportGridJSON;
+window.exportLog = exportLog;
+window.toggleFullscreen = () => UI.toggleFullscreen(() => Grid.resizeCanvas(draw));
+window.toggleSidebar = () => UI.toggleSidebar(() => Grid.resizeCanvas(draw));
+window.toggleRightPanel = () => UI.toggleRightPanel(() => Grid.resizeCanvas(draw));
+window.toggleTheme = () => UI.toggleTheme(draw);
+window.clearLog = UI.clearLog;
+window.toggleAutoScroll = UI.toggleAutoScroll;
+window.jumpToBottom = UI.jumpToBottom;
+window.stepBackward = () => History.stepBackward((snap) => { Grid.setGrid(snap.grid.map(r => [...r])); draw(); });
+window.stepForward = () => History.stepForward((snap) => { Grid.setGrid(snap.grid.map(r => [...r])); draw(); });
+
+window.openCompare = UI.openCompare;
+window.closeCompare = UI.closeCompare;
+window.showShortcuts = UI.showShortcuts;
+window.dismissOnboarding = UI.dismissOnboarding;
+window.loadMaze = (type) => {
+  Maze.loadMaze(type, Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, Grid.terrainGrid, UI.logEntry);
+  resetPath(true);
+  draw();
+};
+window.generateRecursive = () => {
+  Maze.generateRecursive(Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, UI.logEntry);
+  resetPath(true);
+  draw();
+};
+window.generatePerlinTerrain = () => {
+  Maze.generatePerlinTerrain(Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, Grid.terrainGrid, UI.logEntry);
+  resetPath(true);
+  draw();
+};
+window.setHeuristic = (h) => {
+  UI.setHeuristicUI(h);
+  resetPath(true);
+};
+window.toggleRLHeatmap = () => {
+  QLearning.setHeatmap(document.getElementById("rlHeatmapToggle").checked);
+  draw();
+};
+window.toggleRLArrows = () => {
+  QLearning.setArrows(document.getElementById("rlArrowsToggle").checked);
+  draw();
+};
+window.handleRLTrain = handleRLTrain;
+window.handleRLPolicy = handleRLPolicy;
+window.handleRLReset = () => {
+  QLearning.resetRLAgent();
+  UI.logEntry("info", "🧠 RL Agent reset");
+  draw();
+};
+window.drawGrid = () => draw();
 
 init();

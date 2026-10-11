@@ -1,0 +1,19 @@
+{
+  "name": "metromind-ai-modular",
+  "version": "11.0.0",
+  "description": "MetroMind AI — Advanced Pathfinding & RL Simulator (Modular Edition)",
+  "main": "js/main.js",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx serve .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "pathfinding",
+    "ai",
+    "reinforcement-learning",
+    "modular"
+  ],
+  "author": "",
+  "license": "MIT"
+}

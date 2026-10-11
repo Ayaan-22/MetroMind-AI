@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="MetroMind AI — Advanced Pathfinding & RL Simulator v11 Modular" />
+    <title>MetroMind AI — v11 Modular</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <canvas id="bgCanvas" aria-hidden="true"></canvas>
+    
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      <div class="toast-inner">
+        <span class="toast-icon" id="toastIcon">ℹ</span>
+        <span class="toast-msg" id="toastMsg"></span>
+      </div>
+      <div class="toast-bar" id="toastBar"></div>
+    </div>
+
+    <!-- ONBOARDING OVERLAY -->
+    <div class="onboarding-overlay" id="onboardingOverlay" role="dialog" aria-modal="true" aria-label="Welcome to MetroMind AI">
+      <div class="onboarding-box">
+        <div class="onboarding-logo">🏙</div>
+        <div class="onboarding-title">MetroMind AI</div>
+        <div class="onboarding-sub">Advanced Pathfinding &amp; RL Simulator · v11</div>
+        <div class="onboarding-steps">
+          <div class="ob-step">
+            <div class="ob-num">1</div>
+            <div class="ob-text">
+              <strong>Draw Your City</strong>
+              <span>Click or drag on the grid to place walls. Paint terrain types to change movement costs.</span>
+              <div class="ob-keys"><span class="ob-key">1</span> Wall <span class="ob-key">5</span> Hwy <span class="ob-key">6</span> Traffic <span class="ob-key">7</span> Mud <span class="ob-key">4</span> Erase</div>
+            </div>
+          </div>
+          <div class="ob-step">
+            <div class="ob-num">2</div>
+            <div class="ob-text">
+              <strong>Place Start &amp; Goal</strong>
+              <span>Select the Start or Goal tool then click any free cell on the grid to place it.</span>
+              <div class="ob-keys"><span class="ob-key">2</span> Start &nbsp; <span class="ob-key">3</span> Goal</div>
+            </div>
+          </div>
+          <div class="ob-step">
+            <div class="ob-num">3</div>
+            <div class="ob-text">
+              <strong>Find a Path</strong>
+              <span>Choose an algorithm in the <strong style="color: var(--accent2)">Algo</strong> tab, then press Find Path — or compare all 8 at once.</span>
+              <div class="ob-keys"><span class="ob-key">Space</span> Run &nbsp; <span class="ob-key">X</span> Compare All</div>
+            </div>
+          </div>
+        </div>
+        <button class="onboarding-start" id="btnOnboardingStart">▶ START EXPLORING</button>
+        <div class="ob-skip" id="btnOnboardingSkip">Don't show again</div>
+      </div>
+    </div>
+
+    <!-- COMPARE OVERLAY -->
+    <div class="compare-overlay" id="compareOverlay" role="dialog" aria-modal="true" aria-label="Algorithm Comparison">
+      <div class="compare-header">
+        <button class="compare-back" id="btnCompareBack" aria-label="Close comparison">← Back to Editor</button>
+        <div class="compare-title">⚡ Algorithm Comparison</div>
+        <div class="compare-progress" id="compareProgress">Initializing…</div>
+      </div>
+      <div class="compare-grid" id="compareGrid"></div>
+      <div id="compareBarChart" style="display: none"></div>
+    </div>
+
+    <!-- SHORTCUTS -->
+    <div class="shortcuts-overlay" id="shortcutsOverlay" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
+      <div class="shortcuts-box">
+        <div class="shortcuts-title">⌨ Keyboard Shortcuts</div>
+        <div class="shortcut-row"><span>Toggle sidebar</span><kbd>Tab</kbd></div>
+        <div class="shortcut-row"><span>Play / Pause</span><kbd>Space</kbd></div>
+        <div class="shortcut-row"><span>Step once</span><kbd>S</kbd></div>
+        <div class="shortcut-row"><span>Step backward</span><kbd>B</kbd></div>
+        <div class="shortcut-row"><span>Step forward</span><kbd>F</kbd></div>
+        <div class="shortcut-row"><span>Reset path</span><kbd>R</kbd></div>
+        <div class="shortcut-row"><span>Clear all</span><kbd>C</kbd></div>
+        <div class="shortcut-row">
+          <span>Wall / Start / Goal / Erase</span>
+          <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd>
+        </div>
+        <div class="shortcut-row">
+          <span>Highway / Traffic / Mud</span>
+          <kbd>5</kbd><kbd>6</kbd><kbd>7</kbd>
+        </div>
+        <div class="shortcut-row"><span>Fullscreen</span><kbd>G</kbd></div>
+        <div class="shortcut-row"><span>This panel</span><kbd>?</kbd></div>
+        <div class="shortcut-row"><span>Close overlays</span><kbd>Esc</kbd></div>
+      </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header" role="banner">
+      <div class="logo-wrap">
+        <button class="icon-btn" id="sidebarToggleBtn" title="Toggle sidebar (Tab)" aria-label="Toggle sidebar">☰</button>
+        <div class="logo" aria-hidden="true">🏙</div>
+        <div class="title-block">
+          <div class="app-title">MetroMind AI</div>
+          <div class="app-sub">AI Pathfinding Visualization v11</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="icon-btn" id="btnOpenCompare" title="Compare algorithms (X)" aria-label="Compare algorithms">⚡</button>
+        <button class="icon-btn" id="btnShowShortcuts" title="Keyboard shortcuts (?)" aria-label="Show shortcuts">⌨</button>
+        <button class="icon-btn" id="rpToggleBtn" title="Toggle log panel" aria-label="Toggle log panel">📋</button>
+        <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">🌙</button>
+        <span class="hbadge" id="algoBadge" aria-live="polite">A* Search</span>
+        <span class="hbadge blue" id="heurBadge" aria-live="polite">Manhattan</span>
+      </div>
+    </header>
+
+    <!-- MAIN -->
+    <main class="main" id="mainArea" role="main">
+      <div class="sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+
+      <!-- SIDEBAR -->
+      <aside class="sidebar" id="sidebar" role="complementary" aria-label="Controls">
+        <nav class="sb-tabs" role="tablist" aria-label="Control panels">
+          <button class="sb-tab active" id="tbtn-tools" role="tab" aria-selected="true" aria-controls="tab-tools">Tools</button>
+          <button class="sb-tab" id="tbtn-algo" role="tab" aria-selected="false" aria-controls="tab-algo">Algo</button>
+          <button class="sb-tab" id="tbtn-rl" role="tab" aria-selected="false" aria-controls="tab-rl">RL</button>
+          <button class="sb-tab" id="tbtn-stats" role="tab" aria-selected="false" aria-controls="tab-stats">Stats</button>
+        </nav>
+
+        <!-- TAB: Tools -->
+        <div class="sb-panel" id="tab-tools" role="tabpanel" aria-labelledby="tbtn-tools">
+          <div class="sb-section" id="sec-controls">
+            <div class="sb-label sec-label">Controls</div>
+            <div style="display: flex; flex-direction: column; gap: 7px">
+              <button class="btn primary" id="playBtn" aria-label="Find path or pause">▶ FIND PATH</button>
+              <div class="btn-row">
+                <button class="btn" id="stepBtn" disabled aria-label="Step once">▷ Step</button>
+                <button class="btn danger" id="btnClearAll" aria-label="Clear grid">✕ Clear</button>
+              </div>
+              <button class="btn" id="btnResetPath" aria-label="Reset path">↺ Reset Path</button>
+              <div class="history-bar">
+                <button class="btn" id="btnBack" disabled title="Step Backward (B)" aria-label="History back">◀ Back</button>
+                <span id="historyPos">— / —</span>
+                <button class="btn" id="btnFwd" disabled title="Step Forward (F)" aria-label="History forward">Fwd ▶</button>
+              </div>
+            </div>
+          </div>
+          <div class="sb-section" id="sec-speed">
+            <div class="sb-label sec-label">Speed</div>
+            <div class="slider-row">
+              <span>Slow</span>
+              <input type="range" id="speedSlider" min="1" max="100" value="50" aria-label="Animation speed" />
+              <span class="slider-val" id="speedLabel">60ms</span>
+            </div>
+          </div>
+          <div class="sb-section" id="sec-pathopts">
+            <div class="sb-label sec-label">Path Options</div>
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <div class="slider-row">
+                <span title="Heuristic weight — higher = faster but less optimal">Weight</span>
+                <input type="range" id="weightSlider" min="0" max="3" step="0.1" value="1" aria-label="Heuristic weight" />
+                <span class="slider-val" id="weightLabel">1.0×</span>
+              </div>
+              <label class="check-label"><input type="checkbox" id="allowDiagonals" /> 8-Way Diagonals</label>
+              <label class="check-label"><input type="checkbox" id="showCost" checked /> Show f-cost labels</label>
+            </div>
+          </div>
+          <div class="sb-section" id="sec-gridsize">
+            <div class="sb-label sec-label">Grid Size</div>
+            <div class="grid-size-inputs">
+              <input type="number" id="mazeCols" value="50" min="10" max="100" aria-label="Columns" />
+              <span>×</span>
+              <input type="number" id="mazeRows" value="30" min="10" max="100" aria-label="Rows" />
+            </div>
+            <div class="grid-presets">
+              <button class="maze-btn" data-preset="20,15">20×15</button>
+              <button class="maze-btn" data-preset="35,22">35×22</button>
+              <button class="maze-btn" data-preset="50,30">50×30</button>
+              <button class="maze-btn" data-preset="60,40">60×40</button>
+              <button class="maze-btn" data-preset="10,10">10×10</button>
+            </div>
+          </div>
+          <div class="sb-section" id="sec-mazes">
+            <div class="sb-label sec-label">Maze Templates</div>
+            <div class="maze-grid">
+              <button class="maze-btn" data-type="empty">Empty</button>
+              <button class="maze-btn" data-type="maze1">Corridor</button>
+              <button class="maze-btn" data-type="spiral">Spiral</button>
+              <button class="maze-btn" data-type="rooms">Rooms</button>
+              <button class="maze-btn" data-type="cross">Cross</button>
+              <button class="maze-btn" data-type="random">Random</button>
+              <button class="maze-btn" data-type="snake">Snake</button>
+              <button class="maze-btn" data-type="grid2">Grid</button>
+              <button class="maze-btn" data-type="recursive">Recursive</button>
+              <button class="maze-btn" data-type="perlin" style="border-color: rgba(0, 220, 255, 0.3); color: rgba(0, 220, 255, 0.75);">🗺 Perlin</button>
+            </div>
+          </div>
+          <div class="sb-section" id="sec-export">
+            <div class="sb-label sec-label">Export</div>
+            <div style="display: flex; flex-direction: column; gap: 5px">
+              <button class="btn" id="exportCSV">📊 Export Stats CSV</button>
+              <button class="btn" id="exportJSON">🗂 Export Grid JSON</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Algo -->
+        <div class="sb-panel" id="tab-algo" role="tabpanel" aria-labelledby="tbtn-algo" hidden>
+          <div class="sb-section" id="sec-heuristic">
+            <div class="sb-label sec-label">Heuristic</div>
+            <div class="heur-grid">
+              <button class="heur-btn active" id="heur-manhattan" data-heur="manhattan">Manhattan</button>
+              <button class="heur-btn" id="heur-euclidean" data-heur="euclidean">Euclidean</button>
+              <button class="heur-btn" id="heur-chebyshev" data-heur="chebyshev">Chebyshev</button>
+              <button class="heur-btn" id="heur-octile" data-heur="octile">Octile</button>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--tx3); margin-top: 5px;" id="heurFormula">|Δr|+|Δc|</div>
+          </div>
+          <div class="sb-section" id="sec-algo">
+            <div class="sb-label sec-label">Algorithm</div>
+            <div class="algo-grid">
+              <button class="algo-btn active" id="btn-algo-astar" data-algo="astar">A* Search</button>
+              <button class="algo-btn" id="btn-algo-bidirectional" data-algo="bidirectional">Bidir. A*</button>
+              <button class="algo-btn" id="btn-algo-dijkstra" data-algo="dijkstra">Dijkstra's</button>
+              <button class="algo-btn" id="btn-algo-greedy" data-algo="greedy">Greedy BFS</button>
+              <button class="algo-btn" id="btn-algo-bfs" data-algo="bfs">Breadth-First</button>
+              <button class="algo-btn" id="btn-algo-dfs" data-algo="dfs">Depth-First</button>
+              <button class="algo-btn" id="btn-algo-jps" data-algo="jps">JPS ⚡</button>
+              <button class="algo-btn" id="btn-algo-thetastar" data-algo="thetastar">Theta* ∠</button>
+            </div>
+          </div>
+          <div class="sb-section">
+            <div class="sb-label">Visualizer</div>
+            <div class="algo-portrait-wrap">
+              <canvas id="algoPortrait"></canvas>
+              <div class="algo-portrait-label" id="portraitLabel">VISUALIZER</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: RL -->
+        <div class="sb-panel" id="tab-rl" role="tabpanel" aria-labelledby="tbtn-rl" hidden>
+          <div class="sb-section" id="sec-rl">
+            <div class="sb-label sec-label">Q-Learning Agent</div>
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <button class="btn rl-btn primary" id="rlTrainBtn">🧠 TRAIN AGENT</button>
+              <div class="btn-row">
+                <button class="btn rl-btn" id="rlPolicyBtn">▶ Run Policy</button>
+                <button class="btn rl-btn" id="rlResetBtn" style="border-color: rgba(255, 77, 109, 0.3); color: var(--accent3);">↺ Reset</button>
+              </div>
+              <div class="rl-progress"><div class="rl-progress-fill" id="rlProgressFill" style="width: 0%"></div></div>
+            </div>
+          </div>
+          <div class="sb-section">
+            <div class="sb-label">Training Stats</div>
+            <div class="rl-stat-row"><span>Episode</span><span class="rl-stat-val" id="rlEpisodeCount">0</span></div>
+            <div class="rl-stat-row"><span>Epsilon (ε)</span><span class="rl-stat-val" id="rlEpsilonVal">1.000</span></div>
+            <div class="rl-epsilon-bar"><div class="rl-epsilon-fill" id="rlEpsilonFill" style="width: 100%"></div></div>
+            <div class="rl-stat-row" style="margin-top: 5px"><span>Best Reward</span><span class="rl-stat-val" id="rlBestRewardVal">—</span></div>
+            <div class="rl-stat-row"><span>Avg (last 50)</span><span class="rl-stat-val" id="rlAvgRewardVal">—</span></div>
+            <div class="rl-stat-row"><span>Best Path</span><span class="rl-stat-val" id="rlBestPathLen">—</span></div>
+            <div class="rl-stat-row"><span>Q-table size</span><span class="rl-stat-val" id="rlQTableSize">0</span></div>
+            <div class="rl-convergence" aria-label="Reward convergence chart">
+              <canvas id="rlConvergenceChart"></canvas>
+              <div class="rl-conv-label">REWARD / EPISODE</div>
+            </div>
+          </div>
+          <div class="sb-section" id="sec-hyperparams">
+            <div class="sb-label sec-label">Hyperparameters</div>
+            <div style="display: flex; flex-direction: column; gap: 9px">
+              <div>
+                <div class="rl-slider-label"><span>α Learning Rate</span><span class="rl-slider-val" id="rlAlphaVal">0.1</span></div>
+                <input type="range" id="rlAlpha" min="0.01" max="0.5" step="0.01" value="0.1" />
+              </div>
+              <div>
+                <div class="rl-slider-label"><span>γ Discount</span><span class="rl-slider-val" id="rlGammaVal">0.95</span></div>
+                <input type="range" id="rlGamma" min="0.5" max="0.99" step="0.01" value="0.95" />
+              </div>
+              <div>
+                <div class="rl-slider-label"><span>ε Decay Rate</span><span class="rl-slider-val" id="rlDecayVal">0.997</span></div>
+                <input type="range" id="rlEpsilonDecay" min="0.990" max="0.999" step="0.001" value="0.997" />
+              </div>
+              <div>
+                <div class="rl-slider-label"><span>Episodes</span><span class="rl-slider-val" id="rlMaxEpVal">2000</span></div>
+                <input type="range" id="rlMaxEpisodes" min="100" max="5000" step="100" value="2000" />
+              </div>
+              <div>
+                <div class="rl-slider-label"><span>Steps/ep</span><span class="rl-slider-val" id="rlMaxStepsVal">1000</span></div>
+                <input type="range" id="rlMaxSteps" min="100" max="2000" step="50" value="1000" />
+              </div>
+              <div>
+                <div class="rl-slider-label"><span>Batch Size</span><span class="rl-slider-val" id="rlBatchVal">20</span></div>
+                <input type="range" id="rlBatchSize" min="1" max="50" step="1" value="20" />
+              </div>
+            </div>
+          </div>
+          <div class="sb-section">
+            <div class="sb-label">Visualization</div>
+            <div style="display: flex; flex-direction: column; gap: 7px">
+              <label class="check-label"><input type="checkbox" id="rlHeatmapToggle" /> Q-Value Heatmap</label>
+              <label class="check-label"><input type="checkbox" id="rlArrowsToggle" /> Policy Arrows</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Stats -->
+        <div class="sb-panel" id="tab-stats" role="tabpanel" aria-labelledby="tbtn-stats" hidden>
+          <div class="sb-section" id="sec-terrain">
+            <div class="sb-label sec-label">Terrain Legend</div>
+            <div class="terrain-legend">
+              <div class="terrain-item">
+                <div class="terrain-swatch" style="background: #1a3a50; border-color: rgba(100, 160, 200, 0.3);"></div>
+                <div style="flex: 1"><div style="font-size: 11px; color: var(--tx1)">Wall</div><div class="tw-badge" style="margin-top: 2px">blocked</div></div>
+              </div>
+              <div class="terrain-item">
+                <div class="terrain-swatch" style="background: rgba(0, 220, 255, 0.3); border-color: rgba(0, 220, 255, 0.6);"></div>
+                <div style="flex: 1"><div style="font-size: 11px; color: var(--tx1)">Highway</div><div class="tw-badge" style="margin-top: 2px; color: rgba(0, 220, 255, 0.9); border-color: rgba(0, 220, 255, 0.4); background: rgba(0, 220, 255, 0.1);">0.5×</div></div>
+              </div>
+              <div class="terrain-item">
+                <div class="terrain-swatch" style="background: rgba(255, 140, 0, 0.3); border-color: rgba(255, 140, 0, 0.6);"></div>
+                <div style="flex: 1"><div style="font-size: 11px; color: var(--tx1)">Traffic</div><div class="tw-badge" style="margin-top: 2px; color: rgba(255, 140, 0, 0.9); border-color: rgba(255, 140, 0, 0.4); background: rgba(255, 140, 0, 0.1);">3×</div></div>
+              </div>
+              <div class="terrain-item">
+                <div class="terrain-swatch" style="background: rgba(120, 72, 30, 0.4); border-color: rgba(140, 90, 40, 0.7);"></div>
+                <div style="flex: 1"><div style="font-size: 11px; color: var(--tx1)">Mud</div><div class="tw-badge" style="margin-top: 2px; color: rgba(180, 120, 60, 0.9); border-color: rgba(140, 90, 40, 0.4); background: rgba(120, 72, 30, 0.15);">10×</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="sb-section" id="sec-stats">
+            <div class="sb-label sec-label">Statistics</div>
+            <div class="progress-ring-wrap">
+              <div class="progress-ring-container">
+                <svg class="progress-ring" width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
+                  <circle class="progress-ring-track" cx="22" cy="22" r="18" />
+                  <circle class="progress-ring-fill" id="progressRingFill" cx="22" cy="22" r="18" />
+                </svg>
+                <div class="progress-ring-label" id="progressLabel">0%</div>
+              </div>
+              <div class="progress-status"><div id="progressStatus">Ready</div><div class="progress-sub">Search coverage</div></div>
+            </div>
+            <div class="stats">
+              <div class="stat-card" id="cardNodes"><div class="stat-val" id="statNodes">0</div><div class="stat-lbl">Explored</div><canvas class="stat-spark" id="sparkNodes" aria-hidden="true"></canvas></div>
+              <div class="stat-card" id="cardPath"><div class="stat-val" id="statPath">—</div><div class="stat-lbl">Path Len</div><canvas class="stat-spark" id="sparkPath" aria-hidden="true"></canvas></div>
+              <div class="stat-card" id="cardOpen"><div class="stat-val" id="statOpen">0</div><div class="stat-lbl">Open List</div><canvas class="stat-spark" id="sparkOpen" aria-hidden="true"></canvas></div>
+              <div class="stat-card" id="cardCost"><div class="stat-val" id="statCost">—</div><div class="stat-lbl">Cost</div><canvas class="stat-spark" id="sparkCost" aria-hidden="true"></canvas></div>
+            </div>
+            <div class="mini-chart"><canvas id="effChart"></canvas></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- CANVAS WRAP -->
+      <div class="canvas-wrap">
+        <div class="sidebar-toggle" id="sidebarTab" title="Toggle sidebar (Tab)" role="button" tabindex="0">‹</div>
+        <div class="rp-toggle" id="rpToggle" title="Toggle log panel" role="button" tabindex="0">›</div>
+        <div class="canvas-toolbar" id="canvasToolbar" role="toolbar" aria-label="Drawing tools">
+          <span class="toolbar-label">Tool:</span>
+          <button class="tool-btn active" id="toolWall" title="Draw walls (1)" aria-pressed="true">🧱 Wall</button>
+          <button class="tool-btn" id="toolStart" title="Place start node (2)" aria-pressed="false">🟢 Start</button>
+          <button class="tool-btn" id="toolGoal" title="Place goal node (3)" aria-pressed="false">🔴 Goal</button>
+          <button class="tool-btn" id="toolErase" title="Erase cells (4)" aria-pressed="false">✏ Erase</button>
+          <div class="toolbar-sep" role="separator"></div>
+          <button class="tool-btn terrain-highway" id="toolHighway" title="Highway — 0.5× cost (5)" aria-pressed="false">🛣 Hwy</button>
+          <button class="tool-btn terrain-traffic" id="toolTraffic" title="Heavy Traffic — 3× cost (6)" aria-pressed="false">🚦 Traffic</button>
+          <button class="tool-btn terrain-mud" id="toolMud" title="Mud / Rough terrain — 10× cost (7)" aria-pressed="false">🌿 Mud</button>
+          <div class="toolbar-sep" role="separator"></div>
+          <button class="tool-btn" id="btnCompareAll" title="Compare all algorithms (X)">⚡ Compare All</button>
+        </div>
+        <div class="grid-container">
+          <canvas id="grid" role="img" aria-label="Pathfinding grid"></canvas>
+          <canvas id="rippleCanvas" aria-hidden="true"></canvas>
+        </div>
+        <div class="statusbar" role="status" aria-live="polite">
+          <div class="status-dot" id="statusDot" aria-hidden="true"></div>
+          <span id="statusText">Ready — draw walls then click ▶ FIND PATH</span>
+          <span id="coordDisplay"></span>
+        </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <aside class="right-panel" id="rightPanel" role="complementary" aria-label="Algorithm log">
+        <div class="rp-header">
+          <div class="rp-title"><span>Algorithm Log</span><span id="stepCounter">step 0</span></div>
+          <div class="log-controls">
+            <button class="log-ctrl-btn active" id="btnAutoScroll">⬇ Auto</button>
+            <button class="log-ctrl-btn" id="btnClearLog">Clear</button>
+            <button class="log-ctrl-btn" id="btnExportLog">Export</button>
+          </div>
+        </div>
+        <div class="log-wrap">
+          <div class="log" id="algoLog" role="log" aria-live="polite"></div>
+          <div class="scroll-fab" id="scrollFab" role="button" tabindex="0">↓</div>
+        </div>
+        <div class="rp-bottom">
+          <div class="algo-title">Open List — Top Candidates</div>
+          <div class="mini-list"><div id="openListItems" style="color: var(--tx3)">—</div></div>
+          <div class="algo-title">Closed List</div>
+          <div class="mini-list"><div id="closedCount" style="color: var(--tx3)">0 nodes</div></div>
+        </div>
+      </aside>
+    </main>
+
+    <div id="fsHUD" class="fs-hud">
+      <div class="hud-item"><span class="hud-lbl">Explored</span><span class="hud-val" id="hudNodes">0</span></div>
+      <div class="hud-item"><span class="hud-lbl">Path</span><span class="hud-val" id="hudPath">—</span></div>
+      <div class="hud-item"><span class="hud-lbl">Cost</span><span class="hud-val" id="hudCost">—</span></div>
+      <div class="hud-sep"></div>
+      <button id="btnExitFS">✕ EXIT</button>
+    </div>
+    <button id="fsBtn" title="Full-screen mode (G)">⛶</button>
+
+    <div id="dragGhost"></div>
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

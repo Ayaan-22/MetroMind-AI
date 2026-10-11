@@ -1,6 +1,6 @@
 import { WALL, EMPTY, START, GOAL, HIGHWAY, TRAFFIC, MUD } from './config.js';
 
-export function loadMaze(type, ROWS, COLS, grid, startNode, goalNode, terrainGrid) {
+export function loadMaze(type, ROWS, COLS, grid, startNode, goalNode, terrainGrid, log) {
   if (type === "maze1") {
     if (ROWS < 15 || COLS < 22) return "Corridor template needs min 22x15";
     for (let c = 5; c < COLS - 4; c++) grid[4][c] = WALL;
@@ -80,10 +80,11 @@ export function loadMaze(type, ROWS, COLS, grid, startNode, goalNode, terrainGri
   }
   grid[startNode.r][startNode.c] = START;
   grid[goalNode.r][goalNode.c] = GOAL;
+  if (log) log("info", `Template "${type}" loaded`);
   return null; 
 }
 
-export function generateRecursive(ROWS, COLS, grid, startNode, goalNode) {
+export function generateRecursive(ROWS, COLS, grid, startNode, goalNode, log) {
   for (let r = 0; r < ROWS; r++)
     for (let c = 0; c < COLS; c++) grid[r][c] = WALL;
   
@@ -104,9 +105,9 @@ export function generateRecursive(ROWS, COLS, grid, startNode, goalNode) {
   carve(sr, sc);
   grid[startNode.r][startNode.c] = START;
   grid[goalNode.r][goalNode.c] = GOAL;
+  if (log) log("info", "Recursive maze generated");
 }
 
-// Noise helpers 
 function lerp(a, b, t) { return a + t * (b - a); }
 function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
 function grad(hash, x, y) {
@@ -115,7 +116,7 @@ function grad(hash, x, y) {
   return (h & 1 ? -u : u) + (h & 2 ? -v : v);
 }
 
-export function generatePerlinTerrain(ROWS, COLS, grid, startNode, goalNode, terrainGrid) {
+export function generatePerlinTerrain(ROWS, COLS, grid, startNode, goalNode, terrainGrid, log) {
   const perm = Array.from({ length: 512 }, () => Math.floor(Math.random() * 256));
   const wallPerm = Array.from({ length: 512 }, () => Math.floor(Math.random() * 256));
 
@@ -173,4 +174,5 @@ export function generatePerlinTerrain(ROWS, COLS, grid, startNode, goalNode, ter
           grid[nr][nc] = EMPTY;
       }
   });
+  if (log) log("info", "🗺 Perlin terrain generated — try A* vs Dijkstra!");
 }
