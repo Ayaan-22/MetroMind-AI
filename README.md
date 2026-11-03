@@ -4,6 +4,8 @@
 
 **MetroMind AI** is a premium, high-performance simulation platform designed to explore and visualize the intersection of classical pathfinding algorithms and modern Reinforcement Learning. Built with a sleek cyberpunk aesthetic, it provides an interactive playground for urban routing optimization, weighted terrain analysis, and autonomous agent training.
 
+The standalone and modular editions have the same interface and features, including D* Lite dynamic replanning. Open `MetroMind_AI_v11.html` directly for the single-file edition, or serve `modular_version/` to use the ES modules. The standalone file is generated from the modular sources; see the [synchronization instructions](modular_version/README.md#keep-both-editions-synchronized) before making changes.
+
 ---
 
 ## Table of Contents
@@ -27,8 +29,9 @@ MetroMind AI transforms traditional grid-search visualization into a comprehensi
 ## Key Features (v11.0)
 
 1. **Q-Learning Reinforcement Learning**: Train an autonomous agent to navigate complex grids. Featuring live Q-value heatmaps, policy arrow overlays, and reward convergence sparklines.
-2. **Algorithm Comparison Mode**: Run and compare 8 different algorithms simultaneously with real-time performance tracking and "Winner" badges for Speed and Optimality.
-3. **Advanced Pathfinding Suite**: Includes 8 state-of-the-art algorithms:
+2. **Algorithm Comparison Mode**: Compare 9 algorithms with performance tracking and "Winner" badges for Speed and Optimality.
+3. **Advanced Pathfinding Suite**: Includes 9 algorithms:
+    - **Dynamic**: D* Lite repairs the active route when walls or terrain change, with pause/resume and single-step controls.
     - **Optimized**: Jump Point Search (JPS) & Theta* (Any-Angle).
     - **Classical**: A*, Dijkstra, Bidirectional A*, BFS, DFS, Greedy BFS.
 4. **Weighted Urban Terrain**: Simulate realistic city conditions with **Highways (0.5x)**, **Heavy Traffic (3.0x)**, and **Mud (10.0x)**.

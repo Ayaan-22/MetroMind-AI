@@ -371,9 +371,10 @@ button:focus-visible {
     width: var(--sb-w) !important;
     transform: translateX(0);
     box-shadow: 4px 0 28px rgba(0, 0, 0, 0.5);
+    transition: transform var(--t-med) cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
   .sidebar.collapsed {
-    transform: translateX(calc(var(--sb-w) + 4px));
+    transform: translateX(-100%);
     opacity: 1;
     width: var(--sb-w) !important;
   }
@@ -381,9 +382,32 @@ button:focus-visible {
     display: block !important;
   }
   .right-panel {
-    display: none !important;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    width: var(--rp-w) !important;
+    transform: translateX(0);
+    box-shadow: -4px 0 28px rgba(0, 0, 0, 0.5);
+    transition: transform var(--t-med) cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border-left: 1px solid var(--br1);
+    opacity: 1 !important;
+    display: flex !important;
+  }
+  .right-panel.collapsed {
+    transform: translateX(100%);
+    width: var(--rp-w) !important;
+    opacity: 1 !important;
+  }
+  .rp-toggle,
+  #rpToggleBtn {
+    display: flex !important;
   }
 }
+
+
+
 .sidebar-backdrop {
   display: none;
   position: absolute;
@@ -748,6 +772,11 @@ input[type="range"]:focus-visible {
   color: var(--accent2);
   background: rgba(0, 184, 255, 0.12);
   font-weight: 600;
+}
+.heur-btn:disabled,
+#weightSlider:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 .maze-grid {
   display: grid;

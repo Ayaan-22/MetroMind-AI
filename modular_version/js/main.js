@@ -6,6 +6,8 @@ import * as Algorithms from './pathfinding/algorithms.js';
 import * as QLearning from './pathfinding/qlearning.js';
 import * as Maze from './maze.js';
 import * as History from './history.js';
+import * as Comparison from './comparison.js';
+import { startBackground } from './background.js';
 
 // ═══════════════════════════════════════════════════════
 // STATE
@@ -20,6 +22,7 @@ let animTimer = null;
 let lastSolutionPath = null;
 let stepCount = 0;
 let pathAnimInterval = null;
+let historyPreview = null;
 
 // ═══════════════════════════════════════════════════════
 // INITIALIZATION
@@ -29,10 +32,11 @@ function init() {
   Grid.initGrid();
   Grid.resizeCanvas(draw);
   Grid.rippleLoop();
+  startBackground();
   
   UI.triggerGlitch();
   UI.startPortrait(currentAlgorithm);
-  UI.showToast("🚀 MetroMind AI v11 Modular Loaded", "success");
+  UI.showToast("🚀 MetroMind AI v11 Loaded", "success");
   UI.logEntry("success", "System online. Neural grid initialized.");
   
   setupEventListeners();
@@ -43,10 +47,12 @@ function init() {
   updateWeight(heuristicWeight);
   changeAlgorithm(currentAlgorithm);
   setTool(currentTool);
+  UI.showOnboarding();
+  QLearning.updateRLStats();
 }
 
 function draw() {
-  Grid._drawGrid(searchState, lastSolutionPath, currentAlgorithm, allowDiagonals);
+  Grid._drawGrid(historyPreview ? null : searchState, historyPreview ? null : lastSolutionPath, historyPreview || Grid.grid);
   if (QLearning.rlAgent) {
     QLearning.drawRLOverlay(Grid.ctx, Grid.CELL, Grid.ROWS, Grid.COLS, Grid.grid, allowDiagonals);
   }
@@ -67,6 +73,7 @@ function startSearch() {
 
   stopAnim();
   resetPath(true);
+  document.getElementById('canvasEmptyState')?.classList.add('hidden');
   
   searchState = Algorithms.initSearch(
     currentAlgorithm,
@@ -96,45 +103,14 @@ function startSearch() {
   Grid.canvas.classList.add("running");
   
   const stepBtn = document.getElementById("stepBtn");
-  if (stepBtn) stepBtn.disabled = false;
+  if (stepBtn) stepBtn.disabled = currentAlgorithm === 'dstarlite';
   
-  const tickMs = Math.max(5, Config.MAX_DELAY - animSpeed);
-  animTimer = setInterval(() => {
-    if (!searchState || searchState.done) {
-      stopAnim();
-      onSearchComplete();
-      return;
-    }
-    const batchSize = Math.max(1, Math.floor(animSpeed / 10));
-    for (let i = 0; i < batchSize && searchState && !searchState.done; i++) {
-      Algorithms.searchStep(
-        searchState,
-        Grid.grid,
-        Grid.terrainGrid,
-        Grid.COLS,
-        Grid.ROWS,
-        allowDiagonals,
-        Grid.goalNode,
-        Grid.startNode,
-        heuristicWeight,
-        currentAlgorithm,
-        UI.logEntry,
-        UI.setStatus,
-        UI.showToast,
-        onSearchComplete
-      );
-      stepCount++;
-      const counterEl = document.getElementById("stepCounter");
-      if (counterEl) counterEl.textContent = "step " + stepCount;
-      if (stepCount % 5 === 0) History.snapshotHistory(searchState, Grid.grid);
-      updateStatsUI();
-    }
-    draw();
-  }, tickMs);
+  runAnimation();
 }
 
 function resetPath(silent = false) {
   stopAnim();
+  historyPreview = null;
   Grid.stopAgentAnimation();
   if (pathAnimInterval) clearInterval(pathAnimInterval);
   searchState = null;
@@ -170,6 +146,7 @@ function resetPath(silent = false) {
   Grid.canvas.classList.remove("running", "done");
   
   UI.updateStats(0, "—", 0, "—");
+  UI.updateListDisplays(null);
   draw();
 }
 
@@ -183,12 +160,14 @@ function clearAll() {
 }
 
 function togglePlayPause() {
+  leaveHistoryPreview();
   if (!searchState || searchState.done) {
     startSearch();
     return;
   }
   if (animTimer) {
     stopAnim();
+    if (searchState.algo === 'dstarlite') Grid.canvas.classList.remove('running');
     UI.setStatus("running", "Paused");
     const playBtn = document.getElementById("playBtn");
     if (playBtn) {
@@ -198,39 +177,8 @@ function togglePlayPause() {
     const stepBtn = document.getElementById("stepBtn");
     if (stepBtn) stepBtn.disabled = false;
   } else {
-    const tickMs = Math.max(5, Config.MAX_DELAY - animSpeed);
-    animTimer = setInterval(() => {
-      if (!searchState || searchState.done) {
-        stopAnim();
-        onSearchComplete();
-        return;
-      }
-      const batchSize = Math.max(1, Math.floor(animSpeed / 10));
-      for (let i = 0; i < batchSize && searchState && !searchState.done; i++) {
-        Algorithms.searchStep(
-          searchState,
-          Grid.grid,
-          Grid.terrainGrid,
-          Grid.COLS,
-          Grid.ROWS,
-          allowDiagonals,
-          Grid.goalNode,
-          Grid.startNode,
-          heuristicWeight,
-          currentAlgorithm,
-          UI.logEntry,
-          UI.setStatus,
-          UI.showToast,
-          onSearchComplete
-        );
-        stepCount++;
-        const counterEl = document.getElementById("stepCounter");
-        if (counterEl) counterEl.textContent = "step " + stepCount;
-        if (stepCount % 5 === 0) History.snapshotHistory(searchState, Grid.grid);
-        updateStatsUI();
-      }
-      draw();
-    }, tickMs);
+    runAnimation();
+    if (searchState.algo === 'dstarlite') Grid.canvas.classList.add('running');
     UI.setStatus("running", "Searching…");
     const playBtn = document.getElementById("playBtn");
     if (playBtn) {
@@ -242,7 +190,46 @@ function togglePlayPause() {
   }
 }
 
+function runAnimation() {
+  stopAnim();
+  window._setBgSearchActive?.(true);
+  const tickMs = Math.max(5, Config.MAX_DELAY - animSpeed);
+  animTimer = setInterval(() => {
+    if (!searchState || searchState.done) {
+      stopAnim();
+      onSearchComplete();
+      return;
+    }
+    const batchSize = Math.max(1, Math.floor(animSpeed / 10));
+    for (let i = 0; i < batchSize && searchState && !searchState.done; i++) {
+      Algorithms.searchStep(
+        searchState,
+        Grid.grid,
+        Grid.terrainGrid,
+        Grid.COLS,
+        Grid.ROWS,
+        allowDiagonals,
+        Grid.goalNode,
+        Grid.startNode,
+        heuristicWeight,
+        currentAlgorithm,
+        UI.logEntry,
+        UI.setStatus,
+        UI.showToast,
+        onSearchComplete
+      );
+      stepCount++;
+      const counterEl = document.getElementById("stepCounter");
+      if (counterEl) counterEl.textContent = "step " + stepCount;
+      if (stepCount % 5 === 0) History.snapshotHistory(searchState, Grid.grid);
+      updateStatsUI();
+    }
+    draw();
+  }, tickMs);
+}
+
 function stopAnim() {
+  window._setBgSearchActive?.(false);
   if (animTimer) {
     clearInterval(animTimer);
     animTimer = null;
@@ -250,10 +237,12 @@ function stopAnim() {
 }
 
 function stepSearch() {
+  leaveHistoryPreview();
   if (!searchState) {
     startSearch();
-    stopAnim(); 
-    return;
+    stopAnim();
+    if (currentAlgorithm !== 'dstarlite') return;
+    setReplanControls(false);
   }
   if (searchState.done) return;
 
@@ -303,22 +292,84 @@ function onSearchComplete() {
     UI.showToast(`✓ Path found: ${lastSolutionPath.length} steps`, "success");
     Grid.canvas.classList.add("done");
     Grid.startAgentAnimation(lastSolutionPath);
+    if (searchState.algo === 'dstarlite') {
+      UI.setStatus('done', 'D* Lite route active — edit walls or terrain to replan');
+    }
   } else {
     UI.setStatus("error", "No path found");
     UI.logEntry("error", "✕ No path possible!");
     UI.showToast("✕ No path possible!", "error");
+    if (searchState?.algo === 'dstarlite') {
+      UI.setStatus('error', 'No path — remove obstacles to replan');
+    }
+  }
+  if (searchState?.algo === 'dstarlite') {
+    Grid.canvas.classList.remove('running');
+    updateStatsUI();
   }
 }
 
 function updateStatsUI() {
   if (!searchState) return;
+  UI.updateListDisplays(searchState);
   const n = searchState.explored;
   const p = searchState.finalPath ? searchState.finalPath.length : "—";
   const o = searchState.openSet ? (searchState.openSet.size || 0) : 0;
   const c = searchState.solutionCost ? Math.round(searchState.solutionCost) : "—";
   
   UI.updateStats(n, p, o, c);
-  UI.updateProgressRing(n, Grid.ROWS * Grid.COLS * 0.7, "Searching…");
+  if (searchState.algo === 'dstarlite' && searchState.done) {
+    UI.updateProgressRing(searchState.finalPath ? 1 : 0, 1, searchState.finalPath ? 'Route active' : 'No path');
+  } else {
+    UI.updateProgressRing(n, Grid.ROWS * Grid.COLS * 0.7, "Searching…");
+  }
+}
+
+function leaveHistoryPreview() {
+  historyPreview = null;
+  History.setHistoryMode(false);
+}
+
+function setReplanControls(running) {
+  const play = document.getElementById('playBtn');
+  if (play) {
+    play.textContent = running ? '⏸ PAUSE' : '▶ RESUME';
+    play.classList.toggle('running', running);
+  }
+  const step = document.getElementById('stepBtn');
+  if (step) step.disabled = running;
+  Grid.canvas.classList.remove('done');
+  Grid.canvas.classList.toggle('running', running);
+}
+
+function replanChangedCell(r, c) {
+  if (searchState?.algo !== 'dstarlite') return;
+  const resume = !!animTimer || (searchState.done && !historyPreview);
+  leaveHistoryPreview();
+  Grid.stopAgentAnimation();
+  lastSolutionPath = null;
+  searchState.updateCells([{ r, c }]);
+  History.clearHistory();
+  setReplanControls(resume);
+  UI.setStatus('running', resume ? 'D* Lite replanning…' : 'D* Lite changes queued — paused');
+  UI.logEntry('info', `↻ D* Lite repair: cell (${r}, ${c}) changed`);
+  updateStatsUI();
+  // Keep a running timer's cadence while dragging across many cells.
+  if (resume && !animTimer) runAnimation();
+}
+
+function restoreSearchSnapshot(snap) {
+  if (searchState?.algo === 'dstarlite') {
+    stopAnim();
+    Grid.stopAgentAnimation();
+    historyPreview = snap.grid;
+    // History is a visual preview; g/rhs and the authoritative grid stay together.
+    if (!searchState.done) setReplanControls(false);
+  } else {
+    Grid.setGrid(snap.grid.map(r => [...r]));
+  }
+  draw();
+  UI.setStatus('running', `History: snapshot ${History.historyIdx + 1}`);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -333,7 +384,17 @@ function changeAlgorithm(algo) {
   UI.logEntry("info", `→ Switched to ${algo.toUpperCase()}`);
   
   const badge = document.getElementById("algoBadge");
-  if (badge) badge.textContent = algo.charAt(0).toUpperCase() + algo.slice(1);
+  if (badge) badge.textContent = algo === 'dstarlite' ? 'D* Lite' : algo.charAt(0).toUpperCase() + algo.slice(1);
+  UI.updateAlgorithmDetails(algo);
+  const dynamic = algo === 'dstarlite';
+  document.querySelectorAll('.heur-btn').forEach(b => { b.disabled = dynamic; });
+  const weight = document.getElementById('weightSlider');
+  if (weight) weight.disabled = dynamic;
+  const help = document.getElementById('dstarHelp');
+  if (help) help.hidden = !dynamic;
+  const heurBadge = document.getElementById('heurBadge');
+  const heurName = Heuristics.currentHeuristic;
+  if (heurBadge) heurBadge.textContent = dynamic ? 'Auto (D* Lite)' : heurName.charAt(0).toUpperCase() + heurName.slice(1);
   
   resetPath(true);
 }
@@ -354,6 +415,7 @@ function updateSpeed(val) {
   animSpeed = parseInt(val);
   const label = document.getElementById("speedLabel");
   if (label) label.textContent = Math.max(5, Config.MAX_DELAY - animSpeed) + "ms";
+  if (animTimer && searchState?.algo === 'dstarlite') runAnimation();
 }
 
 function updateWeight(val) {
@@ -369,6 +431,7 @@ function updateGridSize() {
   const cols = parseInt(document.getElementById("mazeCols").value);
   const rows = parseInt(document.getElementById("mazeRows").value);
   if (cols >= 10 && cols <= 100 && rows >= 10 && rows <= 100) {
+    resetPath(true);
     Grid.setGridDims(cols, rows);
     Grid.initGrid();
     Grid.resizeCanvas(draw);
@@ -383,6 +446,30 @@ function applyPreset(c, r) {
   if (cInput) cInput.value = c;
   if (rInput) rInput.value = r;
   updateGridSize();
+}
+
+function loadMaze(type) {
+  resetPath(true);
+  QLearning.stopRLTraining();
+  Grid.initGrid();
+  document.getElementById('canvasEmptyState')?.classList.add('hidden');
+  if (type === 'recursive') {
+    Maze.generateRecursive(Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, UI.logEntry);
+  } else if (type === 'perlin') {
+    Maze.generatePerlinTerrain(Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, Grid.terrainGrid, UI.logEntry);
+  } else {
+    const error = Maze.loadMaze(type, Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, Grid.terrainGrid, UI.logEntry);
+    if (error) UI.showToast(error, 'warn');
+  }
+  draw();
+}
+
+function openCompare() {
+  if (animTimer) togglePlayPause();
+  Comparison.openCompare({
+    grid: Grid.grid, terrain: Grid.terrainGrid, start: Grid.startNode, goal: Grid.goalNode,
+    allowDiagonals, weight: heuristicWeight,
+  });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -460,8 +547,11 @@ function setupEventListeners() {
   document.getElementById("btnOnboardingSkip")?.addEventListener("click", () => UI.dismissOnboarding(true));
   
   // Overlays
-  document.getElementById("btnOpenCompare")?.addEventListener("click", UI.openCompare);
-  document.getElementById("btnCompareBack")?.addEventListener("click", UI.closeCompare);
+  document.getElementById("btnOpenCompare")?.addEventListener("click", openCompare);
+  document.getElementById("btnCompareBack")?.addEventListener("click", Comparison.closeCompare);
+  document.getElementById('shortcutsOverlay')?.addEventListener('click', e => {
+    if (e.target === e.currentTarget) UI.hideShortcuts();
+  });
   document.getElementById("btnShowShortcuts")?.addEventListener("click", UI.showShortcuts);
   document.getElementById("btnExitFS")?.addEventListener("click", () => UI.toggleFullscreen(() => Grid.resizeCanvas(draw)));
   document.getElementById("fsBtn")?.addEventListener("click", () => UI.toggleFullscreen(() => Grid.resizeCanvas(draw)));
@@ -486,18 +576,10 @@ function setupEventListeners() {
 
   // History Controls
   document.getElementById("btnBack")?.addEventListener("click", () => {
-    History.stepBackward((snap) => {
-      Grid.setGrid(snap.grid.map(r => [...r]));
-      draw();
-      UI.setStatus("running", `History: snapshot ${History.historyIdx + 1}`);
-    });
+    History.stepBackward(restoreSearchSnapshot);
   });
   document.getElementById("btnFwd")?.addEventListener("click", () => {
-    History.stepForward((snap) => {
-      Grid.setGrid(snap.grid.map(r => [...r]));
-      draw();
-      UI.setStatus("running", `History: snapshot ${History.historyIdx + 1}`);
-    });
+    History.stepForward(restoreSearchSnapshot);
   });
 
   // Sliders
@@ -508,7 +590,7 @@ function setupEventListeners() {
   document.getElementById("allowDiagonals")?.addEventListener("change", e => {
     allowDiagonals = e.target.checked;
     const heurBadge = document.getElementById("heurBadge");
-    if (heurBadge) heurBadge.textContent = allowDiagonals ? "Euclidean" : "Manhattan";
+    if (heurBadge) heurBadge.textContent = currentAlgorithm === 'dstarlite' ? 'Auto (D* Lite)' : allowDiagonals ? "Euclidean" : "Manhattan";
     
     const jpsBtn = document.getElementById("btn-algo-jps");
     if (jpsBtn) {
@@ -539,17 +621,7 @@ function setupEventListeners() {
   // Maze Logic
   document.querySelectorAll(".maze-btn[data-type]").forEach(btn => {
     const type = btn.getAttribute("data-type");
-    btn.addEventListener("click", () => {
-      if (type === "recursive") {
-        Maze.generateRecursive(Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, UI.logEntry);
-      } else if (type === "perlin") {
-        Maze.generatePerlinTerrain(Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, Grid.terrainGrid, UI.logEntry);
-      } else {
-        Maze.loadMaze(type, Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, Grid.terrainGrid, UI.logEntry);
-      }
-      resetPath(true);
-      draw();
-    });
+    btn.addEventListener("click", () => loadMaze(type));
   });
 
   // Algorithm Buttons
@@ -577,7 +649,7 @@ function setupEventListeners() {
     document.getElementById(btnId)?.addEventListener("click", () => setTool(id));
   });
 
-  document.getElementById("btnCompareAll")?.addEventListener("click", UI.openCompare);
+  document.getElementById("btnCompareAll")?.addEventListener("click", openCompare);
 
   // Export Buttons
   document.getElementById("exportCSV")?.addEventListener("click", exportStatsCSV);
@@ -613,6 +685,19 @@ function setupEventListeners() {
   Grid.canvas.addEventListener("mousedown", handleMouseDown);
   window.addEventListener("mousemove", handleMouseMove);
   window.addEventListener("mouseup", handleMouseUp);
+  Grid.canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    handleMouseDown(e.touches[0]);
+  }, { passive: false });
+  Grid.canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    handleMouseMove(e.touches[0]);
+  }, { passive: false });
+  Grid.canvas.addEventListener('touchend', e => {
+    e.preventDefault();
+    handleMouseUp(e.changedTouches[0]);
+  }, { passive: false });
+  Grid.canvas.addEventListener('touchcancel', () => { Grid.setDrawing(false); Grid.hideGhost(); });
   window.addEventListener("resize", () => {
     Grid.resizeCanvas(draw);
     Grid.syncRippleCanvas();
@@ -628,6 +713,7 @@ function setupEventListeners() {
 function handleMouseDown(e) {
   const { r, c } = Grid.getCellFromEvent(e);
   if (r < 0 || r >= Grid.ROWS || c < 0 || c >= Grid.COLS) return;
+  document.getElementById('canvasEmptyState')?.classList.add('hidden');
   
   if (Grid.grid[r][c] === Config.START || Grid.grid[r][c] === Config.GOAL) {
     Grid.setDrawing(Grid.grid[r][c]); 
@@ -639,8 +725,10 @@ function handleMouseDown(e) {
 }
 
 function handleMouseMove(e) {
-  if (!Grid.isDrawing) return;
   const { r, c } = Grid.getCellFromEvent(e);
+  const coords = document.getElementById('coordDisplay');
+  if (coords) coords.textContent = r >= 0 && r < Grid.ROWS && c >= 0 && c < Grid.COLS ? `(${r},${c})` : '';
+  if (!Grid.isDrawing) return;
   
   if (Grid.isDrawing === Config.START || Grid.isDrawing === Config.GOAL) {
     Grid.dragGhost.style.left = e.clientX - 20 + "px";
@@ -654,6 +742,12 @@ function handleMouseUp(e) {
   if (Grid.isDrawing === Config.START || Grid.isDrawing === Config.GOAL) {
     const { r, c } = Grid.getCellFromEvent(e);
     if (r >= 0 && r < Grid.ROWS && c >= 0 && c < Grid.COLS) {
+      const other = Grid.isDrawing === Config.START ? Grid.goalNode : Grid.startNode;
+      if (currentAlgorithm === 'dstarlite' && r === other.r && c === other.c) {
+        Grid.setDrawing(false);
+        Grid.hideGhost();
+        return;
+      }
       if (Grid.grid[r][c] === Config.WALL) Grid.grid[r][c] = Config.EMPTY;
       if (Grid.isDrawing === Config.START) {
         Grid.grid[Grid.startNode.r][Grid.startNode.c] = Config.EMPTY;
@@ -664,6 +758,7 @@ function handleMouseUp(e) {
         Grid.updateGoalNode(r, c);
         Grid.grid[r][c] = Config.GOAL;
       }
+      resetPath(true);
     }
   }
   Grid.setDrawing(false);
@@ -673,6 +768,8 @@ function handleMouseUp(e) {
 
 function paintCell(r, c) {
   if (Grid.grid[r][c] === Config.START || Grid.grid[r][c] === Config.GOAL) return;
+  const wasWall = Grid.grid[r][c] === Config.WALL;
+  const oldTerrain = Grid.terrainGrid[r][c];
   
   if (currentTool === "wall") {
     Grid.grid[r][c] = Config.WALL;
@@ -698,6 +795,16 @@ function paintCell(r, c) {
     Grid.updateGoalNode(r, c);
     Grid.grid[r][c] = Config.GOAL;
   }
+
+  if (currentAlgorithm === 'dstarlite') {
+    if (currentTool === 'start' || currentTool === 'goal') {
+      resetPath(true);
+    } else if (wasWall !== (Grid.grid[r][c] === Config.WALL) || oldTerrain !== Grid.terrainGrid[r][c]) {
+      replanChangedCell(r, c);
+    }
+  } else if (searchState) {
+    resetPath(true);
+  }
   
   Grid.spawnRipple(c, r);
   draw();
@@ -716,7 +823,20 @@ function handleKeydown(e) {
   } else if (e.code === "KeyC") {
     clearAll();
   } else if (e.code === "KeyS") {
-    stepSearch();
+    if (!animTimer) stepSearch();
+  } else if (e.code === 'KeyB') {
+    History.stepBackward(restoreSearchSnapshot);
+  } else if (e.code === 'KeyF') {
+    History.stepForward(restoreSearchSnapshot);
+  } else if (e.code === 'KeyX') {
+    openCompare();
+  } else if (e.code === 'KeyG') {
+    UI.toggleFullscreen(() => Grid.resizeCanvas(draw));
+  } else if (e.key === '?') {
+    UI.showShortcuts();
+  } else if (e.code === 'Escape') {
+    UI.hideShortcuts();
+    Comparison.closeCompare();
   } else if (e.code === "Digit1") setTool("wall");
   else if (e.code === "Digit2") setTool("start");
   else if (e.code === "Digit3") setTool("goal");
@@ -734,6 +854,7 @@ function handleRLTrain() {
     QLearning.stopRLTraining();
     return;
   }
+  resetPath(true);
   const config = {
     alpha: parseFloat(document.getElementById("rlAlpha")?.value || 0.1),
     gamma: parseFloat(document.getElementById("rlGamma")?.value || 0.9),
@@ -754,6 +875,7 @@ function handleRLTrain() {
     Grid.COLS,
     {
       onStep: () => {
+        QLearning.updateRLStats();
         UI.updateSparklines(QLearning.rlEpisode, 0, QLearning.rlAgent.qTable.size, 0);
         draw();
       },
@@ -765,6 +887,7 @@ function handleRLTrain() {
       },
       log: UI.logEntry,
       showToast: UI.showToast,
+      drawGrid: draw,
       config: config
     }
   );
@@ -823,28 +946,16 @@ window.toggleTheme = () => UI.toggleTheme(draw);
 window.clearLog = UI.clearLog;
 window.toggleAutoScroll = UI.toggleAutoScroll;
 window.jumpToBottom = UI.jumpToBottom;
-window.stepBackward = () => History.stepBackward((snap) => { Grid.setGrid(snap.grid.map(r => [...r])); draw(); });
-window.stepForward = () => History.stepForward((snap) => { Grid.setGrid(snap.grid.map(r => [...r])); draw(); });
+window.stepBackward = () => History.stepBackward(restoreSearchSnapshot);
+window.stepForward = () => History.stepForward(restoreSearchSnapshot);
 
-window.openCompare = UI.openCompare;
-window.closeCompare = UI.closeCompare;
+window.openCompare = openCompare;
+window.closeCompare = Comparison.closeCompare;
 window.showShortcuts = UI.showShortcuts;
 window.dismissOnboarding = UI.dismissOnboarding;
-window.loadMaze = (type) => {
-  Maze.loadMaze(type, Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, Grid.terrainGrid, UI.logEntry);
-  resetPath(true);
-  draw();
-};
-window.generateRecursive = () => {
-  Maze.generateRecursive(Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, UI.logEntry);
-  resetPath(true);
-  draw();
-};
-window.generatePerlinTerrain = () => {
-  Maze.generatePerlinTerrain(Grid.ROWS, Grid.COLS, Grid.grid, Grid.startNode, Grid.goalNode, Grid.terrainGrid, UI.logEntry);
-  resetPath(true);
-  draw();
-};
+window.loadMaze = loadMaze;
+window.generateRecursive = () => loadMaze('recursive');
+window.generatePerlinTerrain = () => loadMaze('perlin');
 window.setHeuristic = (h) => {
   UI.setHeuristicUI(h);
   resetPath(true);

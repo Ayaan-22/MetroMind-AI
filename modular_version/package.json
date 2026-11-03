@@ -3,10 +3,13 @@
   "version": "11.0.0",
   "description": "MetroMind AI — Advanced Pathfinding & RL Simulator (Modular Edition)",
   "main": "js/main.js",
+  "type": "module",
   "scripts": {
+    "build": "node scripts/build-standalone.js",
+    "check:parity": "node scripts/build-standalone.js --check",
     "start": "python -m http.server 8000",
     "serve": "npx serve .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test"
   },
   "keywords": [
     "pathfinding",
@@ -15,5 +18,8 @@
     "modular"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
 }

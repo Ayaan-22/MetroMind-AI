@@ -178,7 +178,7 @@ export function runRLEpisode(agent, config, startNode, goalNode, grid, terrainGr
 }
 
 export function startRLTraining(startNode, goalNode, grid, terrainGrid, allowDiagonals, ROWS, COLS, updateCallbacks) {
-  const { onStep, onComplete, log, showToast, drawGrid } = updateCallbacks;
+  const { onStep, onComplete, log, showToast, drawGrid = () => {} } = updateCallbacks;
   
   if (!startNode || !goalNode) {
     showToast("⚠ Set start and goal first", "warn");
@@ -277,6 +277,28 @@ export function resetRLAgent() {
   rlBestPath = null;
   rlLastPath = null;
   clearRLConvergenceChart();
+  updateRLStats();
+}
+
+export function updateRLStats() {
+  const recent = rlRewardHistory.slice(-50);
+  const values = {
+    rlEpisodeCount: rlEpisode,
+    rlEpsilonVal: rlEpsilon.toFixed(3),
+    rlBestRewardVal: Number.isFinite(rlBestReward) ? Math.round(rlBestReward) : '—',
+    rlAvgRewardVal: recent.length ? Math.round(recent.reduce((a, b) => a + b, 0) / recent.length) : '—',
+    rlBestPathLen: rlBestPath?.length || '—',
+    rlQTableSize: rlAgent?.qTable.size || 0,
+  };
+  for (const [id, value] of Object.entries(values)) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  }
+  const epsilon = document.getElementById('rlEpsilonFill');
+  if (epsilon) epsilon.style.width = `${rlEpsilon * 100}%`;
+  const progress = document.getElementById('rlProgressFill');
+  const episodes = Number(document.getElementById('rlMaxEpisodes')?.value) || 2000;
+  if (progress) progress.style.width = `${Math.min(100, rlEpisode / episodes * 100)}%`;
 }
 
 export function runLearnedPolicy(startNode, goalNode, grid, terrainGrid, allowDiagonals, ROWS, COLS, callbacks) {
@@ -411,9 +433,9 @@ export function clearRLConvergenceChart() {
   }
 }
 
-export function drawRLOverlay(ctx, CELL, ROWS, COLS, grid) {
+export function drawRLOverlay(ctx, CELL, ROWS, COLS, grid, allowDiagonals = false) {
   if (!rlAgent || rlAgent.qTable.size === 0) return;
-  const actions = getRLActions(false); 
+  const actions = getRLActions(allowDiagonals);
   const isDark = document.documentElement.getAttribute("data-theme") !== "light";
 
   let qMin = Infinity, qMax = -Infinity;

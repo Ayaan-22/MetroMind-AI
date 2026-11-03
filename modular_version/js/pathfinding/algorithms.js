@@ -2,6 +2,7 @@ import {
   EMPTY, WALL, START, GOAL, OPEN, CLOSED, PATH, TERRAIN_COST 
 } from '../config.js';
 import { heuristic as heuristicFunc } from './heuristics.js';
+import { DStarLite } from './dstar-lite.js';
 
 // ═══════════════════════════════════════════════════════
 // MIN HEAP
@@ -91,6 +92,7 @@ export function getNeighbors(r, c, ROWS, COLS, grid, terrainGrid, allowDiagonals
 
 export function initSearch(algo, sn, gn, grid, terrainGrid, allowDiagonals, heuristicWeight = 1.0) {
   if (!sn || !gn) return null;
+  if (algo === 'dstarlite') return new DStarLite(sn, gn, grid, terrainGrid, allowDiagonals);
   
   const openSet = new MinHeap(),
     nodeMap = {},
@@ -296,6 +298,13 @@ export function searchStep(
   const paintGrid = gr === grid;
   const offscreen = gr !== grid;
 
+  if (algo === 'dstarlite') {
+    if (state.done) return;
+    state.step();
+    if (state.done && onDone) onDone(state.finalPath, state);
+    return;
+  }
+
   // ── JPS ──
   if (algo === "jps") {
     if (state.done || state.openSet.size === 0) {
@@ -459,7 +468,12 @@ export function searchStep(
       bwdPath.reverse();
       const path = [...fwdPath, ...bwdPath.slice(1)];
       state.finalPath = path.slice();
-      state.solutionCost = Math.round(cur.g);
+      // The meeting node's g covers only one search direction. Report the full route.
+      state.solutionCost = Math.round(path.slice(1).reduce((cost, node, i) => {
+        const previous = path[i];
+        return cost + Math.hypot(node.r - previous.r, node.c - previous.c)
+          * getCellTerrainCost(node.r, node.c, ROWS, COLS, terrainGrid);
+      }, 0));
       state.done = true;
       if (!offscreen) {
         logEntry("success", `✓ Bidir path! ${path.length} steps, cost ${state.solutionCost}`);

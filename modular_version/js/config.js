@@ -74,6 +74,12 @@ export function getColors() {
 }
 
 export const PORTRAIT_CONFIGS = {
+  dstarlite: {
+    label: "D* LITE",
+    col: "#f7b731",
+    col2: "#00e5a0",
+    style: "bidir",
+  },
   astar: {
     label: "A* SEARCH",
     col: "#00e5a0",

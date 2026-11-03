@@ -1,4 +1,5 @@
 import { TOAST_ICONS, PORTRAIT_CONFIGS } from './config.js';
+import { setHeuristic } from './pathfinding/heuristics.js';
 
 let sidebarOpen = true;
 let rpOpen = true;
@@ -431,6 +432,7 @@ export function hideShortcuts() {
 }
 
 export function setHeuristicUI(h) {
+  setHeuristic(h);
   document.querySelectorAll(".heur-btn").forEach((b) => b.classList.remove("active"));
   const btn = document.getElementById("heur-" + h);
   if (btn) btn.classList.add("active");
@@ -444,6 +446,48 @@ export function setHeuristicUI(h) {
   if (fEl) fEl.textContent = formulas[h] || "";
   const bEl = document.getElementById("heurBadge");
   if (bEl) bEl.textContent = h[0].toUpperCase() + h.slice(1);
+}
+
+export function dismissOnboarding(neverShow = false) {
+  if (neverShow) {
+    try { localStorage.setItem('mm_ob_skip', '1'); } catch { /* Private/file browsing can deny storage. */ }
+  }
+  document.getElementById('onboardingOverlay')?.classList.remove('visible');
+}
+
+export function showOnboarding() {
+  try { if (localStorage.getItem('mm_ob_skip') === '1') return; } catch { /* Show help when storage is unavailable. */ }
+  document.getElementById('onboardingOverlay')?.classList.add('visible');
+}
+
+export function updateListDisplays(state) {
+  const closed = document.getElementById('closedCount');
+  if (closed) closed.textContent = `${state?.closed?.size || 0} nodes`;
+  const list = document.getElementById('openListItems');
+  if (!list) return;
+  const items = Array.isArray(state?.openSet) ? state.openSet : state?.openSet?.heap || [];
+  const candidates = items.map(item => item.node || item).sort((a, b) => a.f - b.f).slice(0, 5);
+  list.textContent = candidates.length ? candidates.map(n => `(${n.r},${n.c}) f=${Number.isFinite(n.f) ? n.f.toFixed(1) : '∞'}`).join(' · ') : '—';
+}
+
+const algorithmDetails = {
+  astar: ['A* Search', 'Balances travel cost and estimated distance to the goal.', 'f(n) = g(n) + w · h(n)'],
+  dijkstra: ["Dijkstra's", 'Expands the lowest travel cost first.', 'f(n) = g(n)'],
+  greedy: ['Greedy BFS', 'Follows the heuristic toward the goal; the route may be suboptimal.', 'f(n) = w · h(n)'],
+  bfs: ['BFS', 'Explores the grid in breadth-first order.', 'FIFO queue'],
+  dfs: ['DFS', 'Explores deeply before backtracking.', 'LIFO stack'],
+  bidirectional: ['Bidir. A*', 'Searches from both endpoints until the frontiers meet.', 'Forward + backward search'],
+  jps: ['JPS ⚡', 'Jumps along cardinal directions to forced neighbors.', 'f(n) = g(n) + w · h(n)'],
+  thetastar: ['Theta* ∠', 'Uses line of sight to create any-angle routes.', 'f(n) = g(n) + w · h(n)'],
+  dstarlite: ['D* Lite', 'Reuses goal distances to repair the route after obstacle or terrain changes.', 'key = [min(g, rhs) + h + km, min(g, rhs)]'],
+};
+
+export function updateAlgorithmDetails(algo) {
+  const [name, description, formula] = algorithmDetails[algo];
+  for (const [id, value] of [['algoBadge', name], ['hudAlgo', name], ['algoDesc', description], ['algoFormula', formula]]) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  }
 }
 
 export function switchSbTab(name, btn) {

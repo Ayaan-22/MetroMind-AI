@@ -3,7 +3,6 @@ import {
   HIGHWAY, TRAFFIC, MUD, CELL_MIN, CELL_MAX 
 } from './config.js';
 import { heuristic as heuristicFunc } from './pathfinding/heuristics.js';
-import { drawRLOverlay } from './pathfinding/qlearning.js';
 
 export let canvas = document.getElementById("grid");
 export let ctx = canvas ? canvas.getContext("2d") : null;
@@ -240,7 +239,7 @@ export function drawGrid(searchState, lastSolutionPath, animTimer, pathAnimInter
   animFrame = requestAnimationFrame(() => _drawGrid(searchState, lastSolutionPath));
 }
 
-function _drawGrid(searchState, lastSolutionPath) {
+export function _drawGrid(searchState, lastSolutionPath, displayGrid = grid) {
   const C = getColors();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = C[EMPTY];
@@ -291,7 +290,7 @@ function _drawGrid(searchState, lastSolutionPath) {
 
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      const x = c * CELL, y = r * CELL, s = grid[r][c];
+      const x = c * CELL, y = r * CELL, s = displayGrid[r][c];
       if (s === EMPTY) {
         ctx.fillStyle = C[EMPTY];
         ctx.fillRect(x, y, CELL, CELL);
@@ -382,8 +381,6 @@ function _drawGrid(searchState, lastSolutionPath) {
       }
     }
   }
-
-  drawRLOverlay(ctx, CELL, ROWS, COLS, grid);
 
   if (searchState && !searchState.done && searchState.livePath && searchState.livePath.length > 1) {
     const lp = searchState.livePath;
