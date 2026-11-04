@@ -21,7 +21,7 @@ Edit the source files in this directory, then regenerate the standalone file fro
 ```powershell
 node 3d/scripts/build.cjs
 node 3d/scripts/build.cjs --check
-node --test 3d/tests/engine.test.cjs 3d/tests/app.test.cjs
+node --test 3d/tests/engine.test.cjs 3d/tests/app.test.cjs 3d/tests/select.test.cjs
 ```
 
 The builder uses only Node's built-in modules. It embeds local stylesheet and script references from `index.html`, preserves their order, and escapes script terminators so the generated HTML remains valid. `--check` reports a nonzero exit code when the standalone file differs from its sources. Do not edit the generated HTML directly.
@@ -31,18 +31,30 @@ The builder uses only Node's built-in modules. It embeds local stylesheet and sc
 | `index.html` | Workspace layout and accessible controls |
 | `css/styles.css` | Responsive interface, typography and themes |
 | `css/typography.css` | Readable text sizes, contrast, spacing and responsive type rules |
+| `css/map-workspace.css` | Full-window map, floating controls and on-demand panels |
+| `css/select.css` | Consistent dropdown buttons, option lists and focus states |
 | `js/engine.js` | Grid data, search algorithms and Q-learning; exposes `MetroEngine` |
 | `js/city.js` | Three.js city, cameras, lighting, traffic and route rendering; exposes `MetroCity` |
 | `js/app.js` | UI state, editing, simulation controls, charts, persistence and exports |
+| `js/select.js` | Accessible dropdowns with keyboard navigation and viewport placement |
 | `vendor/three.min.js` | Bundled Three.js runtime |
 | `vendor/OrbitControls.js` | Bundled Three.js camera controls |
 | `scripts/build.cjs` | Deterministic standalone HTML builder |
 | `tests/engine.test.cjs` | Search, terrain, import and dynamic replanning checks |
 | `tests/app.test.cjs` | UI playback, learning, downloads, safe imports, dynamic edits and comparison cancellation |
+| `tests/select.test.cjs` | Dropdown selection, keyboard isolation, focus, modal portals and viewport placement |
 
 The previous 3D prototype is preserved separately in `../old_versions/MetroMind_AI_3D_original.html` when supplied with this update. The v11 standalone file is still generated from `../modular_version/` using its own documented workflow.
 
 ## Workspace
+
+The city fills the window by default. Controls and Insights open as floating panels instead of reducing the map area; desktop panels leave the rest of the map interactive. On phones, the workspace menu provides the navigation tools. The small algorithm chip opens settings for the active search or learning mode.
+
+The camera starts in a closer exploration view. Use the map zoom buttons or the scroll wheel to move in and out; **Fit city** shows the entire district. **G** hides the interface for an unobstructed view, and **G**, **Escape**, or **Show controls** restores it. Additional terrain and elevation tools expand from the editing palette.
+
+Choose **More maps → Blank canvas** to build a layout from scratch. Editing is bounded by the selected grid; the surrounding ground is scenery. The search and learning models use grid cells internally, even when the camera is zoomed out over a larger area.
+
+Dropdowns use the same visual style throughout the workspace. Arrow keys, Home/End and typeahead highlight an option; Enter commits it, Escape cancels, and Tab continues normal keyboard navigation. Menus stay within the window and appear above scrolling panels.
 
 Use the city editing tools to place buildings, move the origin and destination, erase obstacles, or paint weighted terrain. Roads cost 1×, highways 0.5×, traffic 3× and rough ground 10×. Elevation can increase uphill travel cost. Diagonal movement never cuts through blocked corners.
 
@@ -52,7 +64,7 @@ The learning workspace trains a Q-learning agent and exposes its parameters, epi
 
 Compare algorithms against the same city, inspect live route/search statistics, and save or export layouts and results. Browser saves remain local to the current browser and origin. Downloaded JSON layouts provide a portable copy.
 
-City camera and lighting controls provide isometric, top-down and street views, day/dusk/night lighting, automatic orbit, traffic visibility, reduced motion and rendering quality. An immersive view hides the side panels. The city is a procedural simulation; roads, traffic and buildings visualize the editable grid rather than live map or traffic data.
+City camera and lighting controls provide isometric, top-down and street views, day/dusk/night lighting, automatic orbit, traffic visibility, reduced motion and rendering quality. Focus mode hides the interface. The city is a procedural simulation; roads, traffic and buildings visualize the editable grid rather than live map or traffic data.
 
 ## Controls
 
@@ -70,7 +82,7 @@ City camera and lighting controls provide isometric, top-down and street views, 
 | `8` / `9` | Raise/lower elevation |
 | `Shift` + draw | Temporarily erase |
 | `C` | Open the map chooser, including a blank canvas |
-| `G` | Toggle immersive view |
+| `G` | Hide/show map controls |
 | `?` | Open the controls reference |
 | `Esc` | Close the active dialog or drawer |
 

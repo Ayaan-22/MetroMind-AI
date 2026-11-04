@@ -8,8 +8,11 @@
   <title>MetroMind AI — City Studio</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/typography.css">
+  <link rel="stylesheet" href="css/map-workspace.css">
+  <link rel="stylesheet" href="css/select.css">
+  <link rel="stylesheet" href="css/builder.css">
 </head>
-<body>
+<body class="map-first">
   <svg class="icon-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
     <symbol id="i-city" viewBox="0 0 24 24"><path d="M3 21V8l6-3v16M9 21V3l7 3v15M16 21V11l5-2v12M1 21h22M5 10h1m-1 4h1m-1 4h1m6-11h1m-1 4h1m-1 4h1m5-2h1m-1 4h1"/></symbol>
     <symbol id="i-route" viewBox="0 0 24 24"><circle cx="5" cy="6" r="3"/><circle cx="19" cy="18" r="3"/><path d="M8 6h8a4 4 0 0 1 0 8H8a4 4 0 0 0 0 8h6"/></symbol>
@@ -51,6 +54,7 @@
     <a class="brand" href="#" aria-label="MetroMind AI home"><span class="brand-mark"><i></i><i></i><i></i></span><span>METROMIND<span class="brand-ai">AI</span><small>URBAN INTELLIGENCE LAB</small></span></a>
     <div class="top-divider"></div><div class="studio-label">City Studio <span class="version-tag">3D</span></div>
     <div class="top-spacer"></div><span class="local-indicator"><i></i> Local workspace</span>
+    <button class="icon-button workspace-menu" id="workspace-menu" aria-label="Open workspace menu" title="Workspace menu"><svg><use href="#i-layers"/></svg></button>
     <button class="button subtle" id="load-btn" title="Load a saved workspace"><svg><use href="#i-upload"/></svg><span>Open</span></button>
     <button class="button subtle" id="save-btn" aria-label="Save city"><svg><use href="#i-save"/></svg><span>Save city</span></button>
     <button class="button export-button" id="export-btn" aria-label="Export"><svg><use href="#i-download"/></svg><span>Export</span><svg class="small"><use href="#i-chevron"/></svg></button>
@@ -58,8 +62,8 @@
   </header>
   <div class="workspace">
     <nav class="rail" aria-label="Workspace tools">
-      <button class="rail-button active" id="nav-simulation" title="Simulation controls" aria-label="Simulation controls"><svg><use href="#i-city"/></svg><span>Studio</span></button>
-      <button class="rail-button" id="nav-learning" title="Reinforcement learning" aria-label="Reinforcement learning"><svg><use href="#i-brain"/></svg><span>Learning</span></button>
+      <button class="rail-button active" id="nav-simulation" aria-controls="control-panel" title="Simulation controls" aria-label="Simulation controls"><svg><use href="#i-city"/></svg><span>Studio</span></button>
+      <button class="rail-button" id="nav-learning" aria-controls="control-panel" title="Reinforcement learning" aria-label="Reinforcement learning"><svg><use href="#i-brain"/></svg><span>Learning</span></button>
       <button class="rail-button" id="nav-compare" title="Compare algorithms (X)" aria-label="Compare algorithms"><svg><use href="#i-chart"/></svg><span>Compare</span></button>
       <button class="rail-button" id="nav-layers" title="Map layers" aria-label="Map layers"><svg><use href="#i-layers"/></svg><span>Layers</span></button>
       <div class="rail-spacer"></div>
@@ -109,17 +113,28 @@
       </div>
     </aside>
     <main class="main-workspace">
-      <div class="scene-heading"><div><div class="scene-eyebrow"><span class="live-dot"></span> SIMULATION ENVIRONMENT <span class="slash">/</span><span id="scene-grid-label">900 NODES</span></div><h1 id="city-name">New Metro District<span class="title-period">.</span></h1><p>A living sandbox for smarter journeys.</p></div><div class="scene-heading-actions"><button class="button mobile-toggle" id="toggle-controls"><svg><use href="#i-settings"/></svg>Controls</button><button class="button subtle" id="compare-btn" aria-label="Compare algorithms" title="Compare algorithms (X)"><svg><use href="#i-chart"/></svg><span>Compare algorithms</span><kbd>X</kbd></button><button class="icon-button" id="fullscreen-btn" title="Fullscreen (G)" aria-label="Toggle fullscreen"><svg><use href="#i-focus"/></svg></button><button class="icon-button mobile-toggle" id="toggle-analytics" title="Analytics" aria-label="Open analytics"><svg><use href="#i-chart"/></svg></button></div></div>
+      <div class="scene-heading"><div><div class="scene-eyebrow"><span class="live-dot"></span> SIMULATION ENVIRONMENT <span class="slash">/</span><span id="scene-grid-label">900 NODES</span></div><h1 id="city-name">New Metro District<span class="title-period">.</span></h1><p>A living sandbox for smarter journeys.</p></div><div class="scene-heading-actions"><button class="button free-build-entry" id="free-build-btn" aria-label="Free Build" aria-pressed="false" title="Free Build editor"><svg><use href="#i-road"/></svg><span>Free Build</span></button><button class="button mobile-toggle" id="toggle-controls" aria-label="Controls" aria-controls="control-panel" aria-expanded="false"><svg><use href="#i-settings"/></svg><span>Controls</span></button><button class="button subtle" id="compare-btn" aria-label="Compare algorithms" title="Compare algorithms (X)"><svg><use href="#i-chart"/></svg><span>Compare</span><kbd>X</kbd></button><button class="icon-button" id="fullscreen-btn" title="Focus on the map (G)" aria-label="Focus on the map" aria-pressed="false"><svg><use href="#i-focus"/></svg></button><button class="button mobile-toggle" id="toggle-analytics" title="Analytics" aria-label="Open analytics" aria-controls="analytics-panel" aria-expanded="false"><svg><use href="#i-chart"/></svg><span>Insights</span></button></div></div>
       <div class="viewport" id="viewport">
-        <canvas id="city-canvas" aria-label="Interactive 3D city. Use the tools to edit terrain, start and goal. Drag to orbit, scroll to zoom."></canvas>
+        <canvas id="city-canvas" tabindex="0" aria-label="Interactive 3D city. Use the tools to edit terrain, start and goal. Drag to orbit, scroll to zoom."></canvas>
         <div class="viewport-vignette"></div>
+        <div class="builder-workspace" id="builder-workspace" hidden aria-label="Free Build editor">
+          <div class="builder-toolbar">
+            <div class="builder-heading"><span class="builder-mode"><i></i>FREE BUILD<small id="build-area">Auto-grow canvas</small></span><div class="builder-history"><button class="icon-button" id="build-undo" aria-label="Undo build stroke" title="Undo (Ctrl+Z)" disabled><svg><use href="#i-back"/></svg></button><button class="icon-button" id="build-redo" aria-label="Redo build stroke" title="Redo (Ctrl+Y)" disabled><svg><use href="#i-step"/></svg></button></div><button class="button subtle" id="build-blank">New canvas</button><button class="button builder-done" id="builder-done"><svg><use href="#i-check"/></svg>Done</button></div>
+            <div class="builder-tools" aria-label="Build tools"><button class="button active" id="build-tool-road" data-build-tool="road"><svg><use href="#i-road"/></svg>Road</button><button class="button" id="build-tool-wall" data-build-tool="wall"><svg><use href="#i-city"/></svg>Building</button><button class="button" id="build-tool-erase" data-build-tool="erase"><svg><use href="#i-erase"/></svg>Erase</button><button class="icon-button" id="build-tool-start" data-build-tool="start" aria-label="Place build origin" title="Place origin"><svg><use href="#i-pin"/></svg></button><button class="icon-button" id="build-tool-goal" data-build-tool="goal" aria-label="Place build destination" title="Place destination"><svg><use href="#i-flag"/></svg></button></div>
+            <div class="builder-options"><label>Surface<select id="build-surface"><option value="road">Street · 1×</option><option value="highway">Highway · 0.5×</option><option value="traffic">Traffic · 3×</option><option value="mud">Mud · 10×</option></select></label><label>Brush<select id="brush-size"><option value="1">Fine · 1 block</option><option value="3">Medium · 3 blocks</option><option value="5">Wide · 5 blocks</option></select></label><label class="builder-guides"><input type="checkbox" id="grid-guides">Guides</label></div>
+          </div>
+          <div class="builder-hint"><svg><use href="#i-help"/></svg><span id="build-help">Draw beyond the edge to expand the canvas. Up to 100 × 100 blocks.</span></div>
+        </div>
         <div class="view-label"><span class="live-dot"></span><span id="view-name">PERSPECTIVE</span><span class="view-divider"></span><span id="city-seed">SEED 2084</span></div>
         <div class="lighting-control" aria-label="City lighting"><button data-light="day" title="Daylight" aria-label="Daylight"><svg><use href="#i-sun"/></svg></button><button data-light="dusk" class="active" title="Golden hour" aria-label="Golden hour"><span class="sunset-icon"></span></button><button data-light="night" title="Night" aria-label="Night"><svg><use href="#i-moon"/></svg></button></div>
-        <div class="map-tools" id="map-tools" aria-label="City editing tools"></div>
+        <div class="map-tools" id="map-tools" aria-label="City editing tools"><button class="map-tool tool-expander" id="tools-expand" aria-label="More terrain tools" aria-expanded="false" data-tooltip="Terrain & elevation tools"><svg><use href="#i-terrain"/></svg></button></div>
         <div class="cell-tooltip" id="cell-tooltip" hidden></div>
         <div class="north-indicator"><span>N</span><svg viewBox="0 0 40 40"><path d="m20 5 7 23-7-5-7 5 7-23Z"/></svg></div>
         <div class="map-legend"><span><i style="--legend:#66d9bd"></i>Route</span><span><i style="--legend:#6baabb"></i>Explored</span><span><i style="--legend:#e1b979"></i>Frontier</span><span><i style="--legend:#b28baf"></i>Destination</span></div>
-        <div class="camera-dock"><button class="active" data-camera="isometric" title="Isometric view"><svg><use href="#i-city"/></svg><span>3D</span></button><button data-camera="top" title="Top-down view"><svg><use href="#i-layers"/></svg><span>Top</span></button><button data-camera="street" title="Street-level view"><svg><use href="#i-eye"/></svg><span>Street</span></button><span></span><button id="orbit-btn" title="Automatic camera orbit" aria-label="Automatic camera orbit" aria-pressed="false"><svg><use href="#i-reset"/></svg></button><button id="reset-camera" title="Reset camera" aria-label="Reset camera"><svg><use href="#i-focus"/></svg></button></div>
+        <div class="camera-dock"><button class="active" data-camera="isometric" title="Isometric view"><svg><use href="#i-city"/></svg><span>3D</span></button><button data-camera="top" title="Top-down view"><svg><use href="#i-layers"/></svg><span>Top</span></button><button data-camera="street" title="Street-level view"><svg><use href="#i-eye"/></svg><span>Street</span></button><span></span><button id="orbit-btn" title="Automatic camera orbit" aria-label="Automatic camera orbit" aria-pressed="false"><svg><use href="#i-reset"/></svg></button><button id="reset-camera" title="Fit the whole city" aria-label="Fit city"><svg><use href="#i-focus"/></svg></button></div>
+        <div class="map-zoom" aria-label="Map zoom"><button id="zoom-in" aria-label="Zoom in" title="Zoom in"><svg><use href="#i-plus"/></svg></button><button id="zoom-out" aria-label="Zoom out" title="Zoom out"><svg><use href="#i-minus"/></svg></button></div>
+        <div class="map-summary" aria-label="Simulation summary"><button id="quick-algorithm" aria-label="Choose search algorithm" aria-controls="control-panel" aria-expanded="false"><svg><use href="#i-route"/></svg><span id="quick-algorithm-name">A* Search</span><svg class="small"><use href="#i-chevron"/></svg></button><span class="summary-stat"><b id="quick-visited">0</b> explored</span><span class="summary-stat"><b id="quick-cost">—</b> travel cost</span></div>
+        <button class="button restore-map-ui" id="restore-map-ui" hidden><svg><use href="#i-focus"/></svg>Show controls <kbd>G</kbd></button>
         <div class="map-scale"><span></span><small id="map-scale-label">5 city blocks</small></div>
         <div class="scene-loading" id="scene-loading"><span class="loading-mark"></span><strong>Building your city</strong><small>Architecture. Atmosphere. Possibility.</small></div>
         <div class="scene-error" id="scene-error" hidden><svg><use href="#i-city"/></svg><h2>Your city needs WebGL</h2><p id="scene-error-text">Enable hardware acceleration in your browser to explore the 3D scene.</p><button class="button" id="retry-scene">Try again</button></div>
@@ -148,6 +163,7 @@
   <script src="vendor/OrbitControls.js"></script>
   <script src="js/engine.js"></script>
   <script src="js/city.js"></script>
+  <script src="js/select.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

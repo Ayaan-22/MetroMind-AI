@@ -141,3 +141,116 @@ test('Q-learning resets on city edits and never uses blocked actions during poli
   grid.set(15, 1); learner.train(2); assert.equal(learner.episodes, 2); assert.equal(learner.policy[15], -1);
   assert.ok(learner.heat.every(Number.isFinite));
 });
+
+test('Free Build starts with undeveloped ground and only painted streets connect its endpoints', () => {
+  const grid = new Grid(20).enableFreeBuild(false);
+  assert.equal(grid.freeBuild, true);
+  assert.equal(grid.developed.reduce((sum, value) => sum + value, 0), 2);
+  assert.equal(grid.types[grid.start], 0); assert.equal(grid.types[grid.goal], 0);
+  for (const algorithm of ['astar', 'dijkstra', 'bfs', 'dfs', 'greedy', 'bidir', 'theta', 'jps', 'dstar']) assert.equal(solve(grid, algorithm).path, null, algorithm);
+  for (let i = grid.start; i <= grid.goal; i++) grid.set(i, 0, 0);
+  for (const algorithm of ['astar', 'dijkstra', 'bfs', 'dfs', 'greedy', 'bidir', 'theta', 'jps', 'dstar']) close(solve(grid, algorithm).cost, 10);
+  const empty = grid.start - grid.size, version = grid.version;
+  assert.equal(grid.types[empty], 1); assert.equal(grid.developed[empty], 0);
+  assert.equal(grid.set(empty, 1, 0, true), true, 'painting a building onto void is a real edit');
+  assert.equal(grid.developed[empty], 1); assert.equal(grid.version, version + 1);
+  grid.enableFreeBuild(true);
+  assert.equal(grid.developed[empty], 1); assert.equal(grid.developed[empty + 1], 0, 'reentering does not turn void into buildings');
+  assert.equal(grid.set(empty, 1, 0, false), true); assert.equal(grid.developed[empty], 0);
+  assert.equal(grid.set(grid.start, 1, 0, false), false, 'endpoint streets cannot be erased');
+  assert.equal(grid.developed[grid.start], 1);
+  grid.set(grid.start + 5, 1, 0, false);
+  assert.equal(solve(grid, 'astar').path, null, 'erasing a street closes the connection');
+  assert.throws(() => grid.set(empty, 0, 0, false), /impassable/);
+});
+
+test('world coordinates round trip for odd and even grids and ordinary cities convert without data changes', () => {
+  for (const size of [4, 15, 30]) {
+    const grid = new Grid(size).generate('terrain', 42), before = Array.from(grid.types), elevation = Array.from(grid.elevations);
+    for (let i = 0; i < grid.count; i++) {
+      const world = grid.cellToWorld(i), cell = grid.worldToCell(world.x, world.z);
+      assert.equal(cell.index, i); assert.equal(cell.inBounds, true);
+    }
+    grid.enableFreeBuild(true);
+    assert.deepEqual(Array.from(grid.types), before); assert.deepEqual(Array.from(grid.elevations), elevation);
+    assert.ok(grid.developed.every(value => value === 1));
+    assert.equal(grid.cellToWorld(-1), null);
+    assert.throws(() => grid.worldToCell(Infinity, 0), /finite/);
+    assert.throws(() => grid.worldToCell(0, NaN), /finite/);
+  }
+});
+
+test('canvas growth in every direction preserves world positions, terrain, elevation, development and route cost', () => {
+  for (const direction of ['west', 'east', 'north', 'south', 'northwest', 'southeast']) {
+    const grid = new Grid(15).generate('terrain', 42).enableFreeBuild(true);
+    const endpointWorld = { start: grid.cellToWorld(grid.start), goal: grid.cellToWorld(grid.goal) };
+    const snapshots = Array.from({ length: grid.count }, (_, i) => ({ world: grid.cellToWorld(i), type: grid.types[i], elevation: grid.elevations[i], developed: grid.developed[i] }));
+    const beforeCost = solve(grid, 'dijkstra').cost, oldSize = grid.size;
+    const x = direction.includes('west') ? grid.originX - 2.25 : direction.includes('east') ? grid.originX + grid.size + 2.25 : 0;
+    const z = direction.includes('north') ? grid.originZ - 2.25 : direction.includes('south') ? grid.originZ + grid.size + 2.25 : 0;
+    const change = grid.expandToWorld(x, z);
+    assert.equal(change.changed, true, direction); assert.equal(change.oldSize, oldSize); assert.ok(grid.size > oldSize);
+    assert.equal(change.index, grid.worldToCell(x, z).index); assert.ok(grid.valid(change.index));
+    assert.equal(grid.types[change.index], 1); assert.equal(grid.developed[change.index], 0);
+    assert.equal(grid.terrain, grid.types); assert.equal(grid.elevation, grid.elevations);
+    for (const snapshot of snapshots) {
+      const index = grid.worldToCell(snapshot.world.x, snapshot.world.z).index;
+      assert.equal(grid.types[index], snapshot.type, direction); assert.equal(grid.elevations[index], snapshot.elevation, direction); assert.equal(grid.developed[index], snapshot.developed, direction);
+      assert.deepEqual(grid.cellToWorld(index), snapshot.world);
+    }
+    assert.deepEqual(grid.cellToWorld(grid.start), endpointWorld.start); assert.deepEqual(grid.cellToWorld(grid.goal), endpointWorld.goal);
+    close(solve(grid, 'dijkstra').cost, beforeCost);
+    for (const algorithm of ['astar', 'bidir', 'jps', 'dstar']) close(solve(grid, algorithm).cost, beforeCost);
+    const version = grid.version, types = grid.types, noChange = grid.expandToWorld(x, z);
+    assert.equal(noChange.changed, false); assert.equal(grid.version, version); assert.equal(grid.types, types);
+  }
+});
+
+test('growth reaches the full supported limit and rejects overflow atomically', () => {
+  const grid = new Grid(99).enableFreeBuild(false), start = grid.cellToWorld(grid.start), goal = grid.cellToWorld(grid.goal);
+  const change = grid.expandToWorld(grid.originX + 99.5, grid.originZ + 10.5);
+  assert.equal(change.changed, true); assert.equal(grid.size, 100, 'padding shrinks to allow use of the last supported column');
+  assert.deepEqual(grid.cellToWorld(grid.start), start); assert.deepEqual(grid.cellToWorld(grid.goal), goal);
+  const snapshot = grid.serialize(), arrays = { types: grid.types, elevation: grid.elevations, developed: grid.developed }, version = grid.version;
+  assert.throws(() => grid.expandToWorld(grid.originX + 100.5, grid.originZ + 10.5), /100 × 100/);
+  assert.deepEqual(grid.serialize(), snapshot); assert.equal(grid.version, version);
+  assert.equal(grid.types, arrays.types); assert.equal(grid.elevations, arrays.elevation); assert.equal(grid.developed, arrays.developed);
+  assert.throws(() => grid.expandToWorld(NaN, 0), /finite/);
+  assert.throws(() => grid.expandToWorld(0, 0, -1), /padding/);
+  assert.deepEqual(grid.serialize(), snapshot);
+  const normal = new Grid(4), next = normal.expandToWorld(3, 0);
+  assert.equal(normal.types[next.index], 0); assert.equal(normal.developed[next.index], 1);
+});
+
+test('Free Build imports retain editable bounds and reject inconsistent or malformed metadata', () => {
+  const grid = new Grid(20).enableFreeBuild(false);
+  for (let i = grid.start; i <= grid.goal; i++) grid.set(i, 2, 0);
+  grid.expandToWorld(grid.originX - 3, grid.originZ - 2);
+  const data = grid.serialize(), restored = Grid.fromJSON(JSON.stringify(data));
+  assert.equal(restored.freeBuild, true); assert.equal(restored.originX, grid.originX); assert.equal(restored.originZ, grid.originZ);
+  assert.deepEqual(restored.types, grid.types); assert.deepEqual(restored.elevations, grid.elevations); assert.deepEqual(restored.developed, grid.developed);
+  assert.deepEqual(restored.cellToWorld(restored.start), grid.cellToWorld(grid.start)); close(solve(restored, 'dijkstra').cost, solve(grid, 'dijkstra').cost);
+  assert.throws(() => Grid.fromJSON({ ...data, freeBuild: 'true' }), /true or false/);
+  assert.throws(() => Grid.fromJSON({ ...data, originX: Infinity }), /origins/);
+  assert.throws(() => Grid.fromJSON({ ...data, originZ: 10001 }), /origins/);
+  assert.throws(() => Grid.fromJSON({ ...data, developed: undefined }), /developed/);
+  assert.throws(() => Grid.fromJSON({ ...data, developed: Array(grid.count).fill(2) }), /Developed/);
+  assert.throws(() => Grid.fromJSON({ ...data, developed: new Array(grid.count) }), /Developed/);
+  assert.throws(() => Grid.fromJSON({ ...data, developed: [1] }), /Developed/);
+  const invalidTerrain = { ...data, types: data.types.slice() }, voidIndex = data.developed.indexOf(0);
+  invalidTerrain.types[voidIndex] = 0;
+  assert.throws(() => Grid.fromJSON(invalidTerrain), /Undeveloped/);
+  assert.throws(() => Grid.fromJSON({ ...data, freeBuild: false }), /Regular/);
+  const old = Grid.fromJSON({ N: 4, T: Array(16).fill(0), E: Array(16).fill(0), start: 0, goal: 15 });
+  assert.equal(old.freeBuild, false); assert.equal(old.originX, -2); assert.equal(old.originZ, -2); assert.ok(old.developed.every(value => value === 1));
+});
+
+test('dynamic replanning starts fresh when growth changes array dimensions without changing the goal index', () => {
+  const grid = new Grid(99); grid.start = 0; grid.goal = 1;
+  const search = solve(grid, 'dstar'), previous = search.dynamic;
+  grid.expandToWorld(grid.originX + 99.5, grid.originZ + 0.5, 0);
+  assert.equal(grid.goal, 1, 'the endpoint index can remain equal despite a resized canvas');
+  search.replan().finish();
+  assert.notEqual(search.dynamic, previous); assert.equal(search.dynamic.g.length, 10000);
+  close(search.cost, 1); assert.deepEqual(search.path, [0, 1]);
+});

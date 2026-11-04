@@ -50,19 +50,86 @@
       this.size = this.N = this.rows = this.cols = size; this.count = size * size;
       this.types = this.terrain = new Uint8Array(this.count);
       this.elevations = this.elevation = new Float32Array(this.count);
+      this.developed = new Uint8Array(this.count).fill(1);
+      this.originX = this.originZ = -size / 2;
+      this.freeBuild = false;
       this.start = size + 1; this.goal = this.count - size - 2;
       this.version = 0; this.seed = 2084; this.preset = 'empty'; this.importNote = '';
     }
     valid(i) { return Number.isInteger(i) && i >= 0 && i < this.count; }
-    set(i, type, elevation) {
+    set(i, type, elevation, developed = true) {
       if (!this.valid(i)) return false;
       if (!Number.isInteger(type) || type < 0 || type > 4) throw new Error('Unknown terrain type.');
+      if (typeof developed !== 'boolean') throw new Error('Developed state must be true or false.');
+      if (this.freeBuild && !developed && type !== 1) throw new Error('Undeveloped ground must be impassable.');
       if (type === 1 && (i === this.start || i === this.goal)) return false;
       const e = elevation === undefined ? this.elevations[i] : Math.max(0, Math.min(12, Number(elevation) || 0));
-      if (this.types[i] === type && this.elevations[i] === e) return false;
-      this.types[i] = type; this.elevations[i] = e; this.version++; return true;
+      const d = this.freeBuild ? Number(developed) : 1;
+      if (this.types[i] === type && this.elevations[i] === e && this.developed[i] === d) return false;
+      this.types[i] = type; this.elevations[i] = e; this.developed[i] = d; this.version++; return true;
     }
-    clear() { this.types.fill(0); this.elevations.fill(0); this.preset = 'empty'; this.version++; return this; }
+    clear() { this.types.fill(0); this.elevations.fill(0); this.developed.fill(1); this.freeBuild = false; this.preset = 'empty'; this.version++; return this; }
+    cellToWorld(i) {
+      if (!this.valid(i)) return null;
+      return { x: this.originX + i % this.size + 0.5, z: this.originZ + Math.floor(i / this.size) + 0.5 };
+    }
+    worldToCell(x, z) {
+      if (!Number.isFinite(x) || !Number.isFinite(z)) throw new Error('World coordinates must be finite numbers.');
+      const col = Math.floor(x - this.originX), row = Math.floor(z - this.originZ);
+      const inBounds = row >= 0 && col >= 0 && row < this.size && col < this.size;
+      return { row, col, index: inBounds ? row * this.size + col : -1, inBounds };
+    }
+    enableFreeBuild(preserve = true) {
+      if (typeof preserve !== 'boolean') throw new Error('Preserve must be true or false.');
+      const wasFreeBuild = this.freeBuild;
+      this.freeBuild = true;
+      if (!preserve) {
+        this.types.fill(1); this.elevations.fill(0); this.developed.fill(0);
+        const row = Math.floor(this.size / 2), left = Math.max(1, Math.floor(this.size / 2) - 5), right = Math.min(this.size - 2, Math.floor(this.size / 2) + 5);
+        this.start = row * this.size + left; this.goal = row * this.size + right;
+        this.types[this.start] = this.types[this.goal] = 0;
+        this.developed[this.start] = this.developed[this.goal] = 1;
+        this.preset = 'freebuild';
+      } else if (!wasFreeBuild) this.developed.fill(1);
+      this.version++; return this;
+    }
+    expandToWorld(x, z, padding = 4) {
+      const target = this.worldToCell(x, z), oldSize = this.size;
+      if (!Number.isInteger(padding) || padding < 0 || padding > 20) throw new Error('Expansion padding must be an integer from 0 to 20.');
+      if (target.inBounds) return { changed: false, index: target.index, row: target.row, col: target.col, rowShift: 0, colShift: 0, oldSize, size: oldSize };
+      const left = Math.max(0, -target.col), right = Math.max(0, target.col - oldSize + 1);
+      const top = Math.max(0, -target.row), bottom = Math.max(0, target.row - oldSize + 1);
+      const required = oldSize + Math.max(left + right, top + bottom);
+      // Validate before allocating or changing any state. Padding may shrink at
+      // the limit, but a requested cell is never silently omitted or clamped.
+      if (required > 100) throw new Error('Free Build has reached its 100 × 100 cell limit. Draw closer to the existing city.');
+      const desired = oldSize + Math.max(left + right + (left || right ? padding : 0), top + bottom + (top || bottom ? padding : 0));
+      const size = Math.min(100, Math.ceil(desired / 10) * 10), extra = size - oldSize;
+      const shift = (negative, positive) => {
+        const spare = extra - negative - positive;
+        if (negative) return negative + Math.min(padding, spare);
+        if (positive) return Math.max(0, spare - Math.min(padding, spare));
+        return Math.floor(extra / 2);
+      };
+      const colShift = shift(left, right), rowShift = shift(top, bottom);
+      const originX = this.originX - colShift, originZ = this.originZ - rowShift;
+      if (Math.abs(originX) > 10000 || Math.abs(originZ) > 10000) throw new Error('The canvas origin must stay within the supported world range.');
+      const types = new Uint8Array(size * size), elevations = new Float32Array(size * size), developed = new Uint8Array(size * size);
+      if (this.freeBuild) types.fill(1); else developed.fill(1);
+      for (let row = 0; row < oldSize; row++) {
+        const from = row * oldSize, to = (row + rowShift) * size + colShift;
+        types.set(this.types.subarray(from, from + oldSize), to);
+        elevations.set(this.elevations.subarray(from, from + oldSize), to);
+        developed.set(this.developed.subarray(from, from + oldSize), to);
+      }
+      const remap = i => (Math.floor(i / oldSize) + rowShift) * size + i % oldSize + colShift;
+      this.start = remap(this.start); this.goal = remap(this.goal);
+      this.size = this.N = this.rows = this.cols = size; this.count = size * size;
+      this.types = this.terrain = types; this.elevations = this.elevation = elevations; this.developed = developed;
+      this.originX = originX; this.originZ = originZ; this.version++;
+      const row = target.row + rowShift, col = target.col + colShift;
+      return { changed: true, index: row * size + col, row, col, rowShift, colShift, oldSize, size };
+    }
     neighbors(i, diagonal = false, includeWalls = false) {
       const r = i / this.size | 0, c = i % this.size, result = [];
       for (const [dr, dc] of diagonal ? DIR8 : DIR4) {
@@ -175,7 +242,7 @@
       }
       this.version++; return this;
     }
-    serialize() { return { format: 'metromind-3d', version: 2, size: this.size, N: this.size, seed: this.seed, preset: this.preset, start: this.start, goal: this.goal, types: Array.from(this.types), elevations: Array.from(this.elevations) }; }
+    serialize() { return { format: 'metromind-3d', version: 3, size: this.size, N: this.size, seed: this.seed, preset: this.preset, start: this.start, goal: this.goal, types: Array.from(this.types), elevations: Array.from(this.elevations), originX: this.originX, originZ: this.originZ, freeBuild: this.freeBuild, developed: Array.from(this.developed) }; }
     static fromJSON(input) {
       const data = typeof input === 'string' ? JSON.parse(input) : input;
       if (!data || typeof data !== 'object') throw new Error('The file must contain a city layout.');
@@ -204,9 +271,22 @@
         if (elevation?.some(x => typeof x !== 'number' || !Number.isFinite(x) || x < 0 || x > 12)) throw new Error('Elevations must be finite values from 0 to 12.');
         grid.types.set(types); if (elevation) grid.elevations.set(elevation);
         grid.start = data.start; grid.goal = data.goal;
+        if (data.freeBuild !== undefined && typeof data.freeBuild !== 'boolean') throw new Error('Free Build mode must be true or false.');
+        grid.freeBuild = data.freeBuild ?? false;
+        for (const key of ['originX', 'originZ']) {
+          if (data[key] !== undefined && (typeof data[key] !== 'number' || !Number.isFinite(data[key]) || Math.abs(data[key]) > 10000)) throw new Error('Canvas origins must be finite numbers within the supported world range.');
+          if (data[key] !== undefined) grid[key] = data[key];
+        }
+        if (data.developed !== undefined) {
+          if (!Array.isArray(data.developed) || data.developed.length !== grid.count || Array.from(data.developed).some(x => x !== 0 && x !== 1)) throw new Error('Developed data does not match the city layout.');
+          grid.developed.set(data.developed);
+        } else if (grid.freeBuild) throw new Error('A Free Build layout must include its developed ground.');
+        if (grid.freeBuild && grid.types.some((type, index) => !grid.developed[index] && type !== 1)) throw new Error('Undeveloped ground must be impassable.');
+        if (!grid.freeBuild && grid.developed.some(value => value !== 1)) throw new Error('Regular layouts cannot contain undeveloped ground.');
       }
       if (!grid.valid(grid.start) || !grid.valid(grid.goal) || grid.start === grid.goal) throw new Error('Choose distinct start and destination cells inside the grid.');
       if (grid.types[grid.start] === 1 || grid.types[grid.goal] === 1) throw new Error('Start and destination cannot be inside buildings.');
+      if (!grid.developed[grid.start] || !grid.developed[grid.goal]) throw new Error('Start and destination must be on developed ground.');
       grid.seed = Number.isInteger(data.seed) ? data.seed : 2084; grid.preset = typeof data.preset === 'string' ? data.preset.slice(0, 40) : 'imported'; grid.version++; return grid;
     }
   }
@@ -375,7 +455,7 @@
     }
     finish() { let safety = 0; while (!this.done && safety++ < this.grid.count * 200) this.step(64); return this; }
     replan(changedIndices = []) {
-      if (this.dynamic && this.dynamic.goal === this.grid.goal) this.dynamic.prepare(Array.from(changedIndices));
+      if (this.dynamic && this.dynamic.goal === this.grid.goal && this.dynamic.g.length === this.grid.count) this.dynamic.prepare(Array.from(changedIndices));
       else if (this.algorithm === 'dstar') this.dynamic = new DStarLite(this.grid, this.options);
       this.resetPlayback(); this.generator = this.createGenerator(); this.replans++; return this;
     }
