@@ -6,6 +6,8 @@
 
 The standalone and modular editions have the same interface and features, including D* Lite dynamic replanning. Open `MetroMind_AI_v11.html` directly for the single-file edition, or serve `modular_version/` to use the ES modules. The standalone file is generated from the modular sources; see the [synchronization instructions](modular_version/README.md#keep-both-editions-synchronized) before making changes.
 
+**3D City Studio:** Open `MetroMind AI 3D.html` for the immersive city edition: procedural architecture, animated street traffic, day/dusk/night lighting, editable terrain, nine search algorithms, incremental D* Lite, Q-learning, search playback, comparisons, and downloadable experiments. Its complete runtime is embedded for offline use. Editable sources, build instructions, controls, and verification are in [`3d/README.md`](3d/README.md). The original prototype is preserved in `old_versions/MetroMind_AI_3D_original.html`.
+
 ---
 
 ## Table of Contents
@@ -104,5 +106,5 @@ Version 11 consolidates the project into a high-performance standalone HTML file
 
 - [ ] D* Lite for dynamic replanning in changing environments.
 - [ ] Multi-agent coordination and collision avoidance.
-- [ ] 3D visualization mode using Three.js.
+- [x] 3D City Studio using Three.js, with a standalone offline build.
 - [ ] GIS data ingestion for real-world city map simulation.

@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="An immersive 3D city laboratory for pathfinding, dynamic routing, and reinforcement learning.">
+  <meta name="theme-color" content="#101718">
+  <title>MetroMind AI — City Studio</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/typography.css">
+</head>
+<body>
+  <svg class="icon-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+    <symbol id="i-city" viewBox="0 0 24 24"><path d="M3 21V8l6-3v16M9 21V3l7 3v15M16 21V11l5-2v12M1 21h22M5 10h1m-1 4h1m-1 4h1m6-11h1m-1 4h1m-1 4h1m5-2h1m-1 4h1"/></symbol>
+    <symbol id="i-route" viewBox="0 0 24 24"><circle cx="5" cy="6" r="3"/><circle cx="19" cy="18" r="3"/><path d="M8 6h8a4 4 0 0 1 0 8H8a4 4 0 0 0 0 8h6"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M12 5a3 3 0 0 0-6-1 4 4 0 0 0-3 6 4 4 0 0 0 0 7 4 4 0 0 0 6 4 3 3 0 0 0 3-3V5Zm0 0a3 3 0 0 1 6-1 4 4 0 0 1 3 6 4 4 0 0 1 0 7 4 4 0 0 1-6 4 3 3 0 0 1-3-3M6 8c3 0 3 3 3 3m-4 5c2-2 4 0 4 0m9-8c-3 0-3 3-3 3m4 5c-2-2-4 0-4 0"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 10 5-10 5L2 8l10-5Zm-10 9 10 5 10-5M2 16l10 5 10-5"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 3v17h17M8 15l4-5 4 2 5-7"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 4v16M12 4v16M20 4v16M1 8h6m2 8h6m2-10h6"/><circle cx="4" cy="8" r="2"/><circle cx="12" cy="16" r="2"/><circle cx="20" cy="6" r="2"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 1 1 5 2c-2 1-2 2-2 3m0 3h.01"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M4 3h13l4 4v14H3V3h1Zm3 0v6h10V3M7 21v-8h10v8"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 15v6h16v-6"/></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V3M7 8l5-5 5 5M4 15v6h16v-6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 4 13 8-13 8V4Z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M5 5v14m14-14L7 12l12 7V5Z"/></symbol>
+    <symbol id="i-step" viewBox="0 0 24 24"><path d="M19 5v14M5 5l12 7-12 7V5Z"/></symbol>
+    <symbol id="i-fast" viewBox="0 0 24 24"><path d="m3 5 9 7-9 7V5Zm9 0 9 7-9 7V5Z"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 9a8 8 0 1 1 0 7M4 3v6h6"/></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M3 6h3c5 0 7 12 12 12h3m-4-4 4 4-4 4M3 18h3c2 0 3-2 4-4m4-4c1-2 2-4 4-4h3m-4-4 4 4-4 4"/></symbol>
+    <symbol id="i-move" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M8 6l4-4 4 4m-8 12 4 4 4-4M6 8l-4 4 4 4m12-8 4 4-4 4"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 22V3c5-4 9 4 15 0v11c-6 4-10-4-15 0"/></symbol>
+    <symbol id="i-erase" viewBox="0 0 24 24"><path d="m14 3 8 8-11 11H7L1 16 14 3ZM7 10l8 8m-4 4h11"/></symbol>
+    <symbol id="i-road" viewBox="0 0 24 24"><path d="M7 2 3 22M17 2l4 20M12 2v4m0 4v4m0 4v4"/></symbol>
+    <symbol id="i-traffic" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="18" rx="3"/><path d="M12 20v3M4 5h3m10 0h3M4 11h3m10 0h3M4 17h3m10 0h3"/><circle cx="12" cy="7" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="17" r="1"/></symbol>
+    <symbol id="i-terrain" viewBox="0 0 24 24"><path d="m2 20 7-14 5 9 3-5 5 10H2Zm5-10 2 2 2-2M17 4l1-2 1 2"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M4 12h16"/></symbol>
+    <symbol id="i-focus" viewBox="0 0 24 24"><path d="M3 9V3h6m6 0h6v6m0 6v6h-6m-6 0H3v-6"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 14A9 9 0 0 1 10 3a9 9 0 1 0 11 11Z"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></symbol>
+  </defs></svg>
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="MetroMind AI home"><span class="brand-mark"><i></i><i></i><i></i></span><span>METROMIND<span class="brand-ai">AI</span><small>URBAN INTELLIGENCE LAB</small></span></a>
+    <div class="top-divider"></div><div class="studio-label">City Studio <span class="version-tag">3D</span></div>
+    <div class="top-spacer"></div><span class="local-indicator"><i></i> Local workspace</span>
+    <button class="button subtle" id="load-btn" title="Load a saved workspace"><svg><use href="#i-upload"/></svg><span>Open</span></button>
+    <button class="button subtle" id="save-btn" aria-label="Save city"><svg><use href="#i-save"/></svg><span>Save city</span></button>
+    <button class="button export-button" id="export-btn" aria-label="Export"><svg><use href="#i-download"/></svg><span>Export</span><svg class="small"><use href="#i-chevron"/></svg></button>
+    <button class="avatar" id="about-btn" title="About City Studio">M<span></span></button>
+  </header>
+  <div class="workspace">
+    <nav class="rail" aria-label="Workspace tools">
+      <button class="rail-button active" id="nav-simulation" title="Simulation controls" aria-label="Simulation controls"><svg><use href="#i-city"/></svg><span>Studio</span></button>
+      <button class="rail-button" id="nav-learning" title="Reinforcement learning" aria-label="Reinforcement learning"><svg><use href="#i-brain"/></svg><span>Learning</span></button>
+      <button class="rail-button" id="nav-compare" title="Compare algorithms (X)" aria-label="Compare algorithms"><svg><use href="#i-chart"/></svg><span>Compare</span></button>
+      <button class="rail-button" id="nav-layers" title="Map layers" aria-label="Map layers"><svg><use href="#i-layers"/></svg><span>Layers</span></button>
+      <div class="rail-spacer"></div>
+      <button class="rail-button" id="nav-settings" title="Display settings" aria-label="Display settings"><svg><use href="#i-settings"/></svg><span>Display</span></button>
+      <button class="rail-button" id="help-btn" title="Keyboard shortcuts (?)" aria-label="Help and keyboard shortcuts"><svg><use href="#i-help"/></svg><span>Help</span></button>
+      <div class="rail-bottom">MM<span>11.3D</span></div>
+    </nav>
+    <aside class="control-panel" id="control-panel" aria-label="Simulation settings">
+      <div class="panel-heading"><div><span class="eyebrow">YOUR WORKSPACE</span><h2>Simulation</h2></div><button class="icon-button mobile-close" id="close-controls" aria-label="Close controls"><svg><use href="#i-close"/></svg></button><span class="panel-index">01</span></div>
+      <div class="panel-scroll">
+        <div class="tabbar" role="tablist"><button class="tab active" id="tab-search" role="tab" aria-selected="true" aria-controls="search-settings"><svg><use href="#i-route"/></svg>Pathfinding</button><button class="tab" id="tab-learning" role="tab" aria-selected="false" aria-controls="learning-settings"><svg><use href="#i-brain"/></svg>Learning</button></div>
+        <div id="search-settings" role="tabpanel">
+          <section class="control-section"><div class="section-label">SEARCH ALGORITHM <span>01</span></div>
+            <div class="select-wrap"><svg><use href="#i-route"/></svg><select id="algorithm" aria-label="Search algorithm"><option value="astar">A* Search</option><option value="dijkstra">Dijkstra</option><option value="bidir">Bidirectional Search</option><option value="dstar">D* Lite</option><option value="theta">Theta* · Any-angle</option><option value="jps">Jump Point Search</option><option value="greedy">Greedy Best-first</option><option value="bfs">Breadth-first Search</option><option value="dfs">Depth-first Search</option></select><svg class="chevron"><use href="#i-chevron"/></svg></div>
+            <div class="algorithm-card"><div><span class="status-dot"></span><strong id="algorithm-type">HEURISTIC SEARCH</strong><span id="algorithm-badge">Optimal*</span></div><p id="algorithm-description">Balances the journey so far with the distance ahead. A smart starting point for city routing.</p><code id="algorithm-formula">f(n) = g(n) + w · h(n)</code></div>
+            <label class="field-label" for="heuristic">Distance heuristic <span class="hint" title="A lower-bound estimate of remaining travel cost">?</span></label><div class="select-wrap compact"><select id="heuristic"><option value="manhattan">Manhattan</option><option value="euclidean">Euclidean</option><option value="octile">Octile</option><option value="chebyshev">Chebyshev</option></select><svg class="chevron"><use href="#i-chevron"/></svg></div>
+            <label class="range-label" for="weight">Heuristic weight <output id="weight-value">1.0</output></label><input id="weight" type="range" min="0" max="3" step="0.1" value="1">
+            <div class="range-ends"><span>More exploration</span><span>More direct</span></div>
+            <label class="toggle-row"><span>Diagonal movement<small>Eight directions, no corner cutting</small></span><input type="checkbox" id="diagonal" role="switch"><i></i></label>
+            <label class="toggle-row"><span>Live replanning<small>Adapt the route as you edit</small></span><input type="checkbox" id="live-replan" role="switch" checked><i></i></label>
+          </section>
+        </div>
+        <div id="learning-settings" role="tabpanel" hidden>
+          <section class="control-section"><div class="section-label">Q-LEARNING AGENT <span>01</span></div><div class="learning-intro"><svg><use href="#i-brain"/></svg><div>Let the city teach.<small>An agent learns through trial and reward.</small></div></div>
+            <label class="range-label" for="alpha">Learning rate · α <output id="alpha-value">0.15</output></label><input id="alpha" type="range" min="0.01" max="1" step="0.01" value="0.15">
+            <label class="range-label" for="gamma">Discount factor · γ <output id="gamma-value">0.95</output></label><input id="gamma" type="range" min="0.1" max="0.99" step="0.01" value="0.95">
+            <label class="range-label" for="decay">Exploration decay <output id="decay-value">0.995</output></label><input id="decay" type="range" min="0.95" max="0.999" step="0.001" value="0.995">
+            <div class="input-pair"><label>Episodes<input id="episodes" type="number" min="10" max="100000" step="100" value="3000"></label><label>Steps / episode<input id="max-steps" type="number" min="10" max="10000" step="100" value="900"></label></div>
+            <div class="input-pair"><label>Batch size<input id="batch-size" type="number" min="1" max="100" value="10"></label><label>Initial ε<input id="epsilon" type="number" min="0.01" max="1" step="0.05" value="1"></label></div>
+            <label class="toggle-row"><span>Q-value heatmap</span><input type="checkbox" id="heatmap" role="switch" checked><i></i></label>
+            <label class="toggle-row"><span>Policy arrows</span><input type="checkbox" id="policy-arrows" role="switch"><i></i></label>
+            <div class="button-pair"><button class="button" id="policy-btn"><svg><use href="#i-play"/></svg>Test policy</button><button class="button subtle" id="reset-agent">Reset agent</button></div>
+          </section>
+        </div>
+        <section class="control-section environment-section"><div class="section-label">BUILD YOUR ENVIRONMENT <span>02</span></div>
+          <div class="preset-grid">
+            <button class="preset active" data-preset="downtown"><span class="preset-art downtown-art"><i></i><i></i><i></i><i></i><i></i><i></i></span><span>Downtown<small>Urban blocks</small></span><b>↗</b></button>
+            <button class="preset" data-preset="manhattan"><span class="preset-art manhattan-art"><i></i><i></i><i></i><i></i><i></i><i></i></span><span>Manhattan<small>Street network</small></span><b>↗</b></button>
+            <button class="preset" data-preset="recursive"><span class="preset-art maze-art"></span><span>Labyrinth<small>Complex routes</small></span><b>↗</b></button>
+            <button class="preset" data-preset="terrain"><span class="preset-art terrain-art"></span><span>Highlands<small>Weighted terrain</small></span><b>↗</b></button>
+          </div>
+          <div class="input-pair environment-fields"><label>Grid size<select id="grid-size"><option value="15">15 × 15</option><option value="20">20 × 20</option><option value="30" selected>30 × 30</option><option value="40">40 × 40</option><option value="50">50 × 50</option><option value="60">60 × 60</option></select></label><label>Seed<input type="number" id="seed" min="1" max="999999" value="2084"></label></div>
+          <div class="button-pair"><button class="button" id="regenerate"><svg><use href="#i-shuffle"/></svg>Regenerate</button><button class="button subtle" id="more-maps">More maps <svg class="small"><use href="#i-chevron"/></svg></button></div>
+        </section>
+        <section class="control-section"><div class="section-label">SIMULATION SPEED <output id="speed-value">12 steps/s</output></div><input id="speed" aria-label="Simulation speed" type="range" min="1" max="120" value="12"><div class="range-ends"><span>Observe</span><span>Accelerate</span></div></section>
+        <div class="panel-tip"><svg><use href="#i-help"/></svg><p>Build a world. Explore a route.<br><span>Use the map tools to make it yours.</span></p></div>
+      </div>
+    </aside>
+    <main class="main-workspace">
+      <div class="scene-heading"><div><div class="scene-eyebrow"><span class="live-dot"></span> SIMULATION ENVIRONMENT <span class="slash">/</span><span id="scene-grid-label">900 NODES</span></div><h1 id="city-name">New Metro District<span class="title-period">.</span></h1><p>A living sandbox for smarter journeys.</p></div><div class="scene-heading-actions"><button class="button mobile-toggle" id="toggle-controls"><svg><use href="#i-settings"/></svg>Controls</button><button class="button subtle" id="compare-btn" aria-label="Compare algorithms" title="Compare algorithms (X)"><svg><use href="#i-chart"/></svg><span>Compare algorithms</span><kbd>X</kbd></button><button class="icon-button" id="fullscreen-btn" title="Fullscreen (G)" aria-label="Toggle fullscreen"><svg><use href="#i-focus"/></svg></button><button class="icon-button mobile-toggle" id="toggle-analytics" title="Analytics" aria-label="Open analytics"><svg><use href="#i-chart"/></svg></button></div></div>
+      <div class="viewport" id="viewport">
+        <canvas id="city-canvas" aria-label="Interactive 3D city. Use the tools to edit terrain, start and goal. Drag to orbit, scroll to zoom."></canvas>
+        <div class="viewport-vignette"></div>
+        <div class="view-label"><span class="live-dot"></span><span id="view-name">PERSPECTIVE</span><span class="view-divider"></span><span id="city-seed">SEED 2084</span></div>
+        <div class="lighting-control" aria-label="City lighting"><button data-light="day" title="Daylight" aria-label="Daylight"><svg><use href="#i-sun"/></svg></button><button data-light="dusk" class="active" title="Golden hour" aria-label="Golden hour"><span class="sunset-icon"></span></button><button data-light="night" title="Night" aria-label="Night"><svg><use href="#i-moon"/></svg></button></div>
+        <div class="map-tools" id="map-tools" aria-label="City editing tools"></div>
+        <div class="cell-tooltip" id="cell-tooltip" hidden></div>
+        <div class="north-indicator"><span>N</span><svg viewBox="0 0 40 40"><path d="m20 5 7 23-7-5-7 5 7-23Z"/></svg></div>
+        <div class="map-legend"><span><i style="--legend:#66d9bd"></i>Route</span><span><i style="--legend:#6baabb"></i>Explored</span><span><i style="--legend:#e1b979"></i>Frontier</span><span><i style="--legend:#b28baf"></i>Destination</span></div>
+        <div class="camera-dock"><button class="active" data-camera="isometric" title="Isometric view"><svg><use href="#i-city"/></svg><span>3D</span></button><button data-camera="top" title="Top-down view"><svg><use href="#i-layers"/></svg><span>Top</span></button><button data-camera="street" title="Street-level view"><svg><use href="#i-eye"/></svg><span>Street</span></button><span></span><button id="orbit-btn" title="Automatic camera orbit" aria-label="Automatic camera orbit" aria-pressed="false"><svg><use href="#i-reset"/></svg></button><button id="reset-camera" title="Reset camera" aria-label="Reset camera"><svg><use href="#i-focus"/></svg></button></div>
+        <div class="map-scale"><span></span><small id="map-scale-label">5 city blocks</small></div>
+        <div class="scene-loading" id="scene-loading"><span class="loading-mark"></span><strong>Building your city</strong><small>Architecture. Atmosphere. Possibility.</small></div>
+        <div class="scene-error" id="scene-error" hidden><svg><use href="#i-city"/></svg><h2>Your city needs WebGL</h2><p id="scene-error-text">Enable hardware acceleration in your browser to explore the 3D scene.</p><button class="button" id="retry-scene">Try again</button></div>
+      </div>
+      <div class="transport"><div class="playback-buttons"><button class="icon-button" id="back-btn" title="Previous step (B)" aria-label="Previous step"><svg><use href="#i-back"/></svg></button><button class="run-button" id="run-btn"><svg><use href="#i-play"/></svg><span>Run simulation</span><kbd>␣</kbd></button><button class="icon-button" id="step-btn" title="Next step (S)" aria-label="Next step"><svg><use href="#i-step"/></svg></button><button class="icon-button" id="finish-btn" title="Finish search" aria-label="Finish search"><svg><use href="#i-fast"/></svg></button><span class="transport-divider"></span><button class="icon-button" id="reset-btn" title="Reset path (R)" aria-label="Reset path"><svg><use href="#i-reset"/></svg></button></div><div class="history-control"><div><span id="playback-label">READY TO EXPLORE</span><span id="history-label">STEP 000 / 000</span></div><input id="history" type="range" value="0" min="0" max="1" aria-label="Search history" disabled></div><div class="transport-state"><span class="live-dot" id="state-dot"></span><span id="state-label">Ready</span></div></div>
+    </main>
+    <aside class="analytics-panel" id="analytics-panel" aria-label="Live simulation analytics"><div class="panel-heading"><div><span class="eyebrow">EVERY DECISION, VISIBLE</span><h2>Live insights</h2></div><span class="live-badge">LIVE</span><button class="icon-button mobile-close" id="close-analytics" aria-label="Close analytics"><svg><use href="#i-close"/></svg></button></div>
+      <div class="panel-scroll"><div class="analytics-tabs"><button class="active" id="insights-tab">Overview</button><button id="activity-tab">Activity <span id="log-count">0</span></button></div>
+        <div id="insights-content"><div class="metrics-grid"><div class="metric"><span>Nodes explored</span><strong id="stat-visited">0<small>/ 900</small></strong><div class="metric-line"><i id="coverage-bar"></i></div></div><div class="metric"><span>Frontier nodes</span><strong id="stat-frontier">0</strong><small class="metric-caption">Awaiting discovery</small></div><div class="metric"><span>Route length</span><strong id="stat-path">—</strong><small class="metric-caption">route vertices</small></div><div class="metric"><span>Travel cost</span><strong class="mint" id="stat-cost">—</strong><small class="metric-caption">weighted units</small></div><div class="metric"><span>Compute time</span><strong id="stat-time">0<small>ms</small></strong><small class="metric-caption">algorithm execution</small></div><div class="metric"><span>Search coverage</span><strong id="stat-coverage">0<small>%</small></strong><small class="metric-caption">of walkable nodes</small></div></div>
+          <section class="insight-section"><div class="section-label">JOURNEY <span id="route-badge" class="tiny-tag">NOT STARTED</span></div><div class="journey"><div><i class="origin-dot"></i><span>Origin<small id="origin-label">BLOCK 15 · AVE 03</small></span><button class="icon-button" id="edit-start" title="Place origin" aria-label="Place origin"><svg><use href="#i-pin"/></svg></button></div><span class="journey-connector"></span><div><i class="goal-dot"></i><span>Destination<small id="goal-label">BLOCK 15 · AVE 26</small></span><button class="icon-button" id="edit-goal" title="Place destination" aria-label="Place destination"><svg><use href="#i-flag"/></svg></button></div></div></section>
+          <section class="insight-section"><div class="section-label">CITY OVERVIEW <span id="minimap-size">30 × 30</span></div><button class="minimap-wrap" id="minimap-button" title="Switch to top-down view"><canvas id="minimap" width="252" height="184" aria-label="Live city minimap"></canvas><span><svg><use href="#i-focus"/></svg></span></button><div class="minimap-caption"><span><i class="live-dot"></i><b id="walkable-label">—</b> walkable</span><span id="building-label">— buildings</span></div></section>
+          <section class="insight-section"><div class="section-label" id="chart-title">SEARCH PULSE <span id="chart-tag">LIVE TELEMETRY</span></div><canvas id="pulse-chart" width="504" height="160" aria-label="Search exploration chart"></canvas><div class="chart-labels"><span id="chart-key"><i></i> Explored <i></i> Frontier</span><span id="chart-value">0 steps</span></div></section>
+          <section class="insight-section rl-results" id="rl-results" hidden><div class="section-label">TRAINING PROGRESS <span id="training-percent">0%</span></div><progress id="training-progress" value="0" max="3000"></progress><div class="rl-stats"><span>Episodes<b id="rl-episodes">0</b></span><span>Exploration ε<b id="rl-epsilon">1.000</b></span><span>Avg. reward<b id="rl-reward">—</b></span><span>Successful<b id="rl-success">0</b></span></div></section>
+          <div class="insight-note"><span class="live-dot"></span><p id="status-message" aria-live="polite">The city is yours. Press play to discover the best way through.</p></div>
+        </div>
+        <div id="activity-content" hidden><div class="activity-heading"><span>Simulation journal</span><button class="text-button" id="clear-log">Clear</button></div><div id="activity-log" class="activity-log"></div><button class="button full-width" id="download-log"><svg><use href="#i-download"/></svg>Download journal</button></div>
+      </div><div class="analytics-footer"><span class="status-dot"></span> All systems local <span>NO CLOUD REQUIRED</span></div>
+    </aside>
+  </div>
+  <footer class="statusbar"><div><span class="live-dot"></span><span id="footer-status">ENGINE READY</span><span class="status-separator">/</span><span id="footer-algorithm">A* SEARCH</span></div><div><span id="hover-coordinates">30 × 30 CITY GRID</span><span class="status-separator">/</span><span id="fps">60 FPS</span><span class="status-separator">/</span><span>DRAG TO ORBIT <span class="muted">·</span> SCROLL TO ZOOM</span></div><button class="text-button" id="shortcuts-footer">Shortcuts <kbd>?</kbd></button></footer>
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+  <dialog id="modal"><div class="modal-heading"><div><span class="eyebrow" id="modal-eyebrow">METROMIND CITY STUDIO</span><h2 id="modal-title"></h2></div><button class="icon-button" id="close-modal" aria-label="Close dialog"><svg><use href="#i-close"/></svg></button></div><div id="modal-content"></div></dialog>
+  <div class="toast-stack" id="toasts" aria-live="polite"></div>
+  <input id="import-file" type="file" accept="application/json,.json" hidden>
+  <script src="vendor/three.min.js"></script>
+  <script src="vendor/OrbitControls.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/city.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
