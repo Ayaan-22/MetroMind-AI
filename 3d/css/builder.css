@@ -90,7 +90,7 @@
   .free-building .control-panel.open { top: 340px; }
 }
 @media (max-width: 820px) {
-  .map-first .scene-heading-actions .free-build-entry span { display: inline; }
+  .map-first .scene-heading-actions .button#free-build-btn span { display: inline; }
   .map-first .scene-heading-actions #compare-btn { display: none; }
   .map-first .scene-heading { max-width: calc(100% - 260px); }
   .builder-toolbar { gap: 10px 7px; }
@@ -103,7 +103,7 @@
 @media (max-width: 570px) {
   .map-first .scene-heading { max-width: calc(100% - 207px); }
   .map-first .scene-heading-actions .free-build-entry { width: auto; padding: 0 9px; gap: 5px; font-size: 11px; }
-  .map-first .scene-heading-actions .free-build-entry span { display: inline; }
+  .map-first .scene-heading-actions .button#free-build-btn span { display: inline; }
   .builder-workspace { top: 130px; }
   .builder-toolbar { width: 100%; padding: 9px; border-radius: 9px; }
   .builder-heading { gap: 4px; flex-wrap: wrap; }

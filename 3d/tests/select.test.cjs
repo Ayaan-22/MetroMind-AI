@@ -145,6 +145,10 @@ test('menus flip above low controls and clamp their width inside a phone viewpor
   assert.equal(menu.style.width, '300px');
   assert.equal(menu.style.left, '10px');
   assert.ok(Number.parseFloat(menu.style.top) + Number.parseFloat(menu.style.maxHeight) <= 790);
+  h.trigger(native).rect = { top: 100, bottom: 140, left: 240, right: 336, width: 96, height: 40 };
+  h.window.dispatchEvent(new h.Event('resize'));
+  assert.equal(menu.style.width, '200px', 'compact triggers still leave readable room for option labels');
+  assert.equal(menu.style.left, '110px', 'the wider menu remains inside the viewport');
   native.disabled = true;
   h.window.dispatchEvent(new h.Event('resize'));
   assert.equal(h.menu(native), undefined, 'a disabled control cannot retain an open menu');

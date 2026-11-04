@@ -899,7 +899,7 @@ output { font-size: var(--type-label); font-weight: 500; }
   .free-building .control-panel.open { top: 340px; }
 }
 @media (max-width: 820px) {
-  .map-first .scene-heading-actions .free-build-entry span { display: inline; }
+  .map-first .scene-heading-actions .button#free-build-btn span { display: inline; }
   .map-first .scene-heading-actions #compare-btn { display: none; }
   .map-first .scene-heading { max-width: calc(100% - 260px); }
   .builder-toolbar { gap: 10px 7px; }
@@ -912,7 +912,7 @@ output { font-size: var(--type-label); font-weight: 500; }
 @media (max-width: 570px) {
   .map-first .scene-heading { max-width: calc(100% - 207px); }
   .map-first .scene-heading-actions .free-build-entry { width: auto; padding: 0 9px; gap: 5px; font-size: 11px; }
-  .map-first .scene-heading-actions .free-build-entry span { display: inline; }
+  .map-first .scene-heading-actions .button#free-build-btn span { display: inline; }
   .builder-workspace { top: 130px; }
   .builder-toolbar { width: 100%; padding: 9px; border-radius: 9px; }
   .builder-heading { gap: 4px; flex-wrap: wrap; }
@@ -2893,7 +2893,7 @@ output { font-size: var(--type-label); font-weight: 500; }
     }
     fitCamera(name,animate=true){
       const n=this.size||30,points=this.cameraBounds(),scale=(this.freeBuild?this.framingExtent:n)/30,aspect=Math.max(.1,this.camera.aspect||1),whole=this.cameraFraming==='fit';
-      const views={isometric:[27.7,25.6,32],top:[.001,52,.001],street:[25,9,28]},v=views[name]||views.isometric;
+      const views={isometric:[27.7,25.6,32],top:[0,52,.001],street:[25,9,28]},v=views[name]||views.isometric;
       const direction=new THREE.Vector3(...v).normalize(),right=new THREE.Vector3(0,1,0).cross(direction).normalize(),up=direction.clone().cross(right).normalize();
       const target=new THREE.Vector3(this.framingCenter?.x??0,name==='street'?1.2*scale:.65*scale,this.framingCenter?.z??0),tangent=Math.tan(THREE.MathUtils.degToRad(this.camera.fov*.5));
       // Fit mode contains the complete city at any aspect. Explore mode uses a
@@ -3046,7 +3046,7 @@ output { font-size: var(--type-label); font-weight: 500; }
     const viewportWidth = document.documentElement.clientWidth || scope.innerWidth;
     const viewportHeight = document.documentElement.clientHeight || scope.innerHeight;
     const edge = 10, gap = 7;
-    const width = Math.max(120, Math.min(rect.width, viewportWidth - edge * 2));
+    const width = Math.max(1, Math.min(Math.max(200, rect.width), viewportWidth - edge * 2));
     instance.menu.style.width = `${width}px`;
     instance.menu.style.maxHeight = `${Math.min(420, viewportHeight - edge * 2)}px`;
     instance.menu.style.left = `${Math.max(edge, Math.min(rect.left, viewportWidth - width - edge))}px`;
@@ -3507,7 +3507,7 @@ output { font-size: var(--type-label); font-weight: 500; }
   $('free-build-btn').onclick=startFreeBuild;$('builder-done').onclick=stopFreeBuild;$('build-blank').onclick=newFreeCanvas;$('build-undo').onclick=undoBuild;$('build-redo').onclick=redoBuild;
   document.querySelectorAll('[data-build-tool]').forEach(button=>button.onclick=()=>{finishBuildStroke();selectTool(button.dataset.buildTool==='road'?$('build-surface').value:button.dataset.buildTool);});
   $('brush-size').onchange=()=>{finishBuildStroke();brushSize=[1,3,5].includes(Number($('brush-size').value))?Number($('brush-size').value):1;updateBuilder();};
-  $('build-surface').onchange=()=>{finishBuildStroke();selectTool($('build-surface').value);};$('grid-guides').onchange=()=>city?.setGridGuides($('grid-guides').checked);
+  $('build-surface').onchange=()=>{const surface=$('build-surface').value;finishBuildStroke();selectTool(surface);};$('grid-guides').onchange=()=>city?.setGridGuides($('grid-guides').checked);
   document.addEventListener('keydown',event=>{if(!editing||!(event.ctrlKey||event.metaKey)||event.target.closest('input,select,textarea,[contenteditable="true"]'))return;const key=event.key.toLowerCase();if(key==='z'||key==='y'){event.preventDefault();event.stopPropagation();key==='y'||event.shiftKey?redoBuild():undoBuild();}});
   $('modal-content').addEventListener('click',e=>{const action=e.target.closest('button')?.dataset.workspace;if(!action)return;closeModal();if(action==='freebuild'){startFreeBuild();}else if(action==='simulation'||action==='learning'){selectTab(action==='learning');openDrawer('control-panel');}else if(action==='layers')showLayers();else if(action==='display')showSettings();else if(action==='focus')immersive();else if(action==='help')showHelp();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').open){if(document.body.classList.contains('immersive'))immersive();else closeDrawers();return;}if(e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,select,textarea,[contenteditable="true"]'))return;if($('modal').open)return;const key=e.key.toLowerCase();if(key===' '){e.preventDefault();toggleRun();}else if(key==='s'||key==='f'){e.preventDefault();stepSearch();}else if(key==='b')backSearch();else if(key==='r'){training=false;resetSearch();}else if(key==='x')compare();else if(key==='t'){selectTab(true);if(!$('control-panel').classList.contains('open'))openDrawer('control-panel');else syncDrawers();}else if(key==='e')startFreeBuild();else if(key==='p'&&editing)selectTool('road');else if(key==='g')immersive();else if(key==='?')showHelp();else if(key==='v')selectTool('view');else if(key==='c'){showMaps();}else if(/^[1-9]$/.test(key))selectTool(tools[Number(key)][0]);});

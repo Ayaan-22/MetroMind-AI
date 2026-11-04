@@ -82,7 +82,7 @@
     const viewportWidth = document.documentElement.clientWidth || scope.innerWidth;
     const viewportHeight = document.documentElement.clientHeight || scope.innerHeight;
     const edge = 10, gap = 7;
-    const width = Math.max(120, Math.min(rect.width, viewportWidth - edge * 2));
+    const width = Math.max(1, Math.min(Math.max(200, rect.width), viewportWidth - edge * 2));
     instance.menu.style.width = `${width}px`;
     instance.menu.style.maxHeight = `${Math.min(420, viewportHeight - edge * 2)}px`;
     instance.menu.style.left = `${Math.max(edge, Math.min(rect.left, viewportWidth - width - edge))}px`;

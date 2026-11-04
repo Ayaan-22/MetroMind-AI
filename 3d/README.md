@@ -33,6 +33,7 @@ The builder uses only Node's built-in modules. It embeds local stylesheet and sc
 | `css/typography.css` | Readable text sizes, contrast, spacing and responsive type rules |
 | `css/map-workspace.css` | Full-window map, floating controls and on-demand panels |
 | `css/select.css` | Consistent dropdown buttons, option lists and focus states |
+| `css/builder.css` | Free Build toolbar, brush controls and canvas editing hints |
 | `js/engine.js` | Grid data, search algorithms and Q-learning; exposes `MetroEngine` |
 | `js/city.js` | Three.js city, cameras, lighting, traffic and route rendering; exposes `MetroCity` |
 | `js/app.js` | UI state, editing, simulation controls, charts, persistence and exports |
@@ -52,7 +53,11 @@ The city fills the window by default. Controls and Insights open as floating pan
 
 The camera starts in a closer exploration view. Use the map zoom buttons or the scroll wheel to move in and out; **Fit city** shows the entire district. **G** hides the interface for an unobstructed view, and **G**, **Escape**, or **Show controls** restores it. Additional terrain and elevation tools expand from the editing palette.
 
-Choose **More maps → Blank canvas** to build a layout from scratch. Editing is bounded by the selected grid; the surrounding ground is scenery. The search and learning models use grid cells internally, even when the camera is zoomed out over a larger area.
+Open **Free Build** in the top-right map controls, or press **E**, to edit the current city without replacing it. Draw beyond its edge to expand the canvas automatically, up to 100 × 100 blocks. Existing buildings, streets and endpoint positions stay in the same world locations as the canvas grows. Choose **Done**, or press **E** again, to keep the map and return to simulation.
+
+In Free Build, choose **New canvas** for undeveloped ground with two endpoint cells. Select **Road** and drag a street between the origin and destination; unbuilt ground is not traversable. The **Surface** menu offers Street (1×), Highway (0.5×), Traffic (3×) and Mud (10×), and the **Brush** menu offers widths of 1, 3 or 5 blocks. Place buildings, erase development, or move either endpoint with the adjacent tools. Toggle **Guides** to reveal the hidden cells. Undo and redo buttons, **Ctrl+Z** and **Ctrl+Y** restore complete build strokes, including canvas growth.
+
+The search and learning models still use a computational grid beneath the freehand editing tools. Free Build provides an expanding canvas with hidden guides, rather than an infinite canvas or a vector road graph. Outside Free Build, ordinary editing remains bounded by the selected grid and the surrounding ground is scenery.
 
 Dropdowns use the same visual style throughout the workspace. Arrow keys, Home/End and typeahead highlight an option; Enter commits it, Escape cancels, and Tab continues normal keyboard navigation. Menus stay within the window and appear above scrolling panels.
 
@@ -76,6 +81,9 @@ City camera and lighting controls provide isometric, top-down and street views, 
 | `R` | Reset the current route |
 | `X` | Compare all nine algorithms |
 | `T` | Switch to learning |
+| `E` | Enter/leave Free Build, keeping the current map |
+| `P` | Select the Road brush in Free Build |
+| `Ctrl+Z` / `Ctrl+Y` | Undo/redo a Free Build stroke |
 | `V` | Select the orbit tool |
 | `1`–`4` | Building, origin, destination, erase |
 | `5`–`7` | Highway, traffic, mud |
@@ -90,7 +98,7 @@ Drag with the orbit tool to rotate, scroll to zoom and right-drag to pan. Choose
 
 ## Format and verification limits
 
-The city uses square grids; the environment selector offers 15, 20, 30, 40, 50 and 60 cells per side. Imports accept the current format, the original 3D format and v11 exports. Rectangular v11 maps retain their cell positions, with unused square space blocked. The JSON importer validates the entire layout before replacing the current city.
+The city uses square grids; the regular environment selector offers 15, 20, 30, 40, 50 and 60 cells per side. Free Build starts a new canvas at 30 × 30 cells and expands automatically to a maximum of 100 × 100. JSON saves include the world origins, developed-cell mask and Free Build mode; importing a Free Build layout restores its positions and reopens the editor. Imports also accept the original 3D format and v11 exports. Rectangular v11 maps retain their cell positions, with unused square space blocked. The JSON importer validates the entire layout before replacing the current city.
 
 Search results report route vertices: Theta* can connect distant visible cells in one segment, so its vertex count is not directly comparable to a cell-by-cell route. Compute times measure algorithm work in the current browser and vary with hardware. Comparison runs use a snapshot of the same grid and movement settings; closing the dialog cancels pending comparison work.
 
