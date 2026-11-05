@@ -525,8 +525,9 @@
       }finally{this.controls.enableDamping=damping;}
       return true;
     }
-    setTool(tool){this.tool=tool;this.controls.mouseButtons.LEFT=tool==='view'?THREE.MOUSE.ROTATE:null;this.controls.touches.ONE=tool==='view'?THREE.TOUCH.ROTATE:null;this.canvas.style.cursor=tool==='view'?'grab':'crosshair';this.setBrush(this.brushSize);}
+    setTool(tool){if(tool!==this.tool)this.finishPointerStroke?.();this.tool=tool;this.controls.mouseButtons.LEFT=tool==='view'?THREE.MOUSE.ROTATE:null;this.controls.touches.ONE=tool==='view'?THREE.TOUCH.ROTATE:null;this.canvas.style.cursor=tool==='view'?'grab':'crosshair';this.setBrush(this.brushSize);}
     setEditor(enabled,options={}){
+      if(this.editorEnabled!==Boolean(enabled))this.finishPointerStroke?.();
       this.editorEnabled=Boolean(enabled);this.paintDown=false;this.lastPaintWorld=null;this.hover.visible=this.selection.visible=false;
       if(this.editorEnabled){this.cameraTween=null;this.cameraTouched=true;}
       this.setBrush(options.brushSize!==undefined?options.brushSize:this.brushSize);
@@ -558,9 +559,57 @@
     }
     bindPointer(){
       const on=(type,listener,opts)=>{this.canvas.addEventListener(type,listener,opts);this.events.push([type,listener,opts]);};this.trafficVisible=!this.reducedMotion;
-      on('pointerdown',event=>{if(event.button===0)this.canvas.focus?.({preventScroll:true});if(event.button!==0||this.tool==='view')return;this.cameraTween=null;this.cameraTouched=true;this.paintDown=true;this.lastPaint=-1;this.lastPaintWorld=null;this.canvas.setPointerCapture(event.pointerId);if(this.editorEnabled){this.paintWorld(this.pickWorld(event),event);return;}const i=this.cellAt(event);if(i>=0&&this.options.onCell){this.options.onCell(i,event);this.lastPaint=i;} });
-      on('pointermove',event=>{if(this.editorEnabled){const point=this.pickWorld(event);this.hoverWorld(point,event);if(this.paintDown&&this.tool!=='view')this.paintWorld(point,event);return;}const i=this.cellAt(event);this.hover.visible=this.selection.visible=i>=0&&this.tool!=='view';if(i>=0){const p=this.point(i,.075);this.hover.position.copy(p);this.selection.position.copy(p);if(this.terrain[i]===1){this.selection.position.y=this.level(i)+(this.buildingHeights[i]||.16)+.02;this.hover.position.y=this.selection.position.y;}}if(this.options.onHover)this.options.onHover(i,event);if(this.paintDown&&this.tool!=='view'&&i>=0&&i!==this.lastPaint){this.lastPaint=i;if(this.options.onCell)this.options.onCell(i,event);} });
-      const end=()=>{const painted=this.paintDown;this.paintDown=false;this.lastPaint=-1;this.lastPaintWorld=null;if(painted)this.options.onStrokeEnd?.();};on('pointerup',end);on('pointercancel',end);on('pointerleave',()=>{this.hover.visible=this.selection.visible=false;if(this.editorEnabled)this.options.onHoverWorld?.(null,null);else if(this.options.onHover)this.options.onHover(-1,null);});on('contextmenu',event=>event.preventDefault());
+      const touches=new Set(),idOf=event=>event.pointerId??0;
+      let owner=null,pendingTouch=null,multiTouch=false;
+      this.canvas.style.touchAction='none';
+      const hideHover=()=>{this.hover.visible=this.selection.visible=false;if(this.editorEnabled)this.options.onHoverWorld?.(null,null);else this.options.onHover?.(-1,null);};
+      const finish=()=>{
+        const painted=this.paintDown,id=owner;owner=null;pendingTouch=null;
+        this.paintDown=false;this.lastPaint=-1;this.lastPaintWorld=null;
+        if(id!==null&&this.canvas.hasPointerCapture?.(id))this.canvas.releasePointerCapture?.(id);
+        if(painted)this.options.onStrokeEnd?.();
+      };
+      this.finishPointerStroke=finish;
+      const paintAt=event=>{
+        if(this.editorEnabled){this.paintWorld(this.pickWorld(event),event);return;}
+        const i=this.cellAt(event);if(i>=0&&i!==this.lastPaint&&this.options.onCell){this.options.onCell(i,event);this.lastPaint=i;}
+      };
+      const begin=event=>{this.paintDown=true;this.lastPaint=-1;this.lastPaintWorld=null;paintAt(event);};
+      const cameraGesture=()=>{multiTouch=true;finish();hideHover();};
+      on('pointerdown',event=>{
+        const id=idOf(event),touch=event.pointerType==='touch';
+        if(touch){touches.add(id);if(touches.size>1){cameraGesture();return;}}
+        if(event.button===0||touch)this.canvas.focus?.({preventScroll:true});
+        if((event.button!==0&&!touch)||this.tool==='view'||owner!==null||multiTouch)return;
+        this.cameraTween=null;this.cameraTouched=true;owner=id;
+        this.canvas.setPointerCapture?.(id);
+        // A second finger can arrive immediately after the first. Delay a
+        // touch mark until a single-finger drag or tap release is confirmed.
+        if(touch)pendingTouch=event;else begin(event);
+      });
+      on('pointermove',event=>{
+        const touch=event.pointerType==='touch',active=owner===idOf(event);
+        if(touch&&(multiTouch||!active)){if(multiTouch)hideHover();return;}
+        if(this.editorEnabled){const point=this.pickWorld(event);this.hoverWorld(point,event);}
+        else{const i=this.cellAt(event);this.hover.visible=this.selection.visible=i>=0&&this.tool!=='view';if(i>=0){const p=this.point(i,.075);this.hover.position.copy(p);this.selection.position.copy(p);if(this.terrain[i]===1){this.selection.position.y=this.level(i)+(this.buildingHeights[i]||.16)+.02;this.hover.position.y=this.selection.position.y;}}this.options.onHover?.(i,event);}
+        if(!active||this.tool==='view')return;
+        if(pendingTouch){if(Math.hypot(event.clientX-pendingTouch.clientX,event.clientY-pendingTouch.clientY)<4)return;const start=pendingTouch;pendingTouch=null;begin(start);}
+        if(this.paintDown)paintAt(event);
+      });
+      const end=(event,cancelled=false)=>{
+        const id=idOf(event),touch=event.pointerType==='touch';
+        if(owner===id){if(pendingTouch&&!cancelled&&!multiTouch&&this.tool!=='view')begin(event);finish();}
+        if(touch){touches.delete(id);if(!touches.size)multiTouch=false;}
+        if(touch||cancelled)hideHover();
+      };
+      on('pointerup',event=>end(event));on('pointercancel',event=>end(event,true));
+      on('lostpointercapture',event=>{if(owner!==idOf(event))return;if(event.pointerType==='touch')multiTouch=true;finish();hideHover();});
+      // OrbitControls r128 uses Touch Events for its two-finger pan/pinch. Keep
+      // that public gesture path independent from editable Pointer Events.
+      on('touchstart',event=>{if(event.touches.length>1)cameraGesture();},{passive:true});
+      on('touchend',event=>{if(!event.touches.length){touches.clear();multiTouch=false;finish();}});
+      on('touchcancel',()=>{touches.clear();multiTouch=false;finish();hideHover();});
+      on('pointerleave',hideHover);on('contextmenu',event=>event.preventDefault());
     }
     animate(time){
       const dt=Math.min(.05,Math.max(0,(time-this.lastTime)/1000||.016));this.lastTime=time;this.elapsed=(this.elapsed||0)+dt;this.frameCount++;if(time-this.fpsTime>650){this.fps=Math.round(this.frameCount*1000/(time-this.fpsTime));this.fpsTime=time;this.frameCount=0;}

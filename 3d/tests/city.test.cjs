@@ -60,6 +60,120 @@ function cameraScene() {
   return { city, canvas, ownerDocument };
 }
 
+function pointerScene() {
+  const fixture = cameraScene(), { city, canvas } = fixture, captures = new Set(), painted = [], strokes = [];
+  Object.assign(city, scene(), {
+    canvas, events: [], editorEnabled: true, tool: 'view',
+    hover: new THREE.Object3D(), selection: new THREE.Object3D(),
+    options: { onPaintWorld(point) { painted.push({ ...point }); }, onStrokeEnd() { strokes.push(painted.length); } },
+  });
+  canvas.setPointerCapture = id => captures.add(id);
+  canvas.hasPointerCapture = id => captures.has(id);
+  canvas.releasePointerCapture = id => { captures.delete(id); canvas.fire('lostpointercapture', { pointerId: id, pointerType: 'touch' }); };
+  city.pickWorld = event => ({ x: 10 + event.clientX / 20, z: 20 + event.clientY / 20 });
+  city.bindPointer(); city.setTool('road');
+  const pointer = (type, id, x, y = 100, pointerType = 'touch') => canvas.fire(type, { pointerId: id, pointerType, button: 0, clientX: x, clientY: y });
+  const touch = (type, points) => canvas.fire(type, { touches: points.map(([pageX, pageY]) => ({ pageX, pageY })) });
+  return { ...fixture, captures, painted, strokes, pointer, touch };
+}
+
+test('touch taps and intentional drags paint complete strokes without turning a small contact movement into a mark', () => {
+  const h = pointerScene();
+  assert.equal(h.canvas.style.touchAction, 'none');
+  h.pointer('pointerdown', 1, 100); h.pointer('pointermove', 1, 102);
+  assert.equal(h.painted.length, 0, 'contact jitter is not yet a paint drag');
+  h.pointer('pointerup', 1, 102);
+  assert.equal(h.painted.length, 1, 'a completed tap paints exactly once');
+  assert.equal(h.strokes.length, 1); assert.equal(h.captures.size, 0);
+  h.pointer('pointerdown', 2, 200); h.pointer('pointermove', 2, 230); h.pointer('pointerup', 2, 230);
+  assert.ok(h.painted.length > 2, 'the real freehand interpolator fills an intentional stroke');
+  near(h.painted[1].x, 20); near(h.painted.at(-1).x, 21.5);
+  assert.equal(h.strokes.length, 2);
+  h.city.controls.dispose();
+});
+
+test('two-finger camera pan and pinch do not paint, including while one finger remains after the gesture', () => {
+  const h = pointerScene(), target = h.city.controls.target.clone(), distance = h.city.camera.position.distanceTo(target);
+  h.pointer('pointerdown', 1, 100); h.touch('touchstart', [[100, 100]]);
+  h.pointer('pointerdown', 2, 200); h.touch('touchstart', [[100, 100], [200, 100]]);
+  h.pointer('pointermove', 1, 70); h.pointer('pointermove', 2, 250);
+  h.touch('touchmove', [[70, 120], [250, 120]]);
+  assert.equal(h.painted.length, 0, 'pinch contacts never become editable cells');
+  assert.equal(h.strokes.length, 0);
+  assert.ok(h.city.controls.target.distanceTo(target) > 0, 'bundled OrbitControls pans with the gesture');
+  assert.ok(h.city.camera.position.distanceTo(h.city.controls.target) < distance, 'bundled OrbitControls also pinches to zoom');
+  h.pointer('pointerup', 2, 250); h.touch('touchend', [[70, 120]]);
+  h.pointer('pointermove', 1, 360); h.pointer('pointerup', 1, 360); h.touch('touchend', []);
+  assert.equal(h.painted.length, 0, 'the remaining finger must lift before painting can restart');
+  h.pointer('pointerdown', 3, 400); h.pointer('pointerup', 3, 400); h.touch('touchend', []);
+  assert.equal(h.painted.length, 1, 'a fresh tap resumes without bridging from the camera gesture');
+  near(h.painted[0].x, 30); assert.equal(h.strokes.length, 1);
+  h.city.controls.dispose();
+});
+
+test('adding a finger ends an existing drawing stroke once and never joins it to the next stroke', () => {
+  const h = pointerScene();
+  h.pointer('pointerdown', 1, 100); h.pointer('pointermove', 1, 120);
+  const count = h.painted.length; assert.ok(count > 1);
+  h.pointer('pointerdown', 2, 200);
+  assert.equal(h.strokes.length, 1);
+  h.pointer('pointermove', 1, 300); h.pointer('pointermove', 2, 400);
+  h.pointer('pointerup', 1, 300); h.pointer('pointerup', 2, 400); h.touch('touchend', []);
+  assert.equal(h.painted.length, count); assert.equal(h.strokes.length, 1);
+  h.pointer('pointerdown', 3, 500); h.pointer('pointerup', 3, 500);
+  assert.equal(h.painted.length, count + 1); assert.equal(h.strokes.length, 2);
+  h.city.controls.dispose();
+});
+
+test('pointer cancellation, capture loss and tool changes finish only the owning edit and leave fresh input usable', () => {
+  const h = pointerScene();
+  h.pointer('pointerdown', 1, 100); h.pointer('pointercancel', 1, 100);
+  assert.equal(h.painted.length, 0); assert.equal(h.strokes.length, 0);
+  h.pointer('pointerdown', 2, 100); h.pointer('pointermove', 2, 120);
+  h.pointer('pointerup', 99, 500, 100, 'pen');
+  assert.equal(h.strokes.length, 0, 'an unrelated pointer cannot end the active stroke');
+  h.canvas.fire('lostpointercapture', { pointerId: 2, pointerType: 'touch' });
+  assert.equal(h.strokes.length, 1);
+  const count = h.painted.length;
+  h.pointer('pointermove', 2, 300); h.pointer('pointerup', 2, 300); h.touch('touchend', []);
+  assert.equal(h.painted.length, count);
+  h.pointer('pointerdown', 3, 300, 100, 'mouse');
+  assert.equal(h.painted.length, count + 1, 'mouse editing remains immediate');
+  h.city.setTool('view');
+  assert.equal(h.strokes.length, 2);
+  h.pointer('pointermove', 3, 500, 100, 'mouse'); h.pointer('pointerup', 3, 500, 100, 'mouse');
+  assert.equal(h.painted.length, count + 1);
+  h.city.controls.dispose();
+});
+
+test('view mode uses a single touch to orbit and never edits the canvas', () => {
+  const h = pointerScene(); h.city.setTool('view');
+  const position = h.city.camera.position.clone();
+  h.pointer('pointerdown', 1, 100); h.touch('touchstart', [[100, 100]]);
+  h.pointer('pointermove', 1, 150); h.touch('touchmove', [[150, 120]]);
+  h.pointer('pointerup', 1, 150); h.touch('touchend', []);
+  assert.ok(h.city.camera.position.distanceTo(position) > 0);
+  assert.equal(h.painted.length, 0); assert.equal(h.strokes.length, 0);
+  h.city.controls.dispose();
+});
+
+test('ordinary city endpoint and terrain editing also use the active touch without treating camera gestures as taps', () => {
+  const h = pointerScene(), cells = [];
+  h.city.setEditor(false); h.city.setTool('start');
+  h.city.cellAt = event => Math.min(15, Math.floor(event.clientX / 20));
+  h.city.options.onCell = index => cells.push(index);
+  h.pointer('pointerdown', 1, 40); h.pointer('pointerup', 1, 40);
+  assert.deepEqual(cells, [2]);
+  h.pointer('pointerdown', 2, 60); h.pointer('pointerdown', 3, 80);
+  h.pointer('pointermove', 2, 100); h.pointer('pointerup', 3, 80); h.pointer('pointerup', 2, 100);
+  assert.deepEqual(cells, [2], 'two-finger navigation leaves the existing endpoints intact');
+  h.city.setTool('wall');
+  h.pointer('pointerdown', 4, 100); h.pointer('pointermove', 4, 160); h.pointer('pointerup', 4, 160);
+  assert.deepEqual(cells, [2, 5, 8]);
+  assert.equal(h.strokes.length, 2);
+  h.city.controls.dispose();
+});
+
 test('camera bearing follows the actual view direction around a panned target', () => {
   const { city } = cameraScene(), target = city.controls.target;
   for (const [x, z, expected] of [[0, 20, 0], [-20, 0, 90], [0, -20, 180], [20, 0, 270], [-20, 20, 45], [20, 20, 315]]) {

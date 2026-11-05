@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="css/builder.css">
   <link rel="stylesheet" href="css/commands.css">
   <link rel="stylesheet" href="css/polish.css">
+  <link rel="stylesheet" href="css/mobile.css">
 </head>
 <body class="map-first">
   <svg class="icon-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -121,7 +122,7 @@
     </aside>
     <main class="main-workspace">
       <div class="viewport" id="viewport">
-        <canvas id="city-canvas" tabindex="0" aria-label="Interactive 3D city. Use the tools to edit terrain, start and goal. Drag to orbit, scroll to zoom."></canvas>
+        <canvas id="city-canvas" tabindex="0" aria-label="Interactive 3D city. Use the tools to edit terrain, start and goal. Drag to orbit; pinch or scroll to zoom. In drawing mode, two fingers navigate the camera."></canvas>
         <div class="viewport-vignette"></div>
         <div class="workspace-actions" id="workspace-actions" role="toolbar" aria-label="Workspace panels">
           <button class="button free-build-entry" id="free-build-btn" aria-label="Free Build" aria-pressed="false" title="Free Build editor"><svg><use href="#i-road"/></svg><span>Free Build</span></button>
@@ -145,7 +146,7 @@
         <div class="builder-workspace" id="builder-workspace" hidden aria-label="Free Build editor">
           <div class="builder-toolbar" id="builder-toolbar" role="toolbar" aria-label="Free Build tools">
             <span class="builder-mode"><i></i>BUILD</span>
-            <div class="builder-tools" aria-label="Build tools"><button class="button active" id="build-tool-road" data-build-tool="road" aria-label="Road" title="Draw road (P)"><svg><use href="#i-road"/></svg><span>Road</span></button><button class="button" id="build-tool-wall" data-build-tool="wall" aria-label="Building" title="Place building (1)"><svg><use href="#i-city"/></svg><span>Building</span></button><button class="button" id="build-tool-erase" data-build-tool="erase" aria-label="Erase" title="Erase (4)"><svg><use href="#i-erase"/></svg><span>Erase</span></button><button class="icon-button" id="build-tool-start" data-build-tool="start" aria-label="Place build origin" title="Place origin (2)"><svg><use href="#i-pin"/></svg></button><button class="icon-button" id="build-tool-goal" data-build-tool="goal" aria-label="Place build destination" title="Place destination (3)"><svg><use href="#i-flag"/></svg></button></div>
+            <div class="builder-tools" aria-label="Build tools"><button class="icon-button" id="build-tool-view" data-build-tool="view" aria-label="Navigate city" title="Navigate city: drag to orbit, pinch to zoom"><svg><use href="#i-move"/></svg></button><button class="button active" id="build-tool-road" data-build-tool="road" aria-label="Road" title="Draw road (P)"><svg><use href="#i-road"/></svg><span>Road</span></button><button class="button" id="build-tool-wall" data-build-tool="wall" aria-label="Building" title="Place building (1)"><svg><use href="#i-city"/></svg><span>Building</span></button><button class="button" id="build-tool-erase" data-build-tool="erase" aria-label="Erase" title="Erase (4)"><svg><use href="#i-erase"/></svg><span>Erase</span></button><button class="icon-button" id="build-tool-start" data-build-tool="start" aria-label="Place build origin" title="Place origin (2)"><svg><use href="#i-pin"/></svg></button><button class="icon-button" id="build-tool-goal" data-build-tool="goal" aria-label="Place build destination" title="Place destination (3)"><svg><use href="#i-flag"/></svg></button></div>
             <div class="builder-options"><label>Surface<select id="build-surface"><option value="road">Street · 1×</option><option value="highway">Highway · 0.5×</option><option value="traffic">Traffic · 3×</option><option value="mud">Mud · 10×</option></select></label><label>Brush width<select id="brush-size"><option value="1">1 block</option><option value="3">3 blocks</option><option value="5">5 blocks</option></select></label></div>
             <label class="builder-guides"><input type="checkbox" id="grid-guides">Guides</label>
             <div class="builder-history"><button class="icon-button" id="build-undo" aria-label="Undo build stroke" title="Undo (Ctrl+Z)" disabled><svg><use href="#i-back"/></svg></button><button class="icon-button" id="build-redo" aria-label="Redo build stroke" title="Redo (Ctrl+Y)" disabled><svg><use href="#i-step"/></svg></button></div>

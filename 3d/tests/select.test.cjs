@@ -6,7 +6,7 @@ const vm = require('node:vm');
 
 // The component's real event handlers run here. Only browser layout and DOM
 // primitives are substituted; visual appearance is checked in a browser.
-function harness({ width = 1000, height = 800 } = {}) {
+function harness({ width = 1000, height = 800, visualBounds } = {}) {
   let document;
   class DOMEvent {
     constructor(type, options = {}) { Object.assign(this, { type, bubbles: false, defaultPrevented: false }, options); }
@@ -72,7 +72,8 @@ function harness({ width = 1000, height = 800 } = {}) {
   document.body = new Element('body'); document.documentElement.append(document.body); document.activeElement = document.body;
   document.createElement = tag => new Element(tag); document.querySelectorAll = selector => document.documentElement.querySelectorAll(selector); document.getElementById = id => document.querySelectorAll('#' + id)[0]; document.contains = el => document.documentElement.contains(el);
   const window = new Target();
-  const context = vm.createContext({ document, Event: DOMEvent, innerWidth: width, innerHeight: height, addEventListener: (...args) => window.addEventListener(...args) });
+  const visualViewport = visualBounds && Object.assign(new Target(), visualBounds);
+  const context = vm.createContext({ document, Event: DOMEvent, innerWidth: width, innerHeight: height, visualViewport, addEventListener: (...args) => window.addEventListener(...args) });
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../js/select.js'), 'utf8'), context);
   function select(id, values, selected = 0, { label = id, wrapping = false, parent = document.body } = {}) {
     const host = new Element(wrapping ? 'label' : 'div'); if (!wrapping) host.className = 'select-wrap'; else host._text = label;
@@ -84,7 +85,7 @@ function harness({ width = 1000, height = 800 } = {}) {
   function menu(native) { return document.getElementById(native.id + '-listbox'); }
   function key(native, value) { const event = new DOMEvent('keydown', { key: value, bubbles: true }); trigger(native).dispatchEvent(event); return event; }
   function click(element) { element.dispatchEvent(new DOMEvent('click', { bubbles: true })); }
-  return { document, window, select, trigger, menu, key, click, Event: DOMEvent, Element, api: context.MetroSelect };
+  return { document, window, visualViewport, select, trigger, menu, key, click, Event: DOMEvent, Element, api: context.MetroSelect };
 }
 
 test('enhancement preserves the native selection and accessible labels and is idempotent', () => {
@@ -152,4 +153,21 @@ test('menus flip above low controls and clamp their width inside a phone viewpor
   native.disabled = true;
   h.window.dispatchEvent(new h.Event('resize'));
   assert.equal(h.menu(native), undefined, 'a disabled control cannot retain an open menu');
+});
+
+test('an open menu repositions within the visible screen when the phone keyboard reduces it', () => {
+  const h = harness({ width: 390, height: 800, visualBounds: { width: 390, height: 800, offsetTop: 0, offsetLeft: 0 } });
+  const native = h.select('grid-size', ['15', '20', '30', '40', '50', '60']);
+  h.api.init();
+  h.trigger(native).rect = { top: 320, bottom: 360, left: 120, right: 260, width: 140, height: 40 };
+  h.click(h.trigger(native));
+  const menu = h.menu(native);
+  assert.equal(menu.dataset.placement, 'below');
+  Object.assign(h.visualViewport, { height: 300, offsetTop: 100 });
+  h.visualViewport.dispatchEvent(new h.Event('resize'));
+  assert.equal(menu.dataset.placement, 'above');
+  assert.ok(Number.parseFloat(menu.style.top) >= 110);
+  assert.ok(Number.parseFloat(menu.style.top) + Number.parseFloat(menu.style.maxHeight) <= 313);
+  h.click(menu.querySelectorAll('[role="option"]')[2]);
+  assert.equal(native.value, '30');
 });

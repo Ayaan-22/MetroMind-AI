@@ -37,6 +37,7 @@ The builder uses only Node's built-in modules. It embeds local stylesheet and sc
 | `css/builder.css` | Free Build toolbar, brush controls and canvas editing hints |
 | `css/commands.css` | Floating simulation and environment controls, panel pins and responsive panel layout |
 | `css/polish.css` | Readable typography, custom scrollbars, inset speed control and interactive compass styling |
+| `css/mobile.css` | Touch targets, phone and tablet layouts, and safe screen insets |
 | `js/engine.js` | Grid data, search algorithms and Q-learning; exposes `MetroEngine` |
 | `js/city.js` | Three.js city, cameras, lighting, traffic and route rendering; exposes `MetroCity` |
 | `js/app.js` | UI state, editing, simulation controls, charts, persistence and exports |
@@ -58,6 +59,8 @@ The previous 3D prototype is preserved separately in `../old_versions/MetroMind_
 The city fills the window by default. A compact floating group provides Free Build, Controls, Compare and Insights. The sidebar keeps Learning, Layers, Display and Help. A small environment card exposes grid size, maps, regeneration, diagonal movement and live replanning. Algorithm and speed sit in a floating capsule above playback; Learning mode offers episode count and Test policy there. Opening Controls brings the actual algorithm, speed and grid fields into the panel, retaining their values. Closing the panel returns them to their floating positions.
 
 Use the sidebar icon beside the MetroMind logo to hide or show the sidebar. The map expands into the freed space, and the choice is remembered on this browser. On phones, the workspace menu provides the sidebar's actions.
+
+On a touch screen, drag with one finger to orbit in Navigate mode. Pinch to zoom and drag with two fingers to pan. In Free Build, choose a brush to draw with one finger, or choose Navigate to move around. Find city lighting under Display and grid settings under Controls on phones.
 
 Controls and Insights open as floating panels. Pin either panel with its header pin button to keep it open while running, generating maps, comparing algorithms, editing, or opening the other panel. Unpinning leaves the panel open; its close button unpins and closes it explicitly. Both panels can remain open on desktop. On phones, the selected panel appears in front while another pinned panel retains its state. Focus mode temporarily hides pinned panels and restores them afterward.
 

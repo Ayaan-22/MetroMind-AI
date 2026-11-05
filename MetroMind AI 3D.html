@@ -1314,6 +1314,308 @@ button, input, select, textarea { font-family: var(--sans); }
 .map-first .topbar .sidebar-toggle:hover, .map-first .topbar .sidebar-toggle[aria-expanded="false"] { border-color: #9ce7c667; background: #9ce7c614; color: #d8f5e4; }
 .map-first .topbar .sidebar-toggle:focus-visible { outline: 2px solid #b4edcf; outline-offset: 3px; }
 @media (max-width: 570px) { .map-first .topbar .sidebar-toggle { display: none; } }
+
+/* Coordinated floating bars, with a compact simulation selector above playback. */
+.map-first { --simulation-dock-width: min(700px, calc(100% - 580px)); --simulation-dock-height: 45px; --simulation-command-height: 45px; --simulation-dock-bottom: 20px; --simulation-dock-gap: 12px; --simulation-camera-height: 45px; }
+.map-first .map-commandbar, .map-first .transport {
+  left: 50%; right: auto; transform: translateX(-50%); box-sizing: border-box;
+  width: var(--simulation-dock-width); max-width: none;
+  height: var(--simulation-dock-height); min-height: var(--simulation-dock-height);
+  padding: 5px 10px; border: 1px solid #86b99d61; border-radius: 9px;
+  background: #13271ff2; box-shadow: 0 8px 30px #0004; backdrop-filter: blur(22px);
+}
+.map-first .transport { bottom: var(--simulation-dock-bottom); flex-wrap: nowrap; }
+.map-first .map-commandbar {
+  width: min(430px, calc(100% - 40px));
+  height: var(--simulation-command-height); min-height: var(--simulation-command-height);
+  top: auto; bottom: calc(var(--simulation-dock-bottom) + var(--simulation-dock-height) + var(--simulation-dock-gap));
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: center;
+}
+.map-first.learning-mode .map-commandbar { width: min(540px, calc(100% - 40px)); grid-template-columns: minmax(0, 1fr) 150px; }
+.map-first .map-commandbar .command-search, .map-first .map-commandbar .command-learning { width: 100%; min-width: 0; }
+.map-first .map-commandbar .command-search .select-wrap, .map-first .map-commandbar .command-search .metro-select { width: 100%; height: 30px; }
+.map-first .map-commandbar .metro-select-trigger, .map-first .map-commandbar .select-wrap.compact > .metro-select-trigger { height: 30px; min-height: 30px; padding: 0 10px; border-color: #7fa88f33; border-radius: 6px; background: #0f1f18a3; font-size: 12px; font-weight: 500; }
+.map-first .map-commandbar .command-speed { display: flex; flex-direction: column; width: auto; min-width: 0; padding-left: 16px; gap: 0; }
+.map-first .map-commandbar .command-speed > label { font-size: 12px; line-height: 16px; }
+.map-first .map-commandbar .command-speed #speed-value { line-height: 16px; font-weight: 500; }
+.map-first .map-commandbar .command-speed #speed { height: 16px; min-height: 16px; }
+.map-first .map-commandbar .command-learning { gap: 8px; }
+.map-first .map-commandbar .command-learning .button, .map-first .map-commandbar .command-learning input { height: 32px; min-height: 32px; }
+.map-first .map-commandbar .command-learning .button { padding: 4px 8px; }
+.map-first .transport .run-button { min-width: 128px; height: 30px; padding: 0 10px; gap: 7px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.map-first .transport .run-button svg { width: 12px; height: 12px; }
+.map-first .transport .icon-button { width: 26px; height: 28px; }
+.map-first .transport .icon-button svg { width: 14px; height: 14px; }
+.map-first .transport .transport-divider { height: 18px; margin: 0 5px; }
+.map-first .transport .transport-state { gap: 6px; font-size: 11px; line-height: 16px; }
+.map-first .transport .history-control { margin: 0; min-width: 120px; flex-basis: auto; order: 0; }
+.map-first .transport .history-control #playback-label { display: none; }
+.map-first .transport .history-control > div { font: 500 11px/14px var(--sans); letter-spacing: .1px; color: #b7d0c0; }
+.map-first .transport .history-control #history-label { color: #d0e5d8; font-variant-numeric: tabular-nums; }
+.map-first .transport #history { height: 4px; margin: 6px 0 0; border-radius: 99px; background: #385044; }
+.map-first .transport #history::-webkit-slider-thumb { width: 9px; height: 9px; border: 0; background: #a0e5c4; box-shadow: 0 0 0 3px #a0e5c414; }
+.map-first .transport #history::-moz-range-thumb { width: 9px; height: 9px; border: 0; border-radius: 50%; background: #a0e5c4; }
+@media (min-width: 1201px) and (max-width: 1620px) {
+  .map-first.insights-open { --map-zoom-bottom: 134px; }
+}
+@media (max-width: 1200px) {
+  .map-first { --simulation-dock-width: min(700px, calc(100% - 48px)); }
+  .map-first, .map-first.learning-mode { --map-zoom-bottom: calc(var(--simulation-dock-bottom) + var(--simulation-dock-height) + var(--simulation-command-height) + var(--simulation-dock-gap) * 3 + var(--simulation-camera-height)); }
+  .map-first .camera-dock { bottom: calc(var(--simulation-dock-bottom) + var(--simulation-dock-height) + var(--simulation-command-height) + var(--simulation-dock-gap) * 2); }
+  .map-first.insights-open .camera-dock { right: var(--map-navigation-right); }
+}
+@media (max-width: 980px) {
+  .map-first { --simulation-dock-width: min(620px, calc(100% - 40px)); }
+  .map-first .transport { gap: 8px 12px; }
+}
+@media (max-width: 570px) {
+  .map-first { --simulation-dock-width: calc(100% - 24px); --simulation-dock-height: 82px; --simulation-command-height: 43px; --simulation-dock-bottom: 12px; --simulation-camera-height: 43px; }
+  .map-first.learning-mode { --simulation-command-height: 82px; }
+  .map-first .map-commandbar, .map-first.learning-mode .map-commandbar { width: min(430px, calc(100% - 24px)); gap: 12px; }
+  .map-first.learning-mode .map-commandbar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .map-first .map-commandbar .command-speed { border-left: 0; padding-left: 0; }
+  .map-first .map-commandbar .command-speed #speed { height: 15px; min-height: 15px; }
+  .map-first .map-commandbar .command-search .select-wrap, .map-first .map-commandbar .command-search .metro-select { height: 31px; }
+  .map-first .map-commandbar .metro-select-trigger, .map-first .map-commandbar .select-wrap.compact > .metro-select-trigger { height: 31px; min-height: 31px; padding: 0 9px; font-size: 12px; }
+  .map-first .map-commandbar .command-learning { flex-direction: column; align-items: stretch; gap: 6px; }
+  .map-first .map-commandbar .command-learning > label { justify-content: space-between; }
+  .map-first .map-commandbar .command-learning .button, .map-first .map-commandbar .command-learning input { height: 30px; min-height: 30px; }
+  .map-first .transport { flex-wrap: wrap; gap: 6px 12px; }
+  .map-first .transport .history-control { flex-basis: 100%; order: 2; }
+  .map-first .transport .history-control #playback-label { display: inline; }
+  .map-first .transport .run-button { min-width: 142px; height: 32px; }
+  .map-first .transport .icon-button { width: 24px; }
+}
+</style>
+  <style>
+/* Touch layouts keep the city usable without changing the desktop workspace. */
+@media (max-width: 820px), (pointer: coarse) and (max-width: 1100px), (max-width: 1024px) and (max-height: 500px) {
+  body.map-first {
+    position: relative; width: 100%; max-width: 100vw; height: 100vh; height: var(--app-height, 100dvh); min-height: 0; overflow: hidden;
+    --mobile-top: max(8px, env(safe-area-inset-top, 0px));
+    --mobile-left: max(8px, env(safe-area-inset-left, 0px));
+    --mobile-right: max(8px, env(safe-area-inset-right, 0px));
+    --mobile-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    --map-edge: 12px; --command-top: calc(var(--mobile-top) + 64px);
+    --map-panel-top: calc(var(--command-top) + 52px);
+    --simulation-dock-width: min(620px, calc(100% - 24px));
+    --simulation-dock-height: 108px; --simulation-command-height: 64px;
+    --simulation-dock-bottom: var(--mobile-bottom); --simulation-dock-gap: 10px; --simulation-camera-height: 52px;
+  }
+  .map-first .workspace, .map-first .main-workspace { min-width: 0; min-height: 0; overflow: hidden; }
+  .map-first #city-canvas { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+  .map-first .topbar {
+    top: var(--mobile-top); left: calc(var(--map-rail) + var(--mobile-left)); right: var(--mobile-right);
+    height: 52px; min-height: 52px; padding: 0 7px; gap: 5px;
+  }
+  .map-first .topbar .studio-label, .map-first .topbar .top-divider, .map-first .topbar .map-identity,
+  .map-first .topbar .avatar { display: none; }
+  .map-first .brand { flex: 1; min-width: 0; font-size: 14px; gap: 6px; letter-spacing: .5px; }
+  .map-first .brand > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .map-first .brand-mark { flex: none; width: 24px; margin-right: -3px; }
+  .map-first .topbar > .button, .map-first .topbar .workspace-menu { flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; justify-content: center; }
+  .map-first .topbar > .button > span, .map-first .topbar .export-button .small { display: none; }
+  .map-first .topbar .sidebar-toggle, .map-first .topbar .header-focus { width: 44px; height: 44px; }
+  .map-first .topbar > .button svg, .map-first .topbar .workspace-menu svg { width: 18px; height: 18px; }
+  .map-first .workspace-actions { top: var(--command-top); right: var(--mobile-right); gap: 6px; }
+  .map-first .workspace-actions .button { height: 44px; min-height: 44px; font-size: 13px; padding: 6px 10px; }
+  .map-first .map-environment { top: calc(var(--command-top) + 52px); }
+  .map-first .lighting-control { top: calc(var(--command-top) + 52px); }
+  .map-first .lighting-control button { width: 44px; height: 44px; }
+  .map-first .viewport { --tool-top: calc(var(--command-top) + 164px); --tool-bottom: calc(var(--simulation-dock-bottom) + var(--simulation-dock-height) + var(--simulation-command-height) + 22px); }
+  .map-first .map-tools, .map-first .map-tools.expanded { display: flex; flex-direction: column; width: 54px; padding: 4px; gap: 2px; overflow-y: auto; overflow-x: hidden; }
+  .map-first .map-tools .map-tool, .map-first .map-tools.expanded .map-tool { width: 44px; height: 44px; min-height: 44px; }
+  .map-first .map-tools .map-tool:after { display: none; }
+  .map-first .terrain-palette { left: calc(var(--map-edge) + 62px); max-height: calc(100% - var(--tool-top) - var(--tool-bottom)); width: min(300px, calc(100% - var(--map-edge) * 2 - 62px)); }
+  .map-first .terrain-heading .icon-button { width: 44px; height: 44px; flex: none; }
+  .map-first .terrain-palette .terrain-tool { min-height: 60px; }
+  .map-first .terrain-tool-grid { grid-template-columns: minmax(0, 1fr); }
+  .map-first .map-commandbar, .map-first.learning-mode .map-commandbar { width: min(470px, calc(100% - 24px)); height: var(--simulation-command-height); min-height: var(--simulation-command-height); padding: 8px; gap: 12px; }
+  .map-first .map-commandbar, .map-first .transport { left: calc((100% + var(--mobile-left) - var(--mobile-right)) / 2); }
+  .map-first .map-commandbar .command-search .select-wrap, .map-first .map-commandbar .command-search .metro-select { height: 44px; }
+  .map-first .map-commandbar .metro-select-trigger, .map-first .map-commandbar .select-wrap.compact > .metro-select-trigger { height: 44px; min-height: 44px; padding: 0 9px; font-size: 14px; }
+  .map-first .map-commandbar .command-speed { padding-left: 12px; gap: 0; }
+  .map-first .map-commandbar .command-speed #speed { height: 28px; min-height: 28px; }
+  .map-first .map-commandbar .command-speed > label, .map-first .map-commandbar .command-speed #speed-value { font-size: 12px; line-height: 16px; }
+  .map-first .map-commandbar .command-learning .button, .map-first .map-commandbar .command-learning input { height: 44px; min-height: 44px; }
+  .map-first .map-commandbar .command-learning input { font-size: 16px; }
+  .map-first .transport { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 44px 38px; gap: 6px; padding: 8px; }
+  .map-first .transport .playback-buttons { display: grid; grid-template-columns: 44px minmax(0, 1fr) repeat(3, 44px); gap: 3px; width: 100%; }
+  .map-first .transport .transport-divider, .map-first .transport .transport-state { display: none; }
+  .map-first .transport .playback-buttons #reset-btn { display: grid; }
+  .map-first .transport .icon-button { width: 44px; height: 44px; }
+  .map-first .transport .icon-button svg { width: 18px; height: 18px; }
+  .map-first .transport .run-button { width: 100%; min-width: 0; height: 44px; padding: 0 5px; font-size: 13px; line-height: 1.2; justify-content: center; }
+  .map-first .transport .run-button svg, .map-first .transport .run-button kbd { display: none; }
+  .map-first .transport .run-button span { white-space: normal; text-align: center; }
+  .map-first .transport .history-control { width: 100%; min-width: 0; margin: 0; order: 0; }
+  .map-first .transport .history-control > div { font-size: 11px; line-height: 16px; }
+  .map-first .transport .history-control #playback-label { display: inline; max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .map-first .transport #history { height: 22px; min-height: 22px; margin: 0; appearance: none; background: transparent; }
+  .map-first .transport #history::-webkit-slider-runnable-track { height: 4px; border-radius: 99px; background: #385044; }
+  .map-first .transport #history::-webkit-slider-thumb { width: 13px; height: 13px; margin-top: -4.5px; }
+  .map-first .transport #history::-moz-range-track { height: 4px; background: #385044; }
+  .map-first .transport #history::-moz-range-thumb { width: 13px; height: 13px; }
+  .map-first .camera-dock { height: 52px; padding: 3px; gap: 0; }
+  .map-first .camera-dock button { height: 44px; min-width: 44px; padding: 0 8px; font-size: 13px; }
+  .map-first .camera-dock button[data-camera] svg { display: none; }
+  .map-first .map-zoom, .map-first.learning-mode .map-zoom { width: 52px; height: 96px; padding: 3px; }
+  .map-first .map-zoom button { width: 44px; height: 44px; }
+  .map-first #compass.north-indicator { width: 52px; }
+  .map-first .view-label, .map-first .map-legend { display: none; }
+  .map-first .toast-stack { bottom: calc(var(--simulation-dock-bottom) + var(--simulation-dock-height) + var(--simulation-command-height) + 24px); right: 12px; left: calc(var(--map-rail) + 12px); width: auto; pointer-events: none; }
+  .map-first .toast { max-width: 100%; font-size: 13px; }
+  .map-first .panel-heading-actions .icon-button, .map-first .terrain-heading .icon-button, .map-first .modal-heading .icon-button { width: 44px; height: 44px; }
+  .map-first .control-panel .button, .map-first .analytics-panel .button, .map-first .tab, .map-first .analytics-tabs button { min-height: 44px; }
+  .map-first .control-panel .select-wrap, .map-first .control-panel .metro-select-trigger, .map-first .select-wrap.compact > .metro-select-trigger { min-height: 44px; }
+  .map-first #environment-slot .command-grid .metro-select-trigger { height: 44px; min-height: 44px; }
+  .map-first .panel-scroll, .map-first dialog, .map-first .terrain-palette { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  .map-first input[type="number"], .map-first input[type="text"], .map-first textarea { min-height: 44px; font-size: 16px; }
+  .map-first .toggle-row { min-height: 48px; }
+  .map-first .control-panel input[type="range"] { min-height: 22px; }
+  .map-first dialog {
+    position: fixed; inset: var(--mobile-top) var(--mobile-right) auto var(--mobile-left); margin: 0 auto;
+    width: min(760px, calc(100vw - var(--mobile-left) - var(--mobile-right))); max-width: none;
+    max-height: calc(var(--app-height, 100dvh) - var(--mobile-top) - var(--mobile-bottom));
+  }
+  .map-first .modal-heading { position: sticky; top: 0; z-index: 3; padding: 12px 16px; gap: 10px; background: #17241c; }
+  .map-first .modal-heading h2 { font-size: 21px; }
+  .map-first #modal-content { padding: 16px; overflow-wrap: break-word; }
+  .map-first .modal-grid, .map-first .compare-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .map-first .action-card { min-width: 0; min-height: 120px; padding: 12px; }
+  .map-first .action-card strong, .map-first .action-card small { font-size: 13px; line-height: 1.5; }
+  .map-first .compare-card { min-width: 0; }
+  .map-first .comparison-footer { flex-wrap: wrap; }
+  .metro-select-menu .metro-select-option { min-height: 46px; }
+  .metro-select-menu .metro-select-option-label { font-size: 14px; }
+}
+
+@media (max-width: 820px) {
+  .map-first.free-building { --map-panel-top: calc(var(--command-top) + 52px); }
+  .map-first .control-panel.open, .map-first .analytics-panel.open {
+    position: absolute; top: var(--map-panel-top); bottom: var(--mobile-bottom); left: calc(var(--map-rail) + var(--mobile-left)); right: var(--mobile-right);
+    width: auto; min-height: 0; max-height: none; border-radius: 12px;
+  }
+  .map-first .panel-heading { min-height: 72px; padding: 12px 16px; }
+  .map-first .panel-scroll { min-height: 0; }
+  .map-first .control-section, .map-first .insight-section { padding-left: 16px; padding-right: 16px; }
+  .map-first.controls-open .camera-dock, .map-first.insights-open .camera-dock,
+  .map-first.controls-open .map-zoom, .map-first.insights-open .map-zoom,
+  .map-first.controls-open #compass, .map-first.insights-open #compass,
+  .map-first.controls-open .map-tools, .map-first.insights-open .map-tools,
+  .map-first.controls-open .lighting-control, .map-first.insights-open .lighting-control { display: none; }
+  .map-first .drawer-backdrop { top: var(--map-panel-top); }
+}
+
+@media (max-width: 570px) {
+  body.map-first { --map-edge: 8px; --map-rail: 0px; }
+  .map-first .topbar { left: var(--mobile-left); right: var(--mobile-right); gap: 3px; }
+  .map-first .topbar .sidebar-toggle { display: none; }
+  .map-first .topbar .workspace-menu { display: inline-flex; }
+  .map-first .brand-ai { display: none; }
+  .map-first .workspace-actions { left: var(--mobile-left); right: var(--mobile-right); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  .map-first .workspace-actions .button { width: 100%; min-width: 0; padding: 4px; font-size: 12px; }
+  .map-first .workspace-actions .button svg { display: none; }
+  .map-first #viewport > .map-environment, .map-first .lighting-control { display: none; }
+  .map-first .viewport { --tool-top: calc(var(--command-top) + 52px); }
+  .map-first .map-tools, .map-first .map-tools.expanded { left: var(--mobile-left); }
+  .map-first .terrain-palette { left: calc(var(--mobile-left) + 62px); width: calc(100% - var(--mobile-left) - var(--mobile-right) - 62px); }
+  .map-first .map-commandbar, .map-first.learning-mode .map-commandbar { width: calc(100% - var(--mobile-left) - var(--mobile-right)); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .map-first .map-commandbar .command-speed { padding-left: 0; border: 0; }
+  .map-first.learning-mode { --simulation-command-height: 112px; }
+  .map-first .map-commandbar .command-learning { flex-direction: column; gap: 6px; }
+  .map-first .map-commandbar .command-learning > label { justify-content: space-between; }
+  .map-first .map-commandbar .command-learning input { width: 70px; min-width: 0; }
+  .map-first .map-commandbar .command-learning .button { padding: 4px; font-size: 13px; }
+  .map-first .transport { width: calc(100% - var(--mobile-left) - var(--mobile-right)); }
+  .map-first .camera-dock { right: var(--mobile-right); }
+  .map-first .map-zoom, .map-first.learning-mode .map-zoom { top: calc(var(--command-top) + 52px); bottom: auto; right: var(--mobile-right); }
+  .map-first #compass.north-indicator { top: calc(var(--command-top) + 160px); bottom: auto; right: var(--mobile-right); }
+  .map-first .builder-workspace { top: calc(var(--command-top) + 52px); left: var(--mobile-left); right: var(--mobile-right); width: auto; max-width: none; max-height: calc(100% - var(--command-top) - 52px - var(--simulation-dock-bottom) - var(--simulation-dock-height) - 12px); overflow-y: auto; overscroll-behavior: contain; pointer-events: auto; border-radius: 11px; }
+  .map-first .builder-toolbar { width: 100%; display: grid; grid-template-columns: 92px minmax(48px, 1fr) 44px 68px; grid-template-areas: 'tools tools tools tools' 'options options options options' 'history guides canvas done'; padding: 8px; gap: 8px 6px; }
+  .map-first .builder-tools { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; width: 100%; padding: 0; border: 0; }
+  .map-first .builder-tools .button, .map-first .builder-tools .icon-button { width: 100%; height: 44px; min-height: 44px; min-width: 0; padding: 0; justify-content: center; }
+  .map-first .builder-tools .button span { display: none; }
+  .map-first .builder-tools .button svg, .map-first .builder-tools .icon-button svg { display: block; width: 20px; height: 20px; }
+  .map-first .builder-options { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; padding: 0; border: 0; }
+  .map-first .builder-options > label { width: 100%; min-width: 0; flex-direction: column; gap: 3px; font-size: 12px; line-height: 17px; }
+  .map-first .builder-options .metro-select { width: 100%; }
+  .map-first .builder-options .metro-select-trigger { min-height: 44px; height: 44px; font-size: 14px; padding: 0 8px; }
+  .map-first .builder-history { gap: 4px; padding: 0; border: 0; }
+  .map-first .builder-history .icon-button { width: 44px; height: 44px; }
+  .map-first .builder-guides { min-height: 44px; justify-content: center; gap: 4px; font-size: 12px; }
+  .map-first .builder-guides input { width: 18px; height: 18px; }
+  .map-first .builder-toolbar #build-blank { width: 44px; min-width: 44px; height: 44px; padding: 0; font-size: 0; justify-content: center; }
+  .map-first .builder-toolbar #build-blank svg { width: 20px; height: 20px; }
+  .map-first .builder-toolbar .builder-done { width: 68px; height: 44px; min-height: 44px; padding: 0 7px; font-size: 13px; justify-content: center; }
+  .map-first.free-building { --simulation-command-height: 0px; }
+  .map-first.free-building .map-commandbar, .map-first.free-building .map-zoom, .map-first.free-building #compass.north-indicator { display: none; }
+  .map-first .modal-grid, .map-first .compare-grid { grid-template-columns: minmax(0, 1fr); }
+  .map-first .modal-grid .action-card:last-child { grid-column: auto; }
+  .map-first .analytics-footer { min-height: 40px; padding: 8px 16px; }
+  .map-first .analytics-footer > span:last-child { display: none; }
+  .map-first .restore-map-ui { top: var(--mobile-top); right: var(--mobile-right); min-height: 44px; }
+}
+
+@media (max-width: 370px) {
+  .map-first .brand > span:last-child { display: none; }
+  .map-first .brand { flex: 1; }
+  .map-first .brand-mark { margin: 0; }
+  .map-first .workspace-actions .button { font-size: 12px; }
+  .map-first .builder-toolbar { grid-template-columns: 92px minmax(48px, 1fr) 44px 62px; gap: 8px 4px; }
+  .map-first .builder-toolbar .builder-done { width: 62px; padding: 0 5px; }
+}
+
+/* A short landscape screen uses the side space instead of tall bottom stacks. */
+@media (min-width: 500px) and (max-width: 1024px) and (max-height: 500px) {
+  body.map-first { --simulation-dock-width: min(580px, calc(100% - var(--mobile-left) - var(--mobile-right))); --simulation-dock-height: 56px; --simulation-command-height: 56px; --simulation-dock-gap: 8px; }
+  .map-first.learning-mode { --simulation-command-height: 56px; }
+  .map-first #viewport > .map-environment, .map-first .lighting-control, .map-first #compass.north-indicator { display: none; }
+  .map-first .viewport { --tool-top: calc(var(--command-top) + 52px); --tool-bottom: calc(var(--simulation-dock-bottom) + 64px); }
+  .map-first .map-commandbar, .map-first.learning-mode .map-commandbar { width: min(450px, calc(100% - 140px)); height: 56px; min-height: 56px; padding: 5px 8px; grid-template-columns: minmax(0, 1fr) 132px; }
+  .map-first .map-commandbar .command-learning { flex-direction: row; align-items: center; }
+  .map-first .map-commandbar .command-learning > label { font-size: 0; }
+  .map-first .map-commandbar .command-learning input { width: 66px; }
+  .map-first .map-commandbar .command-learning .button { padding: 0 7px; white-space: nowrap; }
+  .map-first .transport { display: flex; flex-wrap: nowrap; width: var(--simulation-dock-width); height: 56px; min-height: 56px; padding: 5px 7px; gap: 8px; }
+  .map-first .transport .playback-buttons { display: flex; width: auto; flex: none; gap: 2px; }
+  .map-first .transport .run-button { width: 110px; min-width: 110px; }
+  .map-first .transport .history-control { flex: 1; min-width: 90px; width: auto; }
+  .map-first .transport .history-control #playback-label { display: none; }
+  .map-first .camera-dock { top: calc(var(--command-top) + 52px); bottom: auto; right: var(--mobile-right); }
+  .map-first .map-zoom, .map-first.learning-mode .map-zoom { top: calc(var(--command-top) + 112px); bottom: auto; right: var(--mobile-right); }
+  .map-first .control-panel.open, .map-first .analytics-panel.open {
+    position: absolute; top: calc(var(--command-top) + 52px); bottom: var(--mobile-bottom);
+    left: calc(var(--map-rail) + var(--mobile-left)); right: var(--mobile-right); width: auto; min-height: 0;
+  }
+  .map-first.free-building { --map-panel-top: calc(var(--command-top) + 52px); }
+  .map-first .panel-heading { min-height: 60px; padding: 7px 14px; }
+  .map-first .builder-workspace {
+    top: calc(var(--command-top) + 52px); left: var(--mobile-left); right: auto;
+    width: min(380px, calc(100% - var(--mobile-left) - var(--mobile-right) - 64px)); max-width: none;
+    max-height: calc(100% - var(--command-top) - 52px - var(--simulation-dock-bottom) - 68px);
+    overflow: auto; overscroll-behavior: contain; pointer-events: auto; border-radius: 11px;
+  }
+  .map-first .builder-toolbar { display: grid; grid-template-columns: 92px minmax(48px, 1fr) 44px 62px; grid-template-areas: 'tools tools tools tools' 'history guides canvas done' 'options options options options'; width: 100%; gap: 6px 4px; padding: 8px; }
+  .map-first .builder-tools { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; }
+  .map-first .builder-tools .button, .map-first .builder-tools .icon-button { width: 100%; min-width: 0; height: 44px; min-height: 44px; padding: 0; }
+  .map-first .builder-tools .button span { display: none; }
+  .map-first .builder-tools .button svg, .map-first .builder-tools .icon-button svg { display: block; width: 20px; height: 20px; }
+  .map-first .builder-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .map-first .builder-options .metro-select { width: 100%; }
+  .map-first .builder-options .metro-select-trigger { height: 44px; min-height: 44px; font-size: 14px; }
+  .map-first .builder-history { gap: 4px; }
+  .map-first .builder-history .icon-button { width: 44px; height: 44px; }
+  .map-first .builder-toolbar #build-blank { width: 44px; height: 44px; padding: 0; font-size: 0; }
+  .map-first .builder-toolbar .builder-done { width: 62px; height: 44px; padding: 0 5px; }
+  .map-first.free-building .map-commandbar { display: none; }
+}
+
+@media (min-width: 500px) and (max-width: 800px) and (max-height: 500px) {
+  .map-first.free-building .camera-dock { display: none; }
+}
+
+@media (max-width: 570px) and (max-height: 700px) { .map-first #compass.north-indicator { display: none; } }
 </style>
 </head>
 <body class="map-first">
@@ -1422,7 +1724,7 @@ button, input, select, textarea { font-family: var(--sans); }
     </aside>
     <main class="main-workspace">
       <div class="viewport" id="viewport">
-        <canvas id="city-canvas" tabindex="0" aria-label="Interactive 3D city. Use the tools to edit terrain, start and goal. Drag to orbit, scroll to zoom."></canvas>
+        <canvas id="city-canvas" tabindex="0" aria-label="Interactive 3D city. Use the tools to edit terrain, start and goal. Drag to orbit; pinch or scroll to zoom. In drawing mode, two fingers navigate the camera."></canvas>
         <div class="viewport-vignette"></div>
         <div class="workspace-actions" id="workspace-actions" role="toolbar" aria-label="Workspace panels">
           <button class="button free-build-entry" id="free-build-btn" aria-label="Free Build" aria-pressed="false" title="Free Build editor"><svg><use href="#i-road"/></svg><span>Free Build</span></button>
@@ -1446,7 +1748,7 @@ button, input, select, textarea { font-family: var(--sans); }
         <div class="builder-workspace" id="builder-workspace" hidden aria-label="Free Build editor">
           <div class="builder-toolbar" id="builder-toolbar" role="toolbar" aria-label="Free Build tools">
             <span class="builder-mode"><i></i>BUILD</span>
-            <div class="builder-tools" aria-label="Build tools"><button class="button active" id="build-tool-road" data-build-tool="road" aria-label="Road" title="Draw road (P)"><svg><use href="#i-road"/></svg><span>Road</span></button><button class="button" id="build-tool-wall" data-build-tool="wall" aria-label="Building" title="Place building (1)"><svg><use href="#i-city"/></svg><span>Building</span></button><button class="button" id="build-tool-erase" data-build-tool="erase" aria-label="Erase" title="Erase (4)"><svg><use href="#i-erase"/></svg><span>Erase</span></button><button class="icon-button" id="build-tool-start" data-build-tool="start" aria-label="Place build origin" title="Place origin (2)"><svg><use href="#i-pin"/></svg></button><button class="icon-button" id="build-tool-goal" data-build-tool="goal" aria-label="Place build destination" title="Place destination (3)"><svg><use href="#i-flag"/></svg></button></div>
+            <div class="builder-tools" aria-label="Build tools"><button class="icon-button" id="build-tool-view" data-build-tool="view" aria-label="Navigate city" title="Navigate city: drag to orbit, pinch to zoom"><svg><use href="#i-move"/></svg></button><button class="button active" id="build-tool-road" data-build-tool="road" aria-label="Road" title="Draw road (P)"><svg><use href="#i-road"/></svg><span>Road</span></button><button class="button" id="build-tool-wall" data-build-tool="wall" aria-label="Building" title="Place building (1)"><svg><use href="#i-city"/></svg><span>Building</span></button><button class="button" id="build-tool-erase" data-build-tool="erase" aria-label="Erase" title="Erase (4)"><svg><use href="#i-erase"/></svg><span>Erase</span></button><button class="icon-button" id="build-tool-start" data-build-tool="start" aria-label="Place build origin" title="Place origin (2)"><svg><use href="#i-pin"/></svg></button><button class="icon-button" id="build-tool-goal" data-build-tool="goal" aria-label="Place build destination" title="Place destination (3)"><svg><use href="#i-flag"/></svg></button></div>
             <div class="builder-options"><label>Surface<select id="build-surface"><option value="road">Street · 1×</option><option value="highway">Highway · 0.5×</option><option value="traffic">Traffic · 3×</option><option value="mud">Mud · 10×</option></select></label><label>Brush width<select id="brush-size"><option value="1">1 block</option><option value="3">3 blocks</option><option value="5">5 blocks</option></select></label></div>
             <label class="builder-guides"><input type="checkbox" id="grid-guides">Guides</label>
             <div class="builder-history"><button class="icon-button" id="build-undo" aria-label="Undo build stroke" title="Undo (Ctrl+Z)" disabled><svg><use href="#i-back"/></svg></button><button class="icon-button" id="build-redo" aria-label="Redo build stroke" title="Redo (Ctrl+Y)" disabled><svg><use href="#i-step"/></svg></button></div>
@@ -3582,8 +3884,9 @@ button, input, select, textarea { font-family: var(--sans); }
       }finally{this.controls.enableDamping=damping;}
       return true;
     }
-    setTool(tool){this.tool=tool;this.controls.mouseButtons.LEFT=tool==='view'?THREE.MOUSE.ROTATE:null;this.controls.touches.ONE=tool==='view'?THREE.TOUCH.ROTATE:null;this.canvas.style.cursor=tool==='view'?'grab':'crosshair';this.setBrush(this.brushSize);}
+    setTool(tool){if(tool!==this.tool)this.finishPointerStroke?.();this.tool=tool;this.controls.mouseButtons.LEFT=tool==='view'?THREE.MOUSE.ROTATE:null;this.controls.touches.ONE=tool==='view'?THREE.TOUCH.ROTATE:null;this.canvas.style.cursor=tool==='view'?'grab':'crosshair';this.setBrush(this.brushSize);}
     setEditor(enabled,options={}){
+      if(this.editorEnabled!==Boolean(enabled))this.finishPointerStroke?.();
       this.editorEnabled=Boolean(enabled);this.paintDown=false;this.lastPaintWorld=null;this.hover.visible=this.selection.visible=false;
       if(this.editorEnabled){this.cameraTween=null;this.cameraTouched=true;}
       this.setBrush(options.brushSize!==undefined?options.brushSize:this.brushSize);
@@ -3615,9 +3918,57 @@ button, input, select, textarea { font-family: var(--sans); }
     }
     bindPointer(){
       const on=(type,listener,opts)=>{this.canvas.addEventListener(type,listener,opts);this.events.push([type,listener,opts]);};this.trafficVisible=!this.reducedMotion;
-      on('pointerdown',event=>{if(event.button===0)this.canvas.focus?.({preventScroll:true});if(event.button!==0||this.tool==='view')return;this.cameraTween=null;this.cameraTouched=true;this.paintDown=true;this.lastPaint=-1;this.lastPaintWorld=null;this.canvas.setPointerCapture(event.pointerId);if(this.editorEnabled){this.paintWorld(this.pickWorld(event),event);return;}const i=this.cellAt(event);if(i>=0&&this.options.onCell){this.options.onCell(i,event);this.lastPaint=i;} });
-      on('pointermove',event=>{if(this.editorEnabled){const point=this.pickWorld(event);this.hoverWorld(point,event);if(this.paintDown&&this.tool!=='view')this.paintWorld(point,event);return;}const i=this.cellAt(event);this.hover.visible=this.selection.visible=i>=0&&this.tool!=='view';if(i>=0){const p=this.point(i,.075);this.hover.position.copy(p);this.selection.position.copy(p);if(this.terrain[i]===1){this.selection.position.y=this.level(i)+(this.buildingHeights[i]||.16)+.02;this.hover.position.y=this.selection.position.y;}}if(this.options.onHover)this.options.onHover(i,event);if(this.paintDown&&this.tool!=='view'&&i>=0&&i!==this.lastPaint){this.lastPaint=i;if(this.options.onCell)this.options.onCell(i,event);} });
-      const end=()=>{const painted=this.paintDown;this.paintDown=false;this.lastPaint=-1;this.lastPaintWorld=null;if(painted)this.options.onStrokeEnd?.();};on('pointerup',end);on('pointercancel',end);on('pointerleave',()=>{this.hover.visible=this.selection.visible=false;if(this.editorEnabled)this.options.onHoverWorld?.(null,null);else if(this.options.onHover)this.options.onHover(-1,null);});on('contextmenu',event=>event.preventDefault());
+      const touches=new Set(),idOf=event=>event.pointerId??0;
+      let owner=null,pendingTouch=null,multiTouch=false;
+      this.canvas.style.touchAction='none';
+      const hideHover=()=>{this.hover.visible=this.selection.visible=false;if(this.editorEnabled)this.options.onHoverWorld?.(null,null);else this.options.onHover?.(-1,null);};
+      const finish=()=>{
+        const painted=this.paintDown,id=owner;owner=null;pendingTouch=null;
+        this.paintDown=false;this.lastPaint=-1;this.lastPaintWorld=null;
+        if(id!==null&&this.canvas.hasPointerCapture?.(id))this.canvas.releasePointerCapture?.(id);
+        if(painted)this.options.onStrokeEnd?.();
+      };
+      this.finishPointerStroke=finish;
+      const paintAt=event=>{
+        if(this.editorEnabled){this.paintWorld(this.pickWorld(event),event);return;}
+        const i=this.cellAt(event);if(i>=0&&i!==this.lastPaint&&this.options.onCell){this.options.onCell(i,event);this.lastPaint=i;}
+      };
+      const begin=event=>{this.paintDown=true;this.lastPaint=-1;this.lastPaintWorld=null;paintAt(event);};
+      const cameraGesture=()=>{multiTouch=true;finish();hideHover();};
+      on('pointerdown',event=>{
+        const id=idOf(event),touch=event.pointerType==='touch';
+        if(touch){touches.add(id);if(touches.size>1){cameraGesture();return;}}
+        if(event.button===0||touch)this.canvas.focus?.({preventScroll:true});
+        if((event.button!==0&&!touch)||this.tool==='view'||owner!==null||multiTouch)return;
+        this.cameraTween=null;this.cameraTouched=true;owner=id;
+        this.canvas.setPointerCapture?.(id);
+        // A second finger can arrive immediately after the first. Delay a
+        // touch mark until a single-finger drag or tap release is confirmed.
+        if(touch)pendingTouch=event;else begin(event);
+      });
+      on('pointermove',event=>{
+        const touch=event.pointerType==='touch',active=owner===idOf(event);
+        if(touch&&(multiTouch||!active)){if(multiTouch)hideHover();return;}
+        if(this.editorEnabled){const point=this.pickWorld(event);this.hoverWorld(point,event);}
+        else{const i=this.cellAt(event);this.hover.visible=this.selection.visible=i>=0&&this.tool!=='view';if(i>=0){const p=this.point(i,.075);this.hover.position.copy(p);this.selection.position.copy(p);if(this.terrain[i]===1){this.selection.position.y=this.level(i)+(this.buildingHeights[i]||.16)+.02;this.hover.position.y=this.selection.position.y;}}this.options.onHover?.(i,event);}
+        if(!active||this.tool==='view')return;
+        if(pendingTouch){if(Math.hypot(event.clientX-pendingTouch.clientX,event.clientY-pendingTouch.clientY)<4)return;const start=pendingTouch;pendingTouch=null;begin(start);}
+        if(this.paintDown)paintAt(event);
+      });
+      const end=(event,cancelled=false)=>{
+        const id=idOf(event),touch=event.pointerType==='touch';
+        if(owner===id){if(pendingTouch&&!cancelled&&!multiTouch&&this.tool!=='view')begin(event);finish();}
+        if(touch){touches.delete(id);if(!touches.size)multiTouch=false;}
+        if(touch||cancelled)hideHover();
+      };
+      on('pointerup',event=>end(event));on('pointercancel',event=>end(event,true));
+      on('lostpointercapture',event=>{if(owner!==idOf(event))return;if(event.pointerType==='touch')multiTouch=true;finish();hideHover();});
+      // OrbitControls r128 uses Touch Events for its two-finger pan/pinch. Keep
+      // that public gesture path independent from editable Pointer Events.
+      on('touchstart',event=>{if(event.touches.length>1)cameraGesture();},{passive:true});
+      on('touchend',event=>{if(!event.touches.length){touches.clear();multiTouch=false;finish();}});
+      on('touchcancel',()=>{touches.clear();multiTouch=false;finish();hideHover();});
+      on('pointerleave',hideHover);on('contextmenu',event=>event.preventDefault());
     }
     animate(time){
       const dt=Math.min(.05,Math.max(0,(time-this.lastTime)/1000||.016));this.lastTime=time;this.elapsed=(this.elapsed||0)+dt;this.frameCount++;if(time-this.fpsTime>650){this.fps=Math.round(this.frameCount*1000/(time-this.fpsTime));this.fpsTime=time;this.frameCount=0;}
@@ -3716,22 +4067,24 @@ button, input, select, textarea { font-family: var(--sans); }
   function position(instance) {
     if (!current || current !== instance) return;
     const rect = instance.trigger.getBoundingClientRect();
-    const viewportWidth = document.documentElement.clientWidth || scope.innerWidth;
-    const viewportHeight = document.documentElement.clientHeight || scope.innerHeight;
+    const viewport = scope.visualViewport;
+    const viewportWidth = viewport?.width || document.documentElement.clientWidth || scope.innerWidth;
+    const viewportHeight = viewport?.height || document.documentElement.clientHeight || scope.innerHeight;
+    const viewportLeft = viewport?.offsetLeft || 0, viewportTop = viewport?.offsetTop || 0;
     const edge = 10, gap = 7;
     const width = Math.max(1, Math.min(Math.max(200, rect.width), viewportWidth - edge * 2));
     instance.menu.style.width = `${width}px`;
     instance.menu.style.maxHeight = `${Math.min(420, viewportHeight - edge * 2)}px`;
-    instance.menu.style.left = `${Math.max(edge, Math.min(rect.left, viewportWidth - width - edge))}px`;
+    instance.menu.style.left = `${Math.max(viewportLeft + edge, Math.min(rect.left, viewportLeft + viewportWidth - width - edge))}px`;
     const desired = Math.min(instance.menu.scrollHeight, 420, viewportHeight - edge * 2);
-    const below = viewportHeight - rect.bottom - gap - edge;
-    const above = rect.top - gap - edge;
+    const below = viewportTop + viewportHeight - rect.bottom - gap - edge;
+    const above = rect.top - gap - viewportTop - edge;
     const useAbove = below < Math.min(desired, 230) && above > below;
     const available = Math.max(64, useAbove ? above : below);
     const height = Math.min(desired, available);
     instance.menu.style.maxHeight = `${height}px`;
     const top = useAbove ? rect.top - gap - height : rect.bottom + gap;
-    instance.menu.style.top = `${Math.max(edge, Math.min(top, viewportHeight - height - edge))}px`;
+    instance.menu.style.top = `${Math.max(viewportTop + edge, Math.min(top, viewportTop + viewportHeight - height - edge))}px`;
     instance.menu.dataset.placement = useAbove ? 'above' : 'below';
   }
 
@@ -4172,12 +4525,12 @@ button, input, select, textarea { font-family: var(--sans); }
   function closeModal(){globalThis.MetroSelect?.closeAll();comparisonToken++;$('modal').close();lastFocus?.focus();}
   function showExport(){showModal('Take your work with you.',`<p>Save a reproducible city, analyze experiment results, or keep a record of the decisions along the way.</p><div class="modal-grid"><button class="action-card" data-action="export-json">${icon('city')}<strong>City layout</strong><small>Terrain, elevation, endpoints, and generation seed. Ready to reopen.</small><span class="filetype">JSON · FULL WORKSPACE</span></button><button class="action-card" data-action="export-csv">${icon('chart')}<strong>Experiment results</strong><small>Explored nodes, route cost, length, and execution time.</small><span class="filetype">CSV · SPREADSHEET READY</span></button><button class="action-card" data-action="export-log">${icon('clock')}<strong>Simulation journal</strong><small>A timestamped record of this session's experiments.</small><span class="filetype">TXT · ACTIVITY LOG</span></button></div>`);}
   function showMaps(){const maps=[['empty','Blank canvas','Start with open streets'],['downtown','Downtown','Clustered city blocks'],['manhattan','Manhattan','An ordered street network'],['recursive','Recursive maze','A winding, carved labyrinth'],['corridor','Corridor','Long connected passageways'],['spiral','Spiral','A route that winds inward'],['rooms','Rooms','Connected open quarters'],['cross','Crossroads','Divided urban sectors'],['random','Random city','A seeded urban scatter'],['snake','Serpentine','Switchbacks and long streets'],['grid','City grid','Regular blocks and avenues'],['terrain','Highlands','Elevation and weighted ground']];showModal('A different kind of city.',`<p>Every world uses your grid size and seed. Regenerate a preset to make your experiments reproducible.</p><div class="map-choice-grid">${maps.map(([key,name,desc])=>`<button class="map-choice" data-map="${key}"><b>${name}</b><small>${desc}</small></button>`).join('')}</div>`);}
-  function showHelp(){const keys=[['Space','Run / pause search or training'],['S','Advance one search step'],['B','Step backward through history'],['F','Advance history / search'],['R','Reset the current path'],['X','Compare all nine algorithms'],['T','Switch to agent learning'],['G','Hide / show map controls'],['E','Open / close Free Build'],['P','Draw a street in Free Build'],['Ctrl+Z / Ctrl+Y','Undo / redo a build stroke'],['V','Orbit the city'],['1–4','Building · origin · goal · erase'],['5–7','Highway · traffic · mud'],['8 / 9','Raise / lower ground'],['Shift + draw','Temporarily erase'],['C','Choose a blank city'],['Esc','Close a dialog or drawer']];showModal('Make yourself at home.',`<p>Drag to orbit. Scroll to zoom. Right-drag to pan. Choose a map tool, then click or drag to shape your city. The minimap gives you a different perspective.</p><div class="shortcut-grid">${keys.map(([k,d])=>`<div class="shortcut-row"><span>${d}</span><kbd>${k}</kbd></div>`).join('')}</div>`);}
+  function showHelp(){const keys=[['Space','Run / pause search or training'],['S','Advance one search step'],['B','Step backward through history'],['F','Advance history / search'],['R','Reset the current path'],['X','Compare all nine algorithms'],['T','Switch to agent learning'],['G','Hide / show map controls'],['E','Open / close Free Build'],['P','Draw a street in Free Build'],['Ctrl+Z / Ctrl+Y','Undo / redo a build stroke'],['V','Orbit the city'],['1–4','Building · origin · goal · erase'],['5–7','Highway · traffic · mud'],['8 / 9','Raise / lower ground'],['Shift + draw','Temporarily erase'],['C','Choose a blank city'],['Esc','Close a dialog or drawer']];showModal('Make yourself at home.',`<p>Drag to orbit. Pinch or scroll to zoom; use two fingers or right-drag to pan. In Free Build, choose Navigate to move around, then Road or Building to draw. The minimap gives you a different perspective.</p><div class="shortcut-grid">${keys.map(([k,d])=>`<div class="shortcut-row"><span>${d}</span><kbd>${k}</kbd></div>`).join('')}</div>`);}
   function showLayers(){showModal('Read the city differently.',`<p>Choose what the ground reveals. Your architecture and journey remain in view.</p><div class="modal-grid">${[['base','city','Architecture','Clean streets and a detailed city.'],['search','route','Search activity','Explored cells and the active frontier.'],['cost','terrain','Terrain costs','Highway 0.5× · traffic 3× · mud 10×.']].map(([key,ic,title,desc])=>`<button class="action-card" data-layer="${key}">${icon(ic)}<strong>${title}${layer===key?' ✓':''}</strong><small>${desc}</small></button>`).join('')}</div><p style="margin:20px 0 0">The Learning tab offers Q-value heatmaps and policy arrows after training.</p>`);}
   function showWorkspaceMenu(){showModal('Your city workspace.',`<div class="modal-grid">${[['freebuild','road','Free Build','Draw roads, place buildings and expand the canvas.'],['simulation','route','Simulation','Algorithms, terrain and city generation.'],['learning','brain','Learning','Train an agent and explore its policy.'],['layers','layers','Map layers','Architecture, terrain costs and search activity.'],['display','settings','Display','Lighting, motion and rendering quality.'],['focus','focus','Focus on the city','Hide the interface. Press G or Escape to return.'],['help','help','Help & shortcuts','City navigation and keyboard controls.']].map(([key,ic,title,desc])=>`<button class="action-card" data-workspace="${key}">${icon(ic)}<strong>${title}</strong><small>${desc}</small></button>`).join('')}</div>`);}
   function showSettings(){
-    showModal('Display',`<div class="display-settings"><label class="field-label" for="quality-setting">Rendering quality</label><div class="select-wrap compact"><select id="quality-setting"><option value="high">High · crisp shadows, full resolution</option><option value="balanced">Balanced · lighter rendering</option><option value="low">Performance · no shadows</option></select>${icon('chevron')}</div><label class="toggle-row"><span>Street traffic<small>Decorative vehicles follow passable streets.</small></span><input type="checkbox" id="traffic-setting" role="switch" ${settings.traffic?'checked':''}><i></i></label><label class="toggle-row"><span>Q-value landscape<small>Live training columns: height shows |Q|; mint is positive, violet is negative.</small></span><input type="checkbox" id="landscape-setting" role="switch" ${settings.landscape?'checked':''}><i></i></label><label class="toggle-row"><span>Floating particles<small>Coloured lights drift above the district.</small></span><input type="checkbox" id="particles-setting" role="switch" ${settings.particles?'checked':''}><i></i></label><label class="toggle-row"><span>Reduced motion<small>Pause the camera, vehicles, particles and route dot.</small></span><input type="checkbox" id="motion-setting" role="switch" ${settings.reducedMotion?'checked':''}><i></i></label><label class="toggle-row"><span>Automatic orbit<small>A slow, changing perspective of the district.</small></span><input type="checkbox" id="orbit-setting" role="switch" ${orbit?'checked':''}><i></i></label><p class="settings-note">Everything runs in this browser. The standalone HTML includes its 3D engine and assets, so you can explore offline.</p></div>`);
-    $('quality-setting').value=settings.quality;globalThis.MetroSelect?.sync($('modal'));
+    showModal('Display',`<div class="display-settings"><label class="field-label" for="lighting-setting">City lighting</label><div class="select-wrap compact"><select id="lighting-setting"><option value="day">Daylight</option><option value="dusk">Golden hour</option><option value="night">Night</option></select>${icon('chevron')}</div><label class="field-label" for="quality-setting">Rendering quality</label><div class="select-wrap compact"><select id="quality-setting"><option value="high">High · crisp shadows, full resolution</option><option value="balanced">Balanced · lighter rendering</option><option value="low">Performance · no shadows</option></select>${icon('chevron')}</div><label class="toggle-row"><span>Street traffic<small>Decorative vehicles follow passable streets.</small></span><input type="checkbox" id="traffic-setting" role="switch" ${settings.traffic?'checked':''}><i></i></label><label class="toggle-row"><span>Q-value landscape<small>Live training columns: height shows |Q|; mint is positive, violet is negative.</small></span><input type="checkbox" id="landscape-setting" role="switch" ${settings.landscape?'checked':''}><i></i></label><label class="toggle-row"><span>Floating particles<small>Coloured lights drift above the district.</small></span><input type="checkbox" id="particles-setting" role="switch" ${settings.particles?'checked':''}><i></i></label><label class="toggle-row"><span>Reduced motion<small>Pause the camera, vehicles, particles and route dot.</small></span><input type="checkbox" id="motion-setting" role="switch" ${settings.reducedMotion?'checked':''}><i></i></label><label class="toggle-row"><span>Automatic orbit<small>A slow, changing perspective of the district.</small></span><input type="checkbox" id="orbit-setting" role="switch" ${orbit?'checked':''}><i></i></label><p class="settings-note">Everything runs in this browser. The standalone HTML includes its 3D engine and assets, so you can explore offline.</p></div>`);
+    $('lighting-setting').value=light;$('lighting-setting').onchange=e=>setLighting(e.target.value);$('quality-setting').value=settings.quality;globalThis.MetroSelect?.sync($('modal'));
     $('quality-setting').onchange=e=>{settings.quality=e.target.value;city?.setQuality(settings.quality);};
     $('traffic-setting').onchange=e=>{settings.traffic=e.target.checked;city?.setTraffic(settings.traffic);};
     $('landscape-setting').onchange=e=>{settings.landscape=e.target.checked;city?.setLandscape(settings.landscape);refreshLayer();};
@@ -4193,6 +4546,11 @@ button, input, select, textarea { font-family: var(--sans); }
   function loadMenu(){let saved=false;try{saved=!!localStorage.getItem('metromind-city-studio');}catch{}showModal('Return to a world.',`<p>Open a City Studio layout, the original 3D format, or a v11 grid export. Rectangular v11 grids retain their layout with blocked padding.</p><div class="modal-grid"><button class="action-card" data-action="import-file">${icon('upload')}<strong>Import a city</strong><small>Choose a JSON layout from your device.</small><span class="filetype">3D + V11 SUPPORTED</span></button><button class="action-card" data-action="load-local" ${saved?'':'disabled'}>${icon('save')}<strong>Saved workspace</strong><small>${saved?'Continue from your last local save.':'No city has been saved in this browser yet.'}</small><span class="filetype">LOCAL BROWSER STORAGE</span></button><button class="action-card" data-action="new-city">${icon('plus')}<strong>Start fresh</strong><small>A new downtown district, full of possibility.</small><span class="filetype">NEW CITY</span></button></div>`);}
   function importCity(content){try{const imported=E.Grid.fromJSON(content);flushEdits();playing=training=false;cancelBuildQueue();grid=imported;preset=grid.preset;editing=!!grid.freeBuild;buildUndo=[];buildRedo=[];city?.setEditor(editing,{brushSize,showGrid:$('grid-guides').checked});learner=null;search=null;policyResult=null;clearLearningStats();comparisons=[];city?.setGrid(grid);selectTool(editing?'road':'view');refreshLayer();resetSearch('',true);syncGridInfo();renderStats();drawMinimap();closeModal();const text=grid.importNote||'Your city is ready. Welcome back.';message(text);toast(text);log('City layout imported. '+grid.importNote);}catch(error){toast(error.message||'This city layout could not be opened.','warn');}}
   function setCamera(value){city?.setCamera(value);document.querySelectorAll('[data-camera]').forEach(b=>b.classList.toggle('active',b.dataset.camera===value));setText('view-name',({isometric:'PERSPECTIVE',top:'TOP-DOWN',street:'STREET LEVEL'})[value]);}
+  function setLighting(value){
+    if(!['day','dusk','night'].includes(value))return;
+    light=value;city?.setMode(light);document.querySelectorAll('[data-light]').forEach(button=>button.classList.toggle('active',button.dataset.light===light));
+    const field=$('lighting-setting');if(field){field.value=light;globalThis.MetroSelect?.sync(field);}
+  }
   function updateCompass(){
     const bearing=city?.getBearing?.(),button=$('compass');
     button.disabled=!Number.isFinite(bearing);
@@ -4214,7 +4572,7 @@ button, input, select, textarea { font-family: var(--sans); }
   }
   function syncDrawers(){
     syncSidebar();
-    const narrow=innerWidth<=820,focused=document.body.classList.contains('immersive');
+    const narrow=innerWidth<=820||(innerWidth<=1024&&globalThis.innerHeight<=500),focused=document.body.classList.contains('immersive');
     if(!$(mobilePanel).classList.contains('open'))mobilePanel=$('control-panel').classList.contains('open')?'control-panel':'analytics-panel';
     const visible={};
     for(const id of ['control-panel','analytics-panel']){
@@ -4252,6 +4610,10 @@ button, input, select, textarea { font-family: var(--sans); }
   }
   function immersive(){const focused=document.body.classList.toggle('immersive');closeDrawers(false);$('restore-map-ui').hidden=!focused;$('fullscreen-btn').setAttribute('aria-pressed',String(focused));requestAnimationFrame(resize);}
   function resize(){const el=$('viewport');city?.resize(el.clientWidth,el.clientHeight);}
+  function syncViewportHeight(){
+    const height=globalThis.visualViewport?.height||globalThis.innerHeight||document.body.clientHeight;
+    if(Number.isFinite(height)&&height>0)document.body.style.setProperty('--app-height',height+'px');
+  }
   tools.forEach(([key,ic,title,shortcut],i)=>{const b=document.createElement('button'),advanced=i>=5;b.className=advanced?'terrain-tool':'map-tool'+(i===0?' active':'');b.dataset.tool=key;b.dataset.tooltip=`${title} · ${shortcut}`;b.setAttribute('aria-label',title);b.setAttribute('aria-pressed',String(i===0));const cost=({road:'1× cost',highway:'0.5× cost',traffic:'3× cost',mud:'10× cost',raise:'+0.5 height',lower:'−0.5 height'})[key];b.innerHTML=icon(ic)+(advanced?`<span class="tool-copy"><span class="tool-name">${title.split(' · ')[0]}</span><small class="tool-cost">${cost} · ${shortcut}</small></span>`:'');b.onclick=()=>selectTool(key);$(advanced?(['raise','lower'].includes(key)?'terrain-elevation':'terrain-surfaces'):'map-tools').append(b);});
   $('tools-expand').onclick=()=>setTerrainPalette($('terrain-palette').hidden);
   $('terrain-close').onclick=()=>setTerrainPalette(false,true);
@@ -4261,7 +4623,7 @@ button, input, select, textarea { font-family: var(--sans); }
   [['weight',1],['alpha',2],['gamma',2],['decay',3]].forEach(([id,digits])=>$(id).addEventListener('input',()=>{setText(id+'-value',Number($(id).value).toFixed(digits));if(learner&&id!=='weight')learner.options[id]=Number($(id).value);}));$('speed').oninput=updateSpeed;
   ['episodes','max-steps','batch-size','epsilon'].forEach(id=>$(id).addEventListener('change',()=>{validateLearning();syncQuickControls();if(learner&&id==='max-steps')learner.options.maxSteps=Number($('max-steps').value);}));['heatmap','policy-arrows'].forEach(id=>$(id).onchange=refreshLayer);$('policy-btn').onclick=testPolicy;$('reset-agent').onclick=()=>{training=false;learner=null;policyResult=null;city?.setPath(null);setRunButton();setState('Ready');refreshLayer();drawPulse();['rl-episodes','rl-success'].forEach(id=>setText(id,'0'));setText('rl-reward','—');setText('rl-epsilon',$('epsilon').value);setText('training-percent','0%');$('training-progress').value=0;renderStats();drawMinimap();message('A fresh start for your agent.');log('Agent memory reset.');};
   document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>generate(b.dataset.preset));$('regenerate').onclick=()=>generate(preset,true);$('grid-size').onchange=()=>generate(preset);$('seed').onchange=()=>generate(preset);$('more-maps').onclick=showMaps;$('edit-start').onclick=()=>selectTool('start');$('edit-goal').onclick=()=>selectTool('goal');
-  document.querySelectorAll('[data-camera]').forEach(b=>b.onclick=()=>setCamera(b.dataset.camera));document.querySelectorAll('[data-light]').forEach(b=>b.onclick=()=>{light=b.dataset.light;city?.setMode(light);document.querySelectorAll('[data-light]').forEach(x=>x.classList.toggle('active',x===b));});$('orbit-btn').onclick=()=>setOrbit(!orbit);$('reset-camera').onclick=()=>city?.fitCity();$('minimap-button').onclick=()=>setCamera('top');$('zoom-in').onclick=()=>city?.zoom(1.25);$('zoom-out').onclick=()=>city?.zoom(.8);
+  document.querySelectorAll('[data-camera]').forEach(b=>b.onclick=()=>setCamera(b.dataset.camera));document.querySelectorAll('[data-light]').forEach(b=>b.onclick=()=>setLighting(b.dataset.light));$('orbit-btn').onclick=()=>setOrbit(!orbit);$('reset-camera').onclick=()=>city?.fitCity();$('minimap-button').onclick=()=>setCamera('top');$('zoom-in').onclick=()=>city?.zoom(1.25);$('zoom-out').onclick=()=>city?.zoom(.8);
   $('compass').onclick=()=>{if(!city)return;setOrbit(false);city.resetNorth();updateCompass();};
   $('nav-compare').onclick=compare;$('export-btn').onclick=showExport;$('save-btn').onclick=saveCity;$('load-btn').onclick=loadMenu;$('more-maps').onclick=showMaps;$('help-btn').onclick=$('shortcuts-footer').onclick=showHelp;$('nav-layers').onclick=showLayers;$('nav-settings').onclick=showSettings;
   $('about-btn').onclick=()=>showModal('Cities are complex. Stay curious.',`<p>MetroMind AI brings classical pathfinding and reinforcement learning into a living, editable 3D city. Build an environment, experiment with nine algorithms, and watch every decision become visible.</p><p>Architecture, traffic, and lighting are generated locally. Vehicles are visual atmosphere; routing uses the actual terrain, elevation, and movement rules you set. This is a research and learning sandbox.</p><div class="comparison-summary"><span>9 search algorithms</span><span>Q-learning agent</span><span>100% local</span></div>`);
@@ -4295,14 +4657,14 @@ button, input, select, textarea { font-family: var(--sans); }
     }catch(error){$('scene-loading').hidden=true;$('scene-error').hidden=false;setText('scene-error-text',error.message?.includes('WebGL')?'Enable hardware acceleration in your browser, then try again.':error.message||'The 3D engine could not start.');log('3D rendering unavailable: '+error.message,'warn');}
   }
   $('retry-scene').onclick=()=>{city?.destroy();city=null;initScene();};$('city-canvas').addEventListener('webglcontextlost',e=>{e.preventDefault();playing=training=false;setRunButton();$('scene-error').hidden=false;setText('scene-error-text','The graphics context was interrupted. Try again to rebuild the city.');});
-  new ResizeObserver(resize).observe($('viewport'));addEventListener('resize',()=>{resize();syncDrawers();});document.addEventListener('visibilitychange',()=>{if(document.hidden){playing=training=false;setRunButton();if(search&&!search.done)setState('Paused');}});
+  new ResizeObserver(resize).observe($('viewport'));addEventListener('resize',()=>{syncViewportHeight();resize();syncDrawers();});globalThis.visualViewport?.addEventListener('resize',()=>{syncViewportHeight();resize();});document.addEventListener('visibilitychange',()=>{if(document.hidden){playing=training=false;setRunButton();if(search&&!search.done)setState('Paused');}});
   function frame(time){requestAnimationFrame(frame);const dt=Math.min(200,time-lastFrame||16);lastFrame=time;
     updateCompass();
     if(playing&&search){accumulator+=dt*Number($('speed').value)/1000;const count=Math.min(32,Math.floor(accumulator));if(count){accumulator-=count;search.step(count);renderSearch();}}
     if(training&&learner){const remaining=Math.max(0,Number($('episodes').value)-learner.episodes),batch=Math.min(remaining,Number($('batch-size').value),Math.max(1,Math.floor(10000/learner.options.maxSteps)));if(batch)learner.train(batch);if(time-lastUI>180||!remaining)renderLearning();}
     if(time-lastUI>180){lastUI=time;setText('fps',(city?.fps||0)+' FPS');if(training)renderLearning();}
   }
-  syncGridInfo();updateAlgorithm();syncDrawers();renderStats();drawMinimap();drawPulse();log('City Studio ready · downtown district · seed 2084.');initScene();globalThis.MetroSelect?.init();requestAnimationFrame(frame);
+  syncViewportHeight();syncGridInfo();updateAlgorithm();syncDrawers();renderStats();drawMinimap();drawPulse();log('City Studio ready · downtown district · seed 2084.');initScene();globalThis.MetroSelect?.init();requestAnimationFrame(frame);
   globalThis.MetroApp={get grid(){return grid;},get search(){return search;},get learner(){return learner;},get city(){return city;},get state(){return {playing,training,learning,tool,preset,layer,editing,brushSize};},generate,importCity,compare,flushEdits,paintWorld,startFreeBuild,newFreeCanvas,finishBuildStroke};
 })();
 </script>

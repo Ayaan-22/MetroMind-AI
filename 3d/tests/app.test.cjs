@@ -7,7 +7,7 @@ const engine = require('../js/engine.js');
 
 // Exercise real UI handlers and the real algorithm engine; only graphics and the
 // browser surfaces are substituted. This is not a WebGL/rendering test.
-function createApp({ width = 1440, sidebarCollapsed = false } = {}) {
+function createApp({ width = 1440, height = 900, sidebarCollapsed = false } = {}) {
   const elements = [], byID = new Map(), timers = new Map(), frames = new Map(), downloads = [];
   let next = 1, time = 0, document;
   const canvas = new Proxy({}, { get: (_, key) => key === 'createLinearGradient' ? () => ({ addColorStop() {} }) : () => {} });
@@ -112,9 +112,9 @@ function createApp({ width = 1440, sidebarCollapsed = false } = {}) {
   }
   const storage = new Map();
   if (sidebarCollapsed) storage.set('metromind-sidebar-collapsed', 'true');
-  const context = vm.createContext({ console, document, MetroEngine: engine, MetroCity: FakeCity, Blob, innerWidth: width, matchMedia: () => ({ matches: false }), ResizeObserver: class { observe() {} }, localStorage: { getItem: k => storage.get(k), setItem: (k, v) => storage.set(k, v) }, URL: { createObjectURL: blob => { downloads.push(blob); return 'blob:test'; }, revokeObjectURL() {} }, setTimeout: (fn, delay) => { const id = next++; timers.set(id, { fn, delay }); return id; }, clearTimeout: id => timers.delete(id), requestAnimationFrame: fn => { const id = next++; frames.set(id, fn); return id; }, addEventListener: (...a) => winEvents.addEventListener(...a) });
+  const context = vm.createContext({ console, document, MetroEngine: engine, MetroCity: FakeCity, Blob, innerWidth: width, innerHeight: height, matchMedia: () => ({ matches: false }), ResizeObserver: class { observe() {} }, localStorage: { getItem: k => storage.get(k), setItem: (k, v) => storage.set(k, v) }, URL: { createObjectURL: blob => { downloads.push(blob); return 'blob:test'; }, revokeObjectURL() {} }, setTimeout: (fn, delay) => { const id = next++; timers.set(id, { fn, delay }); return id; }, clearTimeout: id => timers.delete(id), requestAnimationFrame: fn => { const id = next++; frames.set(id, fn); return id; }, addEventListener: (...a) => winEvents.addEventListener(...a) });
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../js/app.js'), 'utf8'), context, { filename: 'app.js' });
-  return { app: context.MetroApp, downloads, body, document, storage, element: id => byID.get(id), click(id) { const el = byID.get(id); el.focus(); return el.click(); }, change(id, value) { const e = byID.get(id); e.value = value; e.dispatch('change'); }, key(value, target = body) { let prevented = false; docEvents.dispatch('keydown', { key: value, target, preventDefault() { prevented = true; } }); return prevented; }, resize(nextWidth) { context.innerWidth = nextWidth; winEvents.dispatch('resize'); }, action(action) { const b = new Element('button', { 'data-action': action }); byID.get('modal-content').dispatch('click', { target: b }); }, frame() { time += 200; for (const [id, fn] of [...frames]) { frames.delete(id); fn(time); } }, async timers() { for (const [id, { fn }] of [...timers]) { if (timers.has(id)) { timers.delete(id); fn(); } } await Promise.resolve(); } };
+  return { app: context.MetroApp, downloads, body, document, storage, element: id => byID.get(id), click(id) { const el = byID.get(id); el.focus(); return el.click(); }, change(id, value) { const e = byID.get(id); e.value = value; e.dispatch('change'); }, key(value, target = body) { let prevented = false; docEvents.dispatch('keydown', { key: value, target, preventDefault() { prevented = true; } }); return prevented; }, resize(nextWidth, nextHeight = context.innerHeight) { context.innerWidth = nextWidth; context.innerHeight = nextHeight; winEvents.dispatch('resize'); }, action(action) { const b = new Element('button', { 'data-action': action }); byID.get('modal-content').dispatch('click', { target: b }); }, frame() { time += 200; for (const [id, fn] of [...frames]) { frames.delete(id); fn(time); } }, async timers() { for (const [id, { fn }] of [...timers]) { if (timers.has(id)) { timers.delete(id); fn(); } } await Promise.resolve(); } };
 }
 
 test('search playback supports run, pause, step, back, history seeking and completion', () => {
@@ -354,6 +354,40 @@ test('mobile pins retain both panels while exposing only the selected panel and 
   assert.equal(environment.parentElement, h.element('viewport'));
 });
 
+test('phone and tablet width changes preserve pinned panels and the same canonical settings', () => {
+  // This covers responsive application state, not CSS layout or browser rendering.
+  for (const [width, height, controlsSuspended] of [[320,568,true], [390,844,true], [570,700,true], [768,1024,true], [844,390,true], [844,900,false]]) {
+    const h = createApp({ width, height }), algorithm = h.element('algorithm'), speed = h.element('speed'), environment = h.element('map-environment');
+    h.click('nav-simulation'); h.click('pin-controls');
+    h.change('algorithm', 'dijkstra'); speed.value = '48'; speed.dispatch('input');
+    h.click('toggle-analytics'); h.click('pin-insights');
+    assert.equal(h.element('control-panel').getAttribute('aria-hidden'), String(controlsSuspended), `Controls visibility at ${width} × ${height}`);
+    assert.equal(h.element('analytics-panel').getAttribute('aria-hidden'), 'false');
+    assert.equal(h.element('pin-controls').getAttribute('aria-pressed'), 'true');
+    assert.equal(h.element('pin-insights').getAttribute('aria-pressed'), 'true');
+    h.resize(390);
+    assert.equal(h.element('control-panel').classList.contains('mobile-suspended'), true);
+    assert.equal(algorithm.closest('#map-commandbar'), h.element('map-commandbar'));
+    assert.equal(environment.parentElement, h.element('viewport'));
+    h.click('nav-simulation');
+    assert.equal(h.element('control-panel').getAttribute('aria-hidden'), 'false');
+    assert.equal(h.element('analytics-panel').getAttribute('aria-hidden'), 'true');
+    assert.equal(algorithm.closest('#algorithm-slot'), h.element('algorithm-slot'));
+    assert.equal(speed.closest('#speed-slot'), h.element('speed-slot'));
+    h.resize(844, 900);
+    for (const id of ['control-panel', 'analytics-panel']) assert.equal(h.element(id).getAttribute('aria-hidden'), 'false');
+    assert.equal(h.element('algorithm'), algorithm);
+    assert.equal(h.element('speed'), speed);
+    assert.equal(algorithm.value, 'dijkstra');
+    assert.equal(speed.value, '48');
+    assert.equal(environment.parentElement, h.element('environment-slot'));
+    h.click('close-controls'); h.click('close-analytics');
+    assert.equal(algorithm.closest('#map-commandbar'), h.element('map-commandbar'));
+    assert.equal(speed.closest('#map-commandbar'), h.element('map-commandbar'));
+    assert.equal(environment.parentElement, h.element('viewport'));
+  }
+});
+
 test('compact floating controls work directly on the map without duplicate navigation buttons', () => {
   const h = createApp();
   for (const id of ['toggle-controls', 'compare-btn', 'quick-algorithm', 'quick-algorithm-name']) assert.equal(h.element(id), undefined, `${id} no longer duplicates navigation`);
@@ -577,6 +611,58 @@ test('Free Build exposes its drawing choices in a compact editor without an opti
   assert.equal(h.app.state.editing, true);
   h.click('builder-done');
   assert.equal(h.element('builder-workspace').hidden, true);
+});
+
+test('the phone workspace menu reaches secondary tools and Free Build can navigate without painting', () => {
+  for (const width of [320, 390, 570]) {
+    const h = createApp({ width });
+    assert.equal(h.element('workspace-sidebar').inert, true, 'the phone menu replaces the hidden sidebar');
+    const chooseWorkspace = key => {
+      h.click('workspace-menu');
+      const cards = h.document.querySelectorAll('[data-workspace]');
+      for (const action of ['simulation', 'learning', 'freebuild', 'layers', 'display', 'focus', 'help']) {
+        assert.ok(cards.some(card => card.dataset.workspace === action), `${action} is reachable from the phone menu`);
+      }
+      const card = cards.findLast(item => item.dataset.workspace === key);
+      h.element('modal-content').dispatch('click', { target: card });
+    };
+    chooseWorkspace('simulation');
+    assert.equal(h.element('control-panel').getAttribute('aria-hidden'), 'false'); h.click('close-controls');
+    chooseWorkspace('learning');
+    assert.equal(h.app.state.learning, true); h.click('close-controls');
+    chooseWorkspace('layers');
+    assert.equal(h.element('modal').open, true);
+    assert.ok(h.document.querySelectorAll('[data-layer]').length >= 3); h.click('close-modal');
+    chooseWorkspace('display');
+    assert.equal(h.element('modal').open, true);
+    assert.ok(h.element('quality-setting'));
+    h.change('lighting-setting', 'night');
+    assert.ok(h.document.querySelectorAll('[data-light]').find(button => button.dataset.light === 'night').classList.contains('active'));
+    h.click('close-modal');
+    chooseWorkspace('display');
+    assert.equal(h.element('lighting-setting').value, 'night'); h.click('close-modal');
+    chooseWorkspace('help');
+    assert.equal(h.element('modal').open, true); h.click('close-modal');
+    chooseWorkspace('focus');
+    assert.equal(h.body.classList.contains('immersive'), true);
+    h.click('restore-map-ui');
+    assert.equal(h.body.classList.contains('immersive'), false, 'a screen button restores controls without a keyboard');
+    chooseWorkspace('freebuild'); h.click('build-blank');
+    const grid = h.app.grid, point = { x: grid.originX + 2.5, z: grid.originZ + 2.5 }, index = grid.worldToCell(point.x, point.z).index;
+    const before = JSON.stringify(grid.serialize());
+    h.click('build-tool-view');
+    assert.equal(h.app.state.editing, true);
+    assert.equal(h.app.state.tool, 'view');
+    assert.equal(h.app.city.tool, 'view');
+    assert.equal(h.element('build-tool-view').getAttribute('aria-pressed'), 'true');
+    buildStroke(h, [point]);
+    assert.equal(JSON.stringify(grid.serialize()), before, 'navigating the canvas cannot paint a road');
+    h.click('build-tool-road'); buildStroke(h, [point]);
+    assert.equal(grid.developed[index], 1, 'drawing resumes without leaving Free Build');
+    h.click('build-undo'); assert.equal(h.app.grid.developed[index], 0);
+    h.click('build-redo'); assert.equal(h.app.grid.developed[index], 1);
+    h.click('builder-done'); assert.equal(h.app.state.editing, false);
+  }
 });
 
 test('Free Build preserves canonical simulation controls in visible Controls or their floating capsule', () => {

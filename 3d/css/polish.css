@@ -115,3 +115,75 @@ button, input, select, textarea { font-family: var(--sans); }
 .map-first .topbar .sidebar-toggle:hover, .map-first .topbar .sidebar-toggle[aria-expanded="false"] { border-color: #9ce7c667; background: #9ce7c614; color: #d8f5e4; }
 .map-first .topbar .sidebar-toggle:focus-visible { outline: 2px solid #b4edcf; outline-offset: 3px; }
 @media (max-width: 570px) { .map-first .topbar .sidebar-toggle { display: none; } }
+
+/* Coordinated floating bars, with a compact simulation selector above playback. */
+.map-first { --simulation-dock-width: min(700px, calc(100% - 580px)); --simulation-dock-height: 45px; --simulation-command-height: 45px; --simulation-dock-bottom: 20px; --simulation-dock-gap: 12px; --simulation-camera-height: 45px; }
+.map-first .map-commandbar, .map-first .transport {
+  left: 50%; right: auto; transform: translateX(-50%); box-sizing: border-box;
+  width: var(--simulation-dock-width); max-width: none;
+  height: var(--simulation-dock-height); min-height: var(--simulation-dock-height);
+  padding: 5px 10px; border: 1px solid #86b99d61; border-radius: 9px;
+  background: #13271ff2; box-shadow: 0 8px 30px #0004; backdrop-filter: blur(22px);
+}
+.map-first .transport { bottom: var(--simulation-dock-bottom); flex-wrap: nowrap; }
+.map-first .map-commandbar {
+  width: min(430px, calc(100% - 40px));
+  height: var(--simulation-command-height); min-height: var(--simulation-command-height);
+  top: auto; bottom: calc(var(--simulation-dock-bottom) + var(--simulation-dock-height) + var(--simulation-dock-gap));
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: center;
+}
+.map-first.learning-mode .map-commandbar { width: min(540px, calc(100% - 40px)); grid-template-columns: minmax(0, 1fr) 150px; }
+.map-first .map-commandbar .command-search, .map-first .map-commandbar .command-learning { width: 100%; min-width: 0; }
+.map-first .map-commandbar .command-search .select-wrap, .map-first .map-commandbar .command-search .metro-select { width: 100%; height: 30px; }
+.map-first .map-commandbar .metro-select-trigger, .map-first .map-commandbar .select-wrap.compact > .metro-select-trigger { height: 30px; min-height: 30px; padding: 0 10px; border-color: #7fa88f33; border-radius: 6px; background: #0f1f18a3; font-size: 12px; font-weight: 500; }
+.map-first .map-commandbar .command-speed { display: flex; flex-direction: column; width: auto; min-width: 0; padding-left: 16px; gap: 0; }
+.map-first .map-commandbar .command-speed > label { font-size: 12px; line-height: 16px; }
+.map-first .map-commandbar .command-speed #speed-value { line-height: 16px; font-weight: 500; }
+.map-first .map-commandbar .command-speed #speed { height: 16px; min-height: 16px; }
+.map-first .map-commandbar .command-learning { gap: 8px; }
+.map-first .map-commandbar .command-learning .button, .map-first .map-commandbar .command-learning input { height: 32px; min-height: 32px; }
+.map-first .map-commandbar .command-learning .button { padding: 4px 8px; }
+.map-first .transport .run-button { min-width: 128px; height: 30px; padding: 0 10px; gap: 7px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.map-first .transport .run-button svg { width: 12px; height: 12px; }
+.map-first .transport .icon-button { width: 26px; height: 28px; }
+.map-first .transport .icon-button svg { width: 14px; height: 14px; }
+.map-first .transport .transport-divider { height: 18px; margin: 0 5px; }
+.map-first .transport .transport-state { gap: 6px; font-size: 11px; line-height: 16px; }
+.map-first .transport .history-control { margin: 0; min-width: 120px; flex-basis: auto; order: 0; }
+.map-first .transport .history-control #playback-label { display: none; }
+.map-first .transport .history-control > div { font: 500 11px/14px var(--sans); letter-spacing: .1px; color: #b7d0c0; }
+.map-first .transport .history-control #history-label { color: #d0e5d8; font-variant-numeric: tabular-nums; }
+.map-first .transport #history { height: 4px; margin: 6px 0 0; border-radius: 99px; background: #385044; }
+.map-first .transport #history::-webkit-slider-thumb { width: 9px; height: 9px; border: 0; background: #a0e5c4; box-shadow: 0 0 0 3px #a0e5c414; }
+.map-first .transport #history::-moz-range-thumb { width: 9px; height: 9px; border: 0; border-radius: 50%; background: #a0e5c4; }
+@media (min-width: 1201px) and (max-width: 1620px) {
+  .map-first.insights-open { --map-zoom-bottom: 134px; }
+}
+@media (max-width: 1200px) {
+  .map-first { --simulation-dock-width: min(700px, calc(100% - 48px)); }
+  .map-first, .map-first.learning-mode { --map-zoom-bottom: calc(var(--simulation-dock-bottom) + var(--simulation-dock-height) + var(--simulation-command-height) + var(--simulation-dock-gap) * 3 + var(--simulation-camera-height)); }
+  .map-first .camera-dock { bottom: calc(var(--simulation-dock-bottom) + var(--simulation-dock-height) + var(--simulation-command-height) + var(--simulation-dock-gap) * 2); }
+  .map-first.insights-open .camera-dock { right: var(--map-navigation-right); }
+}
+@media (max-width: 980px) {
+  .map-first { --simulation-dock-width: min(620px, calc(100% - 40px)); }
+  .map-first .transport { gap: 8px 12px; }
+}
+@media (max-width: 570px) {
+  .map-first { --simulation-dock-width: calc(100% - 24px); --simulation-dock-height: 82px; --simulation-command-height: 43px; --simulation-dock-bottom: 12px; --simulation-camera-height: 43px; }
+  .map-first.learning-mode { --simulation-command-height: 82px; }
+  .map-first .map-commandbar, .map-first.learning-mode .map-commandbar { width: min(430px, calc(100% - 24px)); gap: 12px; }
+  .map-first.learning-mode .map-commandbar { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .map-first .map-commandbar .command-speed { border-left: 0; padding-left: 0; }
+  .map-first .map-commandbar .command-speed #speed { height: 15px; min-height: 15px; }
+  .map-first .map-commandbar .command-search .select-wrap, .map-first .map-commandbar .command-search .metro-select { height: 31px; }
+  .map-first .map-commandbar .metro-select-trigger, .map-first .map-commandbar .select-wrap.compact > .metro-select-trigger { height: 31px; min-height: 31px; padding: 0 9px; font-size: 12px; }
+  .map-first .map-commandbar .command-learning { flex-direction: column; align-items: stretch; gap: 6px; }
+  .map-first .map-commandbar .command-learning > label { justify-content: space-between; }
+  .map-first .map-commandbar .command-learning .button, .map-first .map-commandbar .command-learning input { height: 30px; min-height: 30px; }
+  .map-first .transport { flex-wrap: wrap; gap: 6px 12px; }
+  .map-first .transport .history-control { flex-basis: 100%; order: 2; }
+  .map-first .transport .history-control #playback-label { display: inline; }
+  .map-first .transport .run-button { min-width: 142px; height: 32px; }
+  .map-first .transport .icon-button { width: 24px; }
+}

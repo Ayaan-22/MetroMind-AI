@@ -192,7 +192,7 @@
               <button class="maze-btn" data-type="snake">Snake</button>
               <button class="maze-btn" data-type="grid2">Grid</button>
               <button class="maze-btn" data-type="recursive">Recursive</button>
-              <button class="maze-btn" data-type="perlin" style="border-color: rgba(0, 220, 255, 0.3); color: rgba(0, 220, 255, 0.75);">🗺 Perlin</button>
+              <button class="maze-btn" data-type="perlin" style="border-color: rgba(0, 220, 255, 0.3); color: var(--accent2);">🗺 Perlin</button>
             </div>
           </div>
           <div class="sb-section" id="sec-export">
@@ -214,7 +214,7 @@
               <button class="heur-btn" id="heur-chebyshev" data-heur="chebyshev">Chebyshev</button>
               <button class="heur-btn" id="heur-octile" data-heur="octile">Octile</button>
             </div>
-            <div style="font-family: var(--font-mono); font-size: 11px; color: var(--tx3); margin-top: 5px;" id="heurFormula">|Δr|+|Δc|</div>
+            <div style="font-family: var(--font-mono); font-size: var(--text-sm); color: var(--tx3); margin-top: 5px;" id="heurFormula">|Δr|+|Δc|</div>
           </div>
           <div class="sb-section" id="sec-algo">
             <div class="sb-label sec-label">Algorithm</div>
@@ -231,7 +231,7 @@
             </div>
             <p id="dstarHelp" class="algo-desc" hidden>D* Lite repairs the active route when you draw or erase walls or terrain. Paused edits wait for Resume or Step. Uses an automatic admissible heuristic; moving endpoints starts a new search.</p>
             <p class="algo-desc" id="algoDesc">Balances travel cost and estimated distance to the goal.</p>
-            <div class="formula-box" id="algoFormula">f(n) = g(n) + w · h(n)</div>
+            <div class="formula" id="algoFormula">f(n) = g(n) + w · h(n)</div>
           </div>
           <div class="sb-section">
             <div class="sb-label">Visualizer</div>
@@ -314,19 +314,19 @@
             <div class="terrain-legend">
               <div class="terrain-item">
                 <div class="terrain-swatch" style="background: #1a3a50; border-color: rgba(100, 160, 200, 0.3);"></div>
-                <div style="flex: 1"><div style="font-size: 11px; color: var(--tx1)">Wall</div><div class="tw-badge" style="margin-top: 2px">blocked</div></div>
+                <div style="flex: 1"><div style="font-size: var(--text-sm); color: var(--tx1)">Wall</div><div class="tw-badge" style="margin-top: 2px">blocked</div></div>
               </div>
               <div class="terrain-item">
                 <div class="terrain-swatch" style="background: rgba(0, 220, 255, 0.3); border-color: rgba(0, 220, 255, 0.6);"></div>
-                <div style="flex: 1"><div style="font-size: 11px; color: var(--tx1)">Highway</div><div class="tw-badge" style="margin-top: 2px; color: rgba(0, 220, 255, 0.9); border-color: rgba(0, 220, 255, 0.4); background: rgba(0, 220, 255, 0.1);">0.5×</div></div>
+                <div style="flex: 1"><div style="font-size: var(--text-sm); color: var(--tx1)">Highway</div><div class="tw-badge" style="margin-top: 2px; color: var(--accent2); border-color: rgba(0, 220, 255, 0.4); background: rgba(0, 220, 255, 0.1);">0.5×</div></div>
               </div>
               <div class="terrain-item">
                 <div class="terrain-swatch" style="background: rgba(255, 140, 0, 0.3); border-color: rgba(255, 140, 0, 0.6);"></div>
-                <div style="flex: 1"><div style="font-size: 11px; color: var(--tx1)">Traffic</div><div class="tw-badge" style="margin-top: 2px; color: rgba(255, 140, 0, 0.9); border-color: rgba(255, 140, 0, 0.4); background: rgba(255, 140, 0, 0.1);">3×</div></div>
+                <div style="flex: 1"><div style="font-size: var(--text-sm); color: var(--tx1)">Traffic</div><div class="tw-badge" style="margin-top: 2px; color: var(--accent4); border-color: rgba(255, 140, 0, 0.4); background: rgba(255, 140, 0, 0.1);">3×</div></div>
               </div>
               <div class="terrain-item">
                 <div class="terrain-swatch" style="background: rgba(120, 72, 30, 0.4); border-color: rgba(140, 90, 40, 0.7);"></div>
-                <div style="flex: 1"><div style="font-size: 11px; color: var(--tx1)">Mud</div><div class="tw-badge" style="margin-top: 2px; color: rgba(180, 120, 60, 0.9); border-color: rgba(140, 90, 40, 0.4); background: rgba(120, 72, 30, 0.15);">10×</div></div>
+                <div style="flex: 1"><div style="font-size: var(--text-sm); color: var(--tx1)">Mud</div><div class="tw-badge" style="margin-top: 2px; color: var(--accent4); border-color: rgba(140, 90, 40, 0.4); background: rgba(120, 72, 30, 0.15);">10×</div></div>
               </div>
             </div>
           </div>

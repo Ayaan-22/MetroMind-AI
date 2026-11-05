@@ -79,22 +79,24 @@
   function position(instance) {
     if (!current || current !== instance) return;
     const rect = instance.trigger.getBoundingClientRect();
-    const viewportWidth = document.documentElement.clientWidth || scope.innerWidth;
-    const viewportHeight = document.documentElement.clientHeight || scope.innerHeight;
+    const viewport = scope.visualViewport;
+    const viewportWidth = viewport?.width || document.documentElement.clientWidth || scope.innerWidth;
+    const viewportHeight = viewport?.height || document.documentElement.clientHeight || scope.innerHeight;
+    const viewportLeft = viewport?.offsetLeft || 0, viewportTop = viewport?.offsetTop || 0;
     const edge = 10, gap = 7;
     const width = Math.max(1, Math.min(Math.max(200, rect.width), viewportWidth - edge * 2));
     instance.menu.style.width = `${width}px`;
     instance.menu.style.maxHeight = `${Math.min(420, viewportHeight - edge * 2)}px`;
-    instance.menu.style.left = `${Math.max(edge, Math.min(rect.left, viewportWidth - width - edge))}px`;
+    instance.menu.style.left = `${Math.max(viewportLeft + edge, Math.min(rect.left, viewportLeft + viewportWidth - width - edge))}px`;
     const desired = Math.min(instance.menu.scrollHeight, 420, viewportHeight - edge * 2);
-    const below = viewportHeight - rect.bottom - gap - edge;
-    const above = rect.top - gap - edge;
+    const below = viewportTop + viewportHeight - rect.bottom - gap - edge;
+    const above = rect.top - gap - viewportTop - edge;
     const useAbove = below < Math.min(desired, 230) && above > below;
     const available = Math.max(64, useAbove ? above : below);
     const height = Math.min(desired, available);
     instance.menu.style.maxHeight = `${height}px`;
     const top = useAbove ? rect.top - gap - height : rect.bottom + gap;
-    instance.menu.style.top = `${Math.max(edge, Math.min(top, viewportHeight - height - edge))}px`;
+    instance.menu.style.top = `${Math.max(viewportTop + edge, Math.min(top, viewportTop + viewportHeight - height - edge))}px`;
     instance.menu.dataset.placement = useAbove ? 'above' : 'below';
   }
 

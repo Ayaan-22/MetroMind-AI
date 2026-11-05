@@ -1,0 +1,228 @@
+/* Touch layouts keep the city usable without changing the desktop workspace. */
+@media (max-width: 820px), (pointer: coarse) and (max-width: 1100px), (max-width: 1024px) and (max-height: 500px) {
+  body.map-first {
+    position: relative; width: 100%; max-width: 100vw; height: 100vh; height: var(--app-height, 100dvh); min-height: 0; overflow: hidden;
+    --mobile-top: max(8px, env(safe-area-inset-top, 0px));
+    --mobile-left: max(8px, env(safe-area-inset-left, 0px));
+    --mobile-right: max(8px, env(safe-area-inset-right, 0px));
+    --mobile-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    --map-edge: 12px; --command-top: calc(var(--mobile-top) + 64px);
+    --map-panel-top: calc(var(--command-top) + 52px);
+    --simulation-dock-width: min(620px, calc(100% - 24px));
+    --simulation-dock-height: 108px; --simulation-command-height: 64px;
+    --simulation-dock-bottom: var(--mobile-bottom); --simulation-dock-gap: 10px; --simulation-camera-height: 52px;
+  }
+  .map-first .workspace, .map-first .main-workspace { min-width: 0; min-height: 0; overflow: hidden; }
+  .map-first #city-canvas { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+  .map-first .topbar {
+    top: var(--mobile-top); left: calc(var(--map-rail) + var(--mobile-left)); right: var(--mobile-right);
+    height: 52px; min-height: 52px; padding: 0 7px; gap: 5px;
+  }
+  .map-first .topbar .studio-label, .map-first .topbar .top-divider, .map-first .topbar .map-identity,
+  .map-first .topbar .avatar { display: none; }
+  .map-first .brand { flex: 1; min-width: 0; font-size: 14px; gap: 6px; letter-spacing: .5px; }
+  .map-first .brand > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .map-first .brand-mark { flex: none; width: 24px; margin-right: -3px; }
+  .map-first .topbar > .button, .map-first .topbar .workspace-menu { flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; justify-content: center; }
+  .map-first .topbar > .button > span, .map-first .topbar .export-button .small { display: none; }
+  .map-first .topbar .sidebar-toggle, .map-first .topbar .header-focus { width: 44px; height: 44px; }
+  .map-first .topbar > .button svg, .map-first .topbar .workspace-menu svg { width: 18px; height: 18px; }
+  .map-first .workspace-actions { top: var(--command-top); right: var(--mobile-right); gap: 6px; }
+  .map-first .workspace-actions .button { height: 44px; min-height: 44px; font-size: 13px; padding: 6px 10px; }
+  .map-first .map-environment { top: calc(var(--command-top) + 52px); }
+  .map-first .lighting-control { top: calc(var(--command-top) + 52px); }
+  .map-first .lighting-control button { width: 44px; height: 44px; }
+  .map-first .viewport { --tool-top: calc(var(--command-top) + 164px); --tool-bottom: calc(var(--simulation-dock-bottom) + var(--simulation-dock-height) + var(--simulation-command-height) + 22px); }
+  .map-first .map-tools, .map-first .map-tools.expanded { display: flex; flex-direction: column; width: 54px; padding: 4px; gap: 2px; overflow-y: auto; overflow-x: hidden; }
+  .map-first .map-tools .map-tool, .map-first .map-tools.expanded .map-tool { width: 44px; height: 44px; min-height: 44px; }
+  .map-first .map-tools .map-tool:after { display: none; }
+  .map-first .terrain-palette { left: calc(var(--map-edge) + 62px); max-height: calc(100% - var(--tool-top) - var(--tool-bottom)); width: min(300px, calc(100% - var(--map-edge) * 2 - 62px)); }
+  .map-first .terrain-heading .icon-button { width: 44px; height: 44px; flex: none; }
+  .map-first .terrain-palette .terrain-tool { min-height: 60px; }
+  .map-first .terrain-tool-grid { grid-template-columns: minmax(0, 1fr); }
+  .map-first .map-commandbar, .map-first.learning-mode .map-commandbar { width: min(470px, calc(100% - 24px)); height: var(--simulation-command-height); min-height: var(--simulation-command-height); padding: 8px; gap: 12px; }
+  .map-first .map-commandbar, .map-first .transport { left: calc((100% + var(--mobile-left) - var(--mobile-right)) / 2); }
+  .map-first .map-commandbar .command-search .select-wrap, .map-first .map-commandbar .command-search .metro-select { height: 44px; }
+  .map-first .map-commandbar .metro-select-trigger, .map-first .map-commandbar .select-wrap.compact > .metro-select-trigger { height: 44px; min-height: 44px; padding: 0 9px; font-size: 14px; }
+  .map-first .map-commandbar .command-speed { padding-left: 12px; gap: 0; }
+  .map-first .map-commandbar .command-speed #speed { height: 28px; min-height: 28px; }
+  .map-first .map-commandbar .command-speed > label, .map-first .map-commandbar .command-speed #speed-value { font-size: 12px; line-height: 16px; }
+  .map-first .map-commandbar .command-learning .button, .map-first .map-commandbar .command-learning input { height: 44px; min-height: 44px; }
+  .map-first .map-commandbar .command-learning input { font-size: 16px; }
+  .map-first .transport { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 44px 38px; gap: 6px; padding: 8px; }
+  .map-first .transport .playback-buttons { display: grid; grid-template-columns: 44px minmax(0, 1fr) repeat(3, 44px); gap: 3px; width: 100%; }
+  .map-first .transport .transport-divider, .map-first .transport .transport-state { display: none; }
+  .map-first .transport .playback-buttons #reset-btn { display: grid; }
+  .map-first .transport .icon-button { width: 44px; height: 44px; }
+  .map-first .transport .icon-button svg { width: 18px; height: 18px; }
+  .map-first .transport .run-button { width: 100%; min-width: 0; height: 44px; padding: 0 5px; font-size: 13px; line-height: 1.2; justify-content: center; }
+  .map-first .transport .run-button svg, .map-first .transport .run-button kbd { display: none; }
+  .map-first .transport .run-button span { white-space: normal; text-align: center; }
+  .map-first .transport .history-control { width: 100%; min-width: 0; margin: 0; order: 0; }
+  .map-first .transport .history-control > div { font-size: 11px; line-height: 16px; }
+  .map-first .transport .history-control #playback-label { display: inline; max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .map-first .transport #history { height: 22px; min-height: 22px; margin: 0; appearance: none; background: transparent; }
+  .map-first .transport #history::-webkit-slider-runnable-track { height: 4px; border-radius: 99px; background: #385044; }
+  .map-first .transport #history::-webkit-slider-thumb { width: 13px; height: 13px; margin-top: -4.5px; }
+  .map-first .transport #history::-moz-range-track { height: 4px; background: #385044; }
+  .map-first .transport #history::-moz-range-thumb { width: 13px; height: 13px; }
+  .map-first .camera-dock { height: 52px; padding: 3px; gap: 0; }
+  .map-first .camera-dock button { height: 44px; min-width: 44px; padding: 0 8px; font-size: 13px; }
+  .map-first .camera-dock button[data-camera] svg { display: none; }
+  .map-first .map-zoom, .map-first.learning-mode .map-zoom { width: 52px; height: 96px; padding: 3px; }
+  .map-first .map-zoom button { width: 44px; height: 44px; }
+  .map-first #compass.north-indicator { width: 52px; }
+  .map-first .view-label, .map-first .map-legend { display: none; }
+  .map-first .toast-stack { bottom: calc(var(--simulation-dock-bottom) + var(--simulation-dock-height) + var(--simulation-command-height) + 24px); right: 12px; left: calc(var(--map-rail) + 12px); width: auto; pointer-events: none; }
+  .map-first .toast { max-width: 100%; font-size: 13px; }
+  .map-first .panel-heading-actions .icon-button, .map-first .terrain-heading .icon-button, .map-first .modal-heading .icon-button { width: 44px; height: 44px; }
+  .map-first .control-panel .button, .map-first .analytics-panel .button, .map-first .tab, .map-first .analytics-tabs button { min-height: 44px; }
+  .map-first .control-panel .select-wrap, .map-first .control-panel .metro-select-trigger, .map-first .select-wrap.compact > .metro-select-trigger { min-height: 44px; }
+  .map-first #environment-slot .command-grid .metro-select-trigger { height: 44px; min-height: 44px; }
+  .map-first .panel-scroll, .map-first dialog, .map-first .terrain-palette { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  .map-first input[type="number"], .map-first input[type="text"], .map-first textarea { min-height: 44px; font-size: 16px; }
+  .map-first .toggle-row { min-height: 48px; }
+  .map-first .control-panel input[type="range"] { min-height: 22px; }
+  .map-first dialog {
+    position: fixed; inset: var(--mobile-top) var(--mobile-right) auto var(--mobile-left); margin: 0 auto;
+    width: min(760px, calc(100vw - var(--mobile-left) - var(--mobile-right))); max-width: none;
+    max-height: calc(var(--app-height, 100dvh) - var(--mobile-top) - var(--mobile-bottom));
+  }
+  .map-first .modal-heading { position: sticky; top: 0; z-index: 3; padding: 12px 16px; gap: 10px; background: #17241c; }
+  .map-first .modal-heading h2 { font-size: 21px; }
+  .map-first #modal-content { padding: 16px; overflow-wrap: break-word; }
+  .map-first .modal-grid, .map-first .compare-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .map-first .action-card { min-width: 0; min-height: 120px; padding: 12px; }
+  .map-first .action-card strong, .map-first .action-card small { font-size: 13px; line-height: 1.5; }
+  .map-first .compare-card { min-width: 0; }
+  .map-first .comparison-footer { flex-wrap: wrap; }
+  .metro-select-menu .metro-select-option { min-height: 46px; }
+  .metro-select-menu .metro-select-option-label { font-size: 14px; }
+}
+
+@media (max-width: 820px) {
+  .map-first.free-building { --map-panel-top: calc(var(--command-top) + 52px); }
+  .map-first .control-panel.open, .map-first .analytics-panel.open {
+    position: absolute; top: var(--map-panel-top); bottom: var(--mobile-bottom); left: calc(var(--map-rail) + var(--mobile-left)); right: var(--mobile-right);
+    width: auto; min-height: 0; max-height: none; border-radius: 12px;
+  }
+  .map-first .panel-heading { min-height: 72px; padding: 12px 16px; }
+  .map-first .panel-scroll { min-height: 0; }
+  .map-first .control-section, .map-first .insight-section { padding-left: 16px; padding-right: 16px; }
+  .map-first.controls-open .camera-dock, .map-first.insights-open .camera-dock,
+  .map-first.controls-open .map-zoom, .map-first.insights-open .map-zoom,
+  .map-first.controls-open #compass, .map-first.insights-open #compass,
+  .map-first.controls-open .map-tools, .map-first.insights-open .map-tools,
+  .map-first.controls-open .lighting-control, .map-first.insights-open .lighting-control { display: none; }
+  .map-first .drawer-backdrop { top: var(--map-panel-top); }
+}
+
+@media (max-width: 570px) {
+  body.map-first { --map-edge: 8px; --map-rail: 0px; }
+  .map-first .topbar { left: var(--mobile-left); right: var(--mobile-right); gap: 3px; }
+  .map-first .topbar .sidebar-toggle { display: none; }
+  .map-first .topbar .workspace-menu { display: inline-flex; }
+  .map-first .brand-ai { display: none; }
+  .map-first .workspace-actions { left: var(--mobile-left); right: var(--mobile-right); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+  .map-first .workspace-actions .button { width: 100%; min-width: 0; padding: 4px; font-size: 12px; }
+  .map-first .workspace-actions .button svg { display: none; }
+  .map-first #viewport > .map-environment, .map-first .lighting-control { display: none; }
+  .map-first .viewport { --tool-top: calc(var(--command-top) + 52px); }
+  .map-first .map-tools, .map-first .map-tools.expanded { left: var(--mobile-left); }
+  .map-first .terrain-palette { left: calc(var(--mobile-left) + 62px); width: calc(100% - var(--mobile-left) - var(--mobile-right) - 62px); }
+  .map-first .map-commandbar, .map-first.learning-mode .map-commandbar { width: calc(100% - var(--mobile-left) - var(--mobile-right)); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .map-first .map-commandbar .command-speed { padding-left: 0; border: 0; }
+  .map-first.learning-mode { --simulation-command-height: 112px; }
+  .map-first .map-commandbar .command-learning { flex-direction: column; gap: 6px; }
+  .map-first .map-commandbar .command-learning > label { justify-content: space-between; }
+  .map-first .map-commandbar .command-learning input { width: 70px; min-width: 0; }
+  .map-first .map-commandbar .command-learning .button { padding: 4px; font-size: 13px; }
+  .map-first .transport { width: calc(100% - var(--mobile-left) - var(--mobile-right)); }
+  .map-first .camera-dock { right: var(--mobile-right); }
+  .map-first .map-zoom, .map-first.learning-mode .map-zoom { top: calc(var(--command-top) + 52px); bottom: auto; right: var(--mobile-right); }
+  .map-first #compass.north-indicator { top: calc(var(--command-top) + 160px); bottom: auto; right: var(--mobile-right); }
+  .map-first .builder-workspace { top: calc(var(--command-top) + 52px); left: var(--mobile-left); right: var(--mobile-right); width: auto; max-width: none; max-height: calc(100% - var(--command-top) - 52px - var(--simulation-dock-bottom) - var(--simulation-dock-height) - 12px); overflow-y: auto; overscroll-behavior: contain; pointer-events: auto; border-radius: 11px; }
+  .map-first .builder-toolbar { width: 100%; display: grid; grid-template-columns: 92px minmax(48px, 1fr) 44px 68px; grid-template-areas: 'tools tools tools tools' 'options options options options' 'history guides canvas done'; padding: 8px; gap: 8px 6px; }
+  .map-first .builder-tools { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; width: 100%; padding: 0; border: 0; }
+  .map-first .builder-tools .button, .map-first .builder-tools .icon-button { width: 100%; height: 44px; min-height: 44px; min-width: 0; padding: 0; justify-content: center; }
+  .map-first .builder-tools .button span { display: none; }
+  .map-first .builder-tools .button svg, .map-first .builder-tools .icon-button svg { display: block; width: 20px; height: 20px; }
+  .map-first .builder-options { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; padding: 0; border: 0; }
+  .map-first .builder-options > label { width: 100%; min-width: 0; flex-direction: column; gap: 3px; font-size: 12px; line-height: 17px; }
+  .map-first .builder-options .metro-select { width: 100%; }
+  .map-first .builder-options .metro-select-trigger { min-height: 44px; height: 44px; font-size: 14px; padding: 0 8px; }
+  .map-first .builder-history { gap: 4px; padding: 0; border: 0; }
+  .map-first .builder-history .icon-button { width: 44px; height: 44px; }
+  .map-first .builder-guides { min-height: 44px; justify-content: center; gap: 4px; font-size: 12px; }
+  .map-first .builder-guides input { width: 18px; height: 18px; }
+  .map-first .builder-toolbar #build-blank { width: 44px; min-width: 44px; height: 44px; padding: 0; font-size: 0; justify-content: center; }
+  .map-first .builder-toolbar #build-blank svg { width: 20px; height: 20px; }
+  .map-first .builder-toolbar .builder-done { width: 68px; height: 44px; min-height: 44px; padding: 0 7px; font-size: 13px; justify-content: center; }
+  .map-first.free-building { --simulation-command-height: 0px; }
+  .map-first.free-building .map-commandbar, .map-first.free-building .map-zoom, .map-first.free-building #compass.north-indicator { display: none; }
+  .map-first .modal-grid, .map-first .compare-grid { grid-template-columns: minmax(0, 1fr); }
+  .map-first .modal-grid .action-card:last-child { grid-column: auto; }
+  .map-first .analytics-footer { min-height: 40px; padding: 8px 16px; }
+  .map-first .analytics-footer > span:last-child { display: none; }
+  .map-first .restore-map-ui { top: var(--mobile-top); right: var(--mobile-right); min-height: 44px; }
+}
+
+@media (max-width: 370px) {
+  .map-first .brand > span:last-child { display: none; }
+  .map-first .brand { flex: 1; }
+  .map-first .brand-mark { margin: 0; }
+  .map-first .workspace-actions .button { font-size: 12px; }
+  .map-first .builder-toolbar { grid-template-columns: 92px minmax(48px, 1fr) 44px 62px; gap: 8px 4px; }
+  .map-first .builder-toolbar .builder-done { width: 62px; padding: 0 5px; }
+}
+
+/* A short landscape screen uses the side space instead of tall bottom stacks. */
+@media (min-width: 500px) and (max-width: 1024px) and (max-height: 500px) {
+  body.map-first { --simulation-dock-width: min(580px, calc(100% - var(--mobile-left) - var(--mobile-right))); --simulation-dock-height: 56px; --simulation-command-height: 56px; --simulation-dock-gap: 8px; }
+  .map-first.learning-mode { --simulation-command-height: 56px; }
+  .map-first #viewport > .map-environment, .map-first .lighting-control, .map-first #compass.north-indicator { display: none; }
+  .map-first .viewport { --tool-top: calc(var(--command-top) + 52px); --tool-bottom: calc(var(--simulation-dock-bottom) + 64px); }
+  .map-first .map-commandbar, .map-first.learning-mode .map-commandbar { width: min(450px, calc(100% - 140px)); height: 56px; min-height: 56px; padding: 5px 8px; grid-template-columns: minmax(0, 1fr) 132px; }
+  .map-first .map-commandbar .command-learning { flex-direction: row; align-items: center; }
+  .map-first .map-commandbar .command-learning > label { font-size: 0; }
+  .map-first .map-commandbar .command-learning input { width: 66px; }
+  .map-first .map-commandbar .command-learning .button { padding: 0 7px; white-space: nowrap; }
+  .map-first .transport { display: flex; flex-wrap: nowrap; width: var(--simulation-dock-width); height: 56px; min-height: 56px; padding: 5px 7px; gap: 8px; }
+  .map-first .transport .playback-buttons { display: flex; width: auto; flex: none; gap: 2px; }
+  .map-first .transport .run-button { width: 110px; min-width: 110px; }
+  .map-first .transport .history-control { flex: 1; min-width: 90px; width: auto; }
+  .map-first .transport .history-control #playback-label { display: none; }
+  .map-first .camera-dock { top: calc(var(--command-top) + 52px); bottom: auto; right: var(--mobile-right); }
+  .map-first .map-zoom, .map-first.learning-mode .map-zoom { top: calc(var(--command-top) + 112px); bottom: auto; right: var(--mobile-right); }
+  .map-first .control-panel.open, .map-first .analytics-panel.open {
+    position: absolute; top: calc(var(--command-top) + 52px); bottom: var(--mobile-bottom);
+    left: calc(var(--map-rail) + var(--mobile-left)); right: var(--mobile-right); width: auto; min-height: 0;
+  }
+  .map-first.free-building { --map-panel-top: calc(var(--command-top) + 52px); }
+  .map-first .panel-heading { min-height: 60px; padding: 7px 14px; }
+  .map-first .builder-workspace {
+    top: calc(var(--command-top) + 52px); left: var(--mobile-left); right: auto;
+    width: min(380px, calc(100% - var(--mobile-left) - var(--mobile-right) - 64px)); max-width: none;
+    max-height: calc(100% - var(--command-top) - 52px - var(--simulation-dock-bottom) - 68px);
+    overflow: auto; overscroll-behavior: contain; pointer-events: auto; border-radius: 11px;
+  }
+  .map-first .builder-toolbar { display: grid; grid-template-columns: 92px minmax(48px, 1fr) 44px 62px; grid-template-areas: 'tools tools tools tools' 'history guides canvas done' 'options options options options'; width: 100%; gap: 6px 4px; padding: 8px; }
+  .map-first .builder-tools { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; }
+  .map-first .builder-tools .button, .map-first .builder-tools .icon-button { width: 100%; min-width: 0; height: 44px; min-height: 44px; padding: 0; }
+  .map-first .builder-tools .button span { display: none; }
+  .map-first .builder-tools .button svg, .map-first .builder-tools .icon-button svg { display: block; width: 20px; height: 20px; }
+  .map-first .builder-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .map-first .builder-options .metro-select { width: 100%; }
+  .map-first .builder-options .metro-select-trigger { height: 44px; min-height: 44px; font-size: 14px; }
+  .map-first .builder-history { gap: 4px; }
+  .map-first .builder-history .icon-button { width: 44px; height: 44px; }
+  .map-first .builder-toolbar #build-blank { width: 44px; height: 44px; padding: 0; font-size: 0; }
+  .map-first .builder-toolbar .builder-done { width: 62px; height: 44px; padding: 0 5px; }
+  .map-first.free-building .map-commandbar { display: none; }
+}
+
+@media (min-width: 500px) and (max-width: 800px) and (max-height: 500px) {
+  .map-first.free-building .camera-dock { display: none; }
+}
+
+@media (max-width: 570px) and (max-height: 700px) { .map-first #compass.north-indicator { display: none; } }
