@@ -689,6 +689,134 @@ output { font-size: var(--type-label); font-weight: 500; }
 }
 </style>
   <style>
+/* Keep the primary tools fixed; advanced tools open beside them. */
+.map-first .viewport {
+  --tool-top: 146px;
+  --tool-bottom: 126px;
+}
+
+.map-first .map-tools,
+.map-first .map-tools.expanded {
+  top: var(--tool-top);
+  left: var(--map-edge);
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 3px;
+  width: 46px;
+  max-height: calc(100% - var(--tool-top) - var(--tool-bottom));
+  padding: 6px;
+  overflow: visible;
+  z-index: 13;
+}
+
+.map-first .map-tools .map-tool,
+.map-first .map-tools.expanded .map-tool {
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  flex: none;
+  order: 0;
+}
+
+.map-first .map-tools .tool-expander {
+  order: 1;
+  margin-top: 4px;
+  border-top: 1px solid #89b79c35;
+}
+
+.map-first .map-tools .tool-expander[aria-expanded="true"] {
+  background: #9ce7c624;
+  color: #d2f6df;
+}
+
+.map-first .map-tools .advanced-tool,
+.map-first .map-tools.expanded .advanced-tool,
+.map-first .map-tools .tool-separator,
+.map-first .map-tools.expanded .tool-separator { display: none; }
+
+.map-first .map-tools .map-tool:after { left: 42px; font-size: 12px; z-index: 1; }
+.map-first .map-tools .tool-expander[aria-expanded="true"]:after { display: none; }
+
+.terrain-palette {
+  position: absolute;
+  top: var(--tool-top,146px);
+  left: calc(var(--map-edge,20px) + 56px);
+  width: min(268px, calc(100% - var(--map-edge,20px) * 2 - 56px));
+  max-height: calc(100% - var(--tool-top,146px) - var(--tool-bottom,126px));
+  z-index: 14;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #5a8268 transparent;
+  padding: 12px;
+  border: 1px solid #83b39470;
+  border-radius: 11px;
+  background: #14251ef5;
+  color: #d6e9dd;
+  box-shadow: 0 12px 36px #0005;
+  backdrop-filter: blur(20px);
+}
+
+.terrain-palette[hidden] { display: none; }
+.terrain-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid #83b39430; }
+.terrain-heading h2, .terrain-heading h3, .terrain-heading strong { margin: 0; font: 550 13px/1.5 var(--sans); letter-spacing: 0; }
+.terrain-heading .icon-button { width: 27px; height: 27px; color: #b4cfc0; border-radius: 5px; flex: none; }
+.terrain-heading .icon-button:hover { background: #a2e9bd18; color: #e4f8eb; }
+.terrain-heading .icon-button svg { width: 15px; height: 15px; }
+.terrain-section { margin-top: 12px; }
+.terrain-section h3, .terrain-section h4, .terrain-section-title { display: block; margin: 0 0 7px; font: 500 11px/1.5 var(--sans); letter-spacing: .35px; color: #a7c8b5; }
+.terrain-tool-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
+
+.terrain-palette .terrain-tool {
+  position: relative;
+  display: grid;
+  grid-template-columns: 18px minmax(0,1fr);
+  align-content: center;
+  align-items: center;
+  justify-items: start;
+  gap: 1px 7px;
+  width: auto;
+  height: auto;
+  min-height: 53px;
+  padding: 8px;
+  border: 1px solid #87b79c27;
+  border-radius: 7px;
+  background: #102219;
+  color: #c8dfd1;
+  text-align: left;
+  cursor: pointer;
+}
+
+.terrain-palette .terrain-tool svg { width: 17px; height: 17px; color: #99bea8; }
+.terrain-palette .tool-copy { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.terrain-palette .tool-name { display: block; min-width: 0; font: 500 12px/1.4 var(--sans); overflow-wrap: break-word; }
+.terrain-palette .tool-cost { display: block; color: #9ebdac; font: 400 12px/1.4 var(--sans); }
+.terrain-palette .terrain-tool:after { display: none; }
+.terrain-palette .terrain-tool:hover { border-color: #8bceaa70; background: #254331; color: #effbf3; }
+.terrain-palette .terrain-tool.active, .terrain-palette .terrain-tool[aria-pressed="true"] { border-color: #9ce7c697; background: #2c503b; color: #e5f9ed; }
+.terrain-palette .terrain-tool.active svg, .terrain-palette .terrain-tool[aria-pressed="true"] svg { color: #b6f2cf; }
+.terrain-palette .terrain-tool:focus-visible { outline: 2px solid #b6efcd; outline-offset: 2px; }
+.free-building .terrain-palette,
+.map-first.immersive .terrain-palette,
+.map-first.immersive .map-tools,
+.map-first.immersive .map-tools.expanded { display: none; }
+
+@media (max-width: 570px) {
+  .map-first .viewport { --tool-top: 134px; --tool-bottom: 190px; }
+  .terrain-palette { padding: 10px; border-radius: 9px; }
+  .terrain-heading { gap: 4px; }
+  .terrain-heading h2, .terrain-heading h3, .terrain-heading strong { font-size: 12px; }
+  .terrain-palette .terrain-tool { padding: 7px; gap: 1px 5px; }
+}
+
+@media (max-height: 640px) {
+  .map-first .viewport { --tool-top: 140px; --tool-bottom: 110px; }
+  .map-first .map-tools, .map-first .map-tools.expanded { overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
+  .terrain-palette { max-height: calc(100% - var(--tool-top) - var(--tool-bottom)); }
+}
+</style>
+  <style>
 /* Shared, keyboard-accessible dropdowns with the same slate and mint palette. */
 .metro-select { position: relative; }
 .metro-select-native {
@@ -807,138 +935,385 @@ output { font-size: var(--type-label); font-weight: 500; }
 }
 </style>
   <style>
-/* Free Build is an editor mode over the full-size map. */
-.map-first .scene-heading-actions .free-build-entry {
-  color: #baf3d1;
-  border-color: #8cdeb17d;
-  background: #1b3c2be8;
-}
-.map-first .scene-heading-actions .free-build-entry[aria-pressed="true"] {
-  color: #153e29;
-  background: #a1e9c4;
-  border-color: #c2f8d9;
-}
-.free-build-entry svg { width: 15px; height: 15px; }
+/* Free Build is a contained floating tool dock, with every choice in view. */
+.map-first .scene-heading { display: contents; }
+.map-first .map-identity { display: flex; align-items: center; gap: 9px; min-width: 0; margin-left: 10px; padding-left: 16px; border-left: 1px solid #89b79c35; }
+.map-identity > span:first-child { color: #93ad9f; font-size: 12px; }
+.map-first .map-identity h1 { min-width: 0; max-width: 230px; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #d4e5db; font: 500 13px/1.4 var(--sans); letter-spacing: 0; }
 .free-building #city-canvas:focus-visible { outline: 2px solid #9ce7c657; outline-offset: -3px; }
-.builder-workspace {
-  position: absolute;
-  top: 146px;
-  left: var(--map-edge,20px);
-  right: var(--map-edge,20px);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  z-index: 12;
-  pointer-events: none;
-}
-.builder-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px 14px;
-  padding: 11px 13px;
-  max-width: 100%;
-  background: #14261ef5;
-  border: 1px solid #87c5a16b;
-  border-radius: 11px;
-  box-shadow: 0 10px 36px #0005;
-  pointer-events: auto;
-}
-.builder-heading, .builder-history, .builder-tools, .builder-options {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.builder-mode {
-  position: relative;
-  padding-left: 12px;
-  margin-right: 3px;
-  color: #b4f1cd;
-  font: 500 10px/1.5 var(--mono);
-  letter-spacing: .7px;
-  white-space: nowrap;
-}
-.builder-mode > i { position: absolute; top: 5px; left: 0; width: 5px; height: 5px; background: #a0eac4; border-radius: 50%; }
-.builder-mode small { display: block; font: 10px/1.5 var(--sans); color: #a5c8b3; letter-spacing: 0; margin-top: 2px; }
-.builder-history { gap: 0; }
-.builder-toolbar .button { min-height: 35px; font-size: 12px; padding: 6px 9px; }
-.builder-toolbar .icon-button { width: 29px; height: 34px; }
-.builder-toolbar .icon-button svg { width: 15px; height: 15px; }
-.builder-toolbar .builder-done { color: #163e29; background: #a0e8c1; border-color: #baf0d2; }
-.builder-tools { padding: 0 12px; border-left: 1px solid #89b79c36; border-right: 1px solid #89b79c36; }
-.builder-tools .button { background: transparent; color: #b7cfc0; border-color: transparent; }
-.builder-tools .button.active, .builder-tools .icon-button.active { background: #8bdfb226; border-color: #96dcaf77; color: #d3f6e1; }
-.builder-tools .button svg { width: 14px; height: 14px; }
-.builder-options { gap: 9px; align-items: flex-end; }
-.builder-options > label { display: block; min-width: 0; width: 124px; font-size: 10px; color: #afcbbb; line-height: 1.4; }
-.builder-options .metro-select { display: block; margin-top: 4px; }
-.builder-options .metro-select-trigger { font-size: 12px; height: 33px; padding: 0 9px; }
-.builder-options .builder-guides { display: flex; align-items: center; align-self: center; gap: 6px; width: auto; font-size: 11px; color: #c2dccc; margin-left: 3px; padding-top: 13px; cursor: pointer; }
+.builder-workspace { position: absolute; top: var(--command-top,86px); left: var(--map-edge,20px); right: auto; width: max-content; max-width: calc(100% - 455px); z-index: 18; pointer-events: none; }
+.builder-toolbar { display: flex; align-items: center; flex-wrap: nowrap; gap: 8px; width: max-content; max-width: 100%; min-height: 50px; height: auto; padding: 8px 10px; overflow: visible; background: #14261ef5; border: 1px solid #87c5a179; border-radius: 11px; box-shadow: 0 8px 30px #0005; backdrop-filter: blur(22px); pointer-events: auto; }
+.builder-mode { display: flex; align-items: center; flex: none; gap: 6px; padding: 0 4px; color: #b9efd1; font: 500 11px/1.4 var(--mono); letter-spacing: .5px; white-space: nowrap; }
+.builder-mode > i { width: 5px; height: 5px; background: #a0eac4; border-radius: 50%; }
+.builder-tools, .builder-history, .builder-options { display: flex; align-items: center; flex: none; gap: 4px; }
+.builder-tools, .builder-options, .builder-history { padding-right: 8px; border-right: 1px solid #89b79c36; }
+.builder-toolbar .button { flex: none; min-height: 34px; height: 34px; padding: 5px 8px; gap: 5px; font-size: 12px; white-space: nowrap; }
+.builder-toolbar .icon-button { flex: none; width: 28px; height: 34px; border-radius: 6px; }
+.builder-toolbar svg { width: 14px; height: 14px; }
+.builder-tools .button { background: transparent; color: #c4ddce; border-color: transparent; }
+.builder-tools .button.active, .builder-tools .icon-button.active { background: #8bdfb226; border-color: #96dcaf77; color: #dff8e9; }
+.builder-options { gap: 10px; }
+.builder-options > label { display: flex; flex-direction: column; align-items: stretch; gap: 4px; flex: none; min-width: 0; color: #acc8b8; font-size: 12px; line-height: 1.4; white-space: nowrap; }
+.builder-options .metro-select { display: block; flex: none; width: 154px; min-width: 0; margin: 0; }
+.builder-options .metro-select-trigger { height: 34px; min-height: 34px; font-size: 12px; padding: 0 9px; }
+.builder-guides { display: inline-flex; flex: none; align-items: center; gap: 6px; color: #c2dccc; font-size: 12px; white-space: nowrap; cursor: pointer; }
 .builder-guides input { width: 14px; height: 14px; margin: 0; accent-color: var(--mint); }
-.builder-hint { display: flex; align-items: center; gap: 8px; padding: 8px 11px; max-width: 600px; border: 1px solid #82af9538; border-radius: 7px; background: #11211de8; color: #c0d8c9; font-size: 12px; line-height: 1.5; }
-.builder-hint svg { width: 13px; height: 13px; color: #a2dfbd; flex-shrink: 0; }
-.free-building .map-tools { display: none !important; }
-.free-building .environment-section { display: none; }
-.free-building .lighting-control { top: auto; bottom: 280px; }
-.free-building .map-summary { display: none; }
-.free-building .control-panel.open { top: 284px; }
-.map-first.immersive .builder-workspace { display: none; }
-
-@media (max-width: 1380px) {
-  .builder-toolbar { gap: 10px; }
-  .builder-options > label { width: 114px; }
-  .builder-tools { padding: 0 9px; }
-  .builder-mode { margin-right: 0; }
+.builder-toolbar #build-area { display: none; color: #a0bfae; font: 11px/1.4 var(--mono); white-space: nowrap; }
+.builder-toolbar #build-blank { background: #1a3024; border-color: #769a8357; }
+.builder-toolbar .builder-done { position: static; color: #163e29; background: #a0e8c1; border-color: #baf0d2; box-shadow: none; }
+.builder-toolbar .builder-done:hover { background: #bcf4d4; }
+.builder-toolbar .button:focus-visible, .builder-toolbar .icon-button:focus-visible, .builder-toolbar .metro-select-trigger:focus-visible { outline-offset: 2px; }
+.builder-hint { position: absolute; width: 1px; height: 1px; overflow: hidden; padding: 0; margin: -1px; clip-path: inset(50%); white-space: nowrap; }
+.builder-workspace[hidden], .free-building .map-tools, .free-building .terrain-palette, .free-building .environment-section, .free-building .map-summary { display: none !important; }
+.map-first.immersive .builder-workspace, .map-first.immersive .map-identity { display: none; }
+@media (min-width: 1841px) {
+  .builder-toolbar { gap: 7px; }
+  .builder-options > label { flex-direction: row; align-items: center; gap: 7px; }
+  .builder-options .metro-select { width: 154px; }
 }
-@media (max-width: 1100px) {
-  .builder-toolbar { max-width: 660px; }
-  .builder-heading { flex-basis: 100%; }
-  .builder-heading .builder-done { margin-left: auto; }
-  .builder-tools { border-left: 0; padding-left: 0; }
-  .free-building .control-panel.open { top: 340px; }
+@media (max-width: 1840px) {
+  .builder-workspace { width: min(760px, calc(100% - 455px)); }
+  .builder-toolbar { display: grid; grid-template-columns: auto minmax(0,1fr) auto auto; grid-template-areas: 'mode tools history done' 'options options guides canvas'; align-items: center; gap: 12px 10px; width: 100%; padding: 11px 12px; }
+  .builder-mode { grid-area: mode; }
+  .builder-tools { grid-area: tools; border: 0; padding: 0; }
+  .builder-options { grid-area: options; border: 0; padding: 0; gap: 12px; }
+  .builder-options > label { flex-direction: column; align-items: stretch; gap: 3px; }
+  .builder-options .metro-select { width: 154px; }
+  .builder-guides { grid-area: guides; }
+  .builder-history { grid-area: history; border: 0; padding: 0; }
+  .builder-toolbar #build-blank { grid-area: canvas; }
+  .builder-toolbar .builder-done { grid-area: done; }
+}
+@media (max-width: 1440px) {
+  .builder-mode { display: none; }
+  .builder-workspace { width: min(710px, calc(100% - 445px)); }
+  .builder-toolbar { grid-template-columns: minmax(0,1fr) auto auto; grid-template-areas: 'tools history done' 'options guides canvas'; gap: 11px 8px; }
+  .builder-options { gap: 9px; }
+  .builder-options > label { flex-direction: column; align-items: stretch; gap: 3px; }
+  .builder-options .metro-select { width: 154px; }
+}
+@media (max-width: 1280px) {
+  .builder-workspace { top: 138px; width: min(710px, calc(100% - var(--map-edge,20px) * 2)); max-width: calc(100% - var(--map-edge,20px) * 2); }
+  .builder-toolbar { gap: 12px; }
+  .builder-options { gap: 14px; }
+  .builder-options > label { flex-direction: column; align-items: stretch; gap: 3px; }
+  .builder-options .metro-select { width: 154px; }
+}
+@media (max-width: 1000px) {
+  .map-first .map-identity { margin-left: 0; padding-left: 12px; }
+  .map-first .map-identity h1 { max-width: 150px; }
 }
 @media (max-width: 820px) {
-  .map-first .scene-heading-actions .button#free-build-btn span { display: inline; }
-  .map-first .scene-heading-actions #compare-btn { display: none; }
-  .map-first .scene-heading { max-width: calc(100% - 260px); }
-  .builder-toolbar { gap: 10px 7px; }
-  .builder-tools { flex-basis: 100%; padding-right: 0; border-right: 0; }
-  .builder-options { flex-basis: 100%; }
-  .builder-options > label { flex: 1; width: auto; }
-  .builder-options .builder-guides { flex: none; }
-  .free-building .control-panel.open { top: 84px; z-index: 31; }
+  .map-first .map-identity h1 { max-width: 120px; }
+  .map-first .map-identity { margin-left: 3px; }
+  .builder-toolbar { gap: 11px 8px; }
+  .builder-options > label { flex-direction: column; align-items: stretch; gap: 3px; }
+}
+@media (max-width: 650px) {
+  .map-first .map-identity { display: none; }
+  .builder-toolbar { grid-template-columns: minmax(0,1fr) auto; grid-template-areas: 'tools tools' 'options options' 'history done' 'guides canvas'; }
+  .builder-tools { justify-content: space-between; }
+  .builder-options { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+  .builder-options > label { width: 100%; }
+  .builder-options .metro-select { width: 100%; }
+  .builder-toolbar .builder-done, .builder-toolbar #build-blank { justify-self: end; }
+  .map-first.free-building { --map-panel-top: 390px; }
 }
 @media (max-width: 570px) {
-  .map-first .scene-heading { max-width: calc(100% - 207px); }
-  .map-first .scene-heading-actions .free-build-entry { width: auto; padding: 0 9px; gap: 5px; font-size: 11px; }
-  .map-first .scene-heading-actions .button#free-build-btn span { display: inline; }
-  .builder-workspace { top: 130px; }
-  .builder-toolbar { width: 100%; padding: 9px; border-radius: 9px; }
-  .builder-heading { gap: 4px; flex-wrap: wrap; }
-  .builder-heading .button { font-size: 11px; padding: 6px; }
-  .builder-heading .builder-done { margin-left: auto; }
-  .builder-history .icon-button { width: 25px; }
-  .builder-mode { font-size: 9px; padding-left: 9px; letter-spacing: .35px; }
-  .builder-mode small { font-size: 10px; }
-  .builder-tools { gap: 5px; }
-  .builder-tools .button { font-size: 12px; padding: 6px 8px; }
-  .builder-tools .icon-button { width: 28px; }
-  .builder-options { gap: 7px; }
-  .builder-options .metro-select-trigger { font-size: 11px; padding: 0 7px; }
-  .builder-options .builder-guides { margin: 0; gap: 4px; font-size: 10px; }
-  .builder-hint { font-size: 11px; padding: 7px 9px; }
-  .free-building .lighting-control { bottom: 280px; }
-  .free-building .control-panel.open { top: 78px; }
+  .builder-workspace { top: 130px; left: 12px; width: calc(100% - 24px); max-width: calc(100% - 24px); }
+  .builder-toolbar { padding: 10px; gap: 10px 8px; border-radius: 10px; grid-template-areas: 'tools tools' 'options options' 'history done' 'guides canvas'; }
+  .builder-tools { gap: 3px; }
+  .builder-toolbar .button { min-width: 0; min-height: 34px; height: 34px; padding: 5px 7px; font-size: 12px; }
+  .builder-toolbar .icon-button { min-width: 28px; width: 28px; height: 34px; }
+  .builder-tools .button { gap: 4px; }
+  .builder-tools .button svg { display: none; }
+  .builder-options { gap: 10px; }
+  .builder-options > label { font-size: 12px; }
+  .builder-options .metro-select-trigger { font-size: 12px; }
+  .map-first.free-building { --map-panel-top: 365px; }
+}
+</style>
+  <style>
+/* Small floating islands leave the city as the main workspace. */
+.map-first { --command-top: 86px; --map-panel-top: 140px; }
+.sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip-path: inset(50%); white-space: nowrap; border: 0 !important; }
+.workspace-actions { position: absolute; top: var(--command-top); right: var(--map-edge); z-index: 20; display: flex; align-items: center; gap: 7px; }
+.workspace-actions .button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 39px; min-height: 39px; padding: 7px 11px; border: 1px solid #8fb79c52; border-radius: 8px; color: #d4e8dc; background: #12221cef; font-size: 12px; white-space: nowrap; box-shadow: 0 4px 16px #0003; backdrop-filter: blur(20px); }
+.workspace-actions .button svg { width: 15px; height: 15px; }
+.workspace-actions .button:hover { background: #244532; border-color: #9ce7c67d; }
+.workspace-actions .button[aria-expanded="true"], .workspace-actions .free-build-entry[aria-pressed="true"] { background: #2b503a; border-color: #9ce7c695; color: #def8e8; }
+.map-commandbar, .map-environment { position: absolute; z-index: 16; color: #d0e6d8; border: 1px solid #87b99d61; border-radius: 11px; background: #13251eef; box-shadow: 0 8px 28px #0004; backdrop-filter: blur(22px); }
+.map-commandbar { top: auto; bottom: 104px; left: 50%; right: auto; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; width: max-content; max-width: calc(100% - 40px); min-height: 48px; height: auto; padding: 7px 12px; overflow: visible; }
+.map-commandbar > div { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.map-commandbar .command-search > label { display: none; }
+.map-commandbar .command-search .select-wrap, .map-commandbar .command-search .metro-select { width: 190px; min-width: 0; margin: 0; }
+.map-commandbar .command-speed { width: 158px; display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding-left: 14px; border-left: 1px solid #86b49832; }
+.command-speed > label { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0; color: #aac8b7; font-size: 12px; line-height: 1.4; white-space: nowrap; }
+.command-speed #speed-value { color: #d0f1dc; font: 500 12px/1.4 var(--mono); white-space: nowrap; }
+.command-speed #speed { width: 100%; min-width: 0; height: 4px; margin: 0; }
+.map-commandbar .select-wrap { height: 34px; }
+.map-commandbar .metro-select-trigger, .map-commandbar .select-wrap.compact > .metro-select-trigger { min-height: 34px; height: 34px; padding: 0 10px; font-size: 12px; }
+.map-commandbar .command-learning { gap: 10px; }
+.map-commandbar .command-learning > label { display: flex; align-items: center; gap: 7px; color: #b5cdbe; font-size: 12px; }
+.map-commandbar input[type="number"] { width: 78px; height: 34px; min-height: 34px; padding: 0 8px; border: 1px solid #587761; border-radius: 6px; color: #def0e4; background: #14211b; font-size: 12px; }
+.map-commandbar .button { min-height: 34px; height: 34px; padding: 6px 9px; gap: 6px; font-size: 12px; white-space: nowrap; }
+.map-commandbar .button svg { width: 14px; height: 14px; }
+.map-environment { top: var(--command-top); left: var(--map-edge); width: 280px; padding: 10px; }
+.environment-primary { display: flex; align-items: center; gap: 8px; }
+.command-grid { display: flex; align-items: center; gap: 7px; min-width: 0; margin: 0; color: #b5cdbe; font-size: 12px; white-space: nowrap; }
+.command-grid .metro-select { width: 100px; min-width: 0; margin: 0; }
+.command-grid .metro-select-trigger { min-height: 33px; height: 33px; padding: 0 9px; font-size: 12px; }
+.command-map { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+.command-map .button { min-height: 33px; height: 33px; padding: 5px 8px; gap: 5px; font-size: 12px; }
+.command-map .icon-button { width: 28px; height: 33px; border-radius: 6px; }
+.command-map svg { width: 14px; height: 14px; }
+.command-switches { display: flex; align-items: center; gap: 16px; padding-top: 10px; margin-top: 8px; border-top: 1px solid #86b4982b; }
+.command-switches label { display: flex; align-items: center; gap: 6px; color: #bad3c4; font-size: 12px; cursor: pointer; }
+.command-switches input { width: 14px; height: 14px; margin: 0; accent-color: var(--mint); }
+#algorithm-slot .command-search { margin: 0 0 14px; }
+#algorithm-slot .command-search > label { display: none; }
+#algorithm-slot .select-wrap, #algorithm-slot .metro-select { width: 100%; margin: 0; }
+#environment-slot .map-environment { position: static; width: 100%; padding: 0; margin: 0 0 14px; border: 0; border-radius: 0; background: none; box-shadow: none; backdrop-filter: none; }
+#environment-slot .environment-primary { display: block; }
+#environment-slot .command-grid { display: flex; justify-content: space-between; gap: 14px; font-size: 13px; }
+#environment-slot .command-grid .metro-select { width: 160px; }
+#environment-slot .command-grid .metro-select-trigger { min-height: 38px; height: 38px; font-size: 13px; }
+#environment-slot .command-map, #environment-slot .command-switches { display: none; }
+.environment-seed { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; color: #b5cdbe; font-size: 13px; }
+.environment-seed input { display: block; width: 100%; min-width: 0; min-height: 40px; padding: 9px 12px; border: 1px solid #72958069; border-radius: 7px; background: #111e19; color: #e0f0e5; font: 500 13px/1.4 var(--mono); color-scheme: dark; }
+.environment-seed input:focus-visible { outline: 2px solid #a9edc9; outline-offset: 2px; }
+#speed-slot { padding: 20px 0; border-top: 1px solid #86b49827; }
+#speed-slot .command-speed { display: flex; flex-direction: column; gap: 13px; width: 100%; }
+#speed-slot .command-speed > label { font-size: 13px; }
+#speed-slot #speed { margin: 0; }
+.map-first .map-summary { display: none !important; }
+.map-first .topbar .header-focus { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 32px; height: 34px; padding: 0; border: 1px solid #89b79c35; border-radius: 6px; color: #bdd5c6; }
+.map-first .topbar .header-focus svg { width: 15px; height: 15px; }
+.map-first .topbar .header-focus:hover, .map-first .topbar .header-focus[aria-pressed="true"] { background: #284a36; color: #d8f5e4; }
+.map-first .rail { gap: 10px; padding-top: 18px; padding-bottom: 12px; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
+.map-first .rail-button { flex: none; height: 50px; }
+.map-first .rail-spacer { min-height: 10px; }
+.map-first .rail-bottom { flex: none; }
+.map-first .rail #nav-learning[aria-expanded="true"] { background: #9ce7c612; color: #c7f5da; }
+.map-first .control-panel.open, .map-first .analytics-panel.open { top: var(--map-panel-top); }
+.map-first .control-panel.pinned, .map-first .analytics-panel.pinned { border-color: #9ce7c6a3; box-shadow: 0 12px 36px #0005, inset 0 2px #9ce7c63b; }
+.map-first .panel-heading { gap: 10px; min-height: 78px; padding: 15px 18px; }
+.panel-heading-actions { display: flex; align-items: center; flex: none; gap: 3px; margin-left: auto; }
+.map-first .panel-heading-actions .icon-button { flex: none; width: 31px; height: 32px; color: #afcbbb; border-radius: 6px; }
+.map-first .panel-heading-actions .icon-button:hover { color: #e2f6e9; background: #9ce7c619; }
+.map-first .panel-heading-actions .panel-pin[aria-pressed="true"] { color: #d1f6e0; background: #31533f; border: 1px solid #98d8b17d; }
+.map-first .panel-heading-actions .panel-pin svg { width: 15px; height: 15px; transition: transform .15s; }
+.map-first .panel-heading-actions .panel-pin[aria-pressed="true"] svg { transform: rotate(-30deg); }
+.map-first .mobile-suspended { display: none !important; }
+.map-first .mobile-front { z-index: 31; }
+.map-first .drawer-backdrop { top: var(--map-panel-top); }
+.map-first .viewport { --tool-top: 198px; }
+.map-first.controls-open .viewport { --tool-top: 140px; }
+.map-first.controls-open .map-tools { left: calc(var(--map-edge) + var(--map-panel) + 12px); }
+.map-first.controls-open .terrain-palette { left: calc(var(--map-edge) + var(--map-panel) + 68px); }
+.map-first.insights-open .lighting-control, .map-first.insights-open .map-zoom { right: calc(var(--map-edge) + var(--map-panel) + 12px); }
+.map-first.insights-open .north-indicator { right: calc(var(--map-edge) + var(--map-panel) + 22px); }
+.map-first.immersive .workspace-actions, .map-first.immersive .map-commandbar, .map-first.immersive .map-environment, .map-first.immersive .builder-workspace, .map-first.immersive .control-panel.open, .map-first.immersive .analytics-panel.open, .map-first.immersive .drawer-backdrop { display: none !important; }
+.map-commandbar[hidden], .map-commandbar [hidden], .map-environment[hidden] { display: none !important; }
+@media (max-width: 1840px) { .map-first.free-building { --map-panel-top: 220px; } }
+@media (max-width: 1280px) { .map-first.free-building { --map-panel-top: 280px; } }
+@media (max-width: 1200px) { .map-commandbar { bottom: 170px; } }
+@media (max-width: 980px) {
+  .map-commandbar { bottom: 140px; }
+  .map-first .camera-dock { bottom: 206px; }
+  .map-first .map-zoom { bottom: 265px; }
+  .map-first .north-indicator { bottom: 350px; }
+}
+@media (max-width: 820px) {
+  .map-first .control-panel.open, .map-first .analytics-panel.open { top: var(--map-panel-top); bottom: 12px; min-height: 0; }
+  .map-first.controls-open .map-tools { left: var(--map-edge); }
+  .map-first.controls-open .terrain-palette { left: calc(var(--map-edge) + 56px); }
+  .map-first.insights-open .lighting-control, .map-first.insights-open .map-zoom { right: var(--map-edge); }
+  .map-first.insights-open .north-indicator { right: calc(var(--map-edge) + 10px); }
+  .map-first.controls-open .map-commandbar, .map-first.insights-open .map-commandbar, .map-first.controls-open #viewport > .map-environment, .map-first.insights-open #viewport > .map-environment { display: none; }
+}
+@media (max-width: 570px) {
+  .map-first { --command-top: 78px; --map-panel-top: 130px; }
+  .workspace-actions { left: 12px; right: 12px; gap: 6px; }
+  .workspace-actions .button { flex: 1; min-width: 0; height: 38px; min-height: 38px; padding: 7px 6px; gap: 5px; font-size: 12px; }
+  .workspace-actions .button svg { display: none; }
+  .map-environment { top: 132px; width: min(280px, calc(100% - 116px)); padding: 9px; }
+  .environment-primary { gap: 5px; }
+  .command-grid { gap: 5px; }
+  .command-grid .metro-select { width: 96px; }
+  .command-map .button { width: 31px; min-width: 31px; padding: 0; font-size: 0; }
+  .command-map .button svg { width: 15px; height: 15px; }
+  .command-map .icon-button { width: 25px; }
+  .command-switches { gap: 12px; padding-top: 8px; margin-top: 7px; }
+  .map-first .viewport { --tool-top: 239px; --tool-bottom: 190px; }
+  .map-first.controls-open .viewport { --tool-top: 132px; }
+  .map-first .lighting-control { top: 132px; }
+  .map-commandbar { left: 12px; right: 12px; bottom: 190px; transform: none; width: auto; max-width: none; gap: 10px; padding: 8px 10px; }
+  .map-commandbar .command-search { flex: 1; }
+  .map-commandbar .command-search .select-wrap, .map-commandbar .command-search .metro-select { width: 100%; }
+  .map-commandbar .command-speed { flex: none; width: 126px; padding-left: 10px; }
+  .map-commandbar .command-learning { flex: 1; flex-wrap: wrap; gap: 6px; }
+  .map-commandbar .command-learning > label { gap: 5px; }
+  .map-commandbar .command-learning > label, .map-commandbar .command-learning .button { font-size: 12px; }
+  .map-commandbar .command-learning .button { height: 30px; min-height: 30px; padding: 4px 7px; }
+  .map-commandbar input[type="number"] { width: 70px; height: 30px; min-height: 30px; }
+  .map-first .camera-dock { bottom: 136px; }
+  .map-first .map-zoom { bottom: 260px; }
+  .map-first .north-indicator { bottom: 340px; }
+  .map-first .control-panel.open, .map-first .analytics-panel.open { left: 12px; right: 12px; top: var(--map-panel-top); width: calc(100vw - 24px); }
+  .map-first .panel-heading { min-height: 72px; padding: 12px 15px; }
+  .map-first .panel-heading-actions .icon-button { width: 32px; height: 32px; }
+  .map-first .topbar .header-focus { display: none; }
+  .map-first.free-building { --map-panel-top: 365px; }
 }
 @media (max-width: 370px) {
-  .builder-heading .builder-mode { flex: 1; }
-  .builder-heading .builder-history { margin-left: auto; }
-  .builder-heading #build-blank { margin-left: auto; }
-  .builder-tools .button { gap: 4px; padding: 6px; }
-  .builder-tools .button svg { display: none; }
-  .builder-tools .icon-button { width: 25px; }
+  .map-environment { width: calc(100% - 116px); }
+  .command-grid { gap: 4px; }
+  .command-grid .metro-select { width: 90px; }
+  .command-map { gap: 2px; }
+  .command-map .button { width: 27px; min-width: 27px; }
+  .command-map .icon-button { width: 23px; }
+  .map-commandbar .command-speed { width: 120px; }
 }
+@media (max-height: 640px) {
+  .map-first .rail { gap: 4px; padding-top: 10px; padding-bottom: 10px; }
+  .map-first .rail-button { height: 45px; }
+  .map-first .control-panel.open, .map-first .analytics-panel.open { bottom: 12px; min-height: 0; }
+  .map-first .panel-heading { min-height: 64px; padding-top: 10px; padding-bottom: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .map-first .panel-heading-actions .panel-pin svg { transition: none; } }
+@media (min-width: 571px) and (max-width: 650px) {
+  .map-first.free-building { --map-panel-top: 390px; }
+}
+
+@media (max-width: 570px) {
+  .map-first.learning-mode .map-zoom { bottom: 300px; }
+  .map-first.learning-mode .north-indicator { bottom: 380px; }
+}
+
+
+@media (max-width: 650px) and (max-height: 640px) {
+  .map-first.free-building .map-commandbar { display: none; }
+}
+</style>
+  <style>
+/* Readable type and consistent details for the floating workspace. */
+:root {
+  --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --text: #e7f0e9;
+  --muted: #b6c8bd;
+  --faint: #a0b6a8;
+  --scroll-track: #102019;
+  --scroll-thumb: #638c76;
+  --scroll-hover: #96c7ab;
+}
+
+body { font-family: var(--sans); font-kerning: normal; font-size: 14px; line-height: 1.6; }
+button, input, select, textarea { font-family: var(--sans); }
+.map-first { --panel-gutter: 20px; }
+.map-first .panel-heading h2 { font-size: 22px; line-height: 1.3; font-weight: 600; letter-spacing: -.4px; color: #edf5ef; }
+.map-first .eyebrow { font-family: var(--sans); font-size: 11px; line-height: 1.5; letter-spacing: .75px; font-weight: 600; color: #a6bfaf; }
+.map-first .section-label, .map-first .control-section .section-label, .map-first .insight-section .section-label { font-family: var(--sans); font-size: 11px; line-height: 1.6; letter-spacing: .6px; font-weight: 600; color: #b7cdbf; }
+.map-first .section-label > span { color: #a6bdaf; font-size: 11px; }
+.map-first .field-label, .map-first .range-label, .map-first .environment-seed { color: #c6d8cd; font-size: 13px; line-height: 1.5; }
+.map-first .toggle-row { color: #d5e4da; font-size: 13px; }
+.map-first .toggle-row small, .map-first .range-ends { font-size: 12px; line-height: 1.55; color: #afc5b7; }
+.map-first .algorithm-card p, .map-first .insight-note p { font-size: 13px; line-height: 1.7; color: #bdcfc3; }
+.map-first .algorithm-card strong, .map-first .algorithm-card #algorithm-badge { font-size: 11px; font-weight: 600; }
+.map-first .algorithm-card code { font-size: 12px; line-height: 1.7; color: #d4e8dc; }
+.map-first .preset > span:last-of-type { font-size: 13px; line-height: 1.45; font-weight: 600; color: #d1e3d7; }
+.map-first .preset small { font-size: 12px; line-height: 1.5; font-weight: 400; color: #b1c8b8; }
+.map-first .panel-tip p { font-size: 13px; line-height: 1.65; color: #c2d9c9; }
+.map-first .panel-tip p span { font-size: 12px; color: #a9c2b1; }
+.map-first .rail-button span, .map-first .camera-dock button { font-size: 12px; line-height: 1.35; }
+.map-first .metric > span { font-size: 12px; line-height: 1.5; color: #c0d3c7; }
+.map-first .metric strong { font-family: var(--sans); font-size: 30px; line-height: 1.3; font-weight: 600; letter-spacing: -.7px; font-variant-numeric: tabular-nums; }
+.map-first .metric-caption, .map-first .minimap-caption, .map-first .chart-labels { font-size: 12px; line-height: 1.5; color: #adc7b6; }
+.map-first .metric strong small { font-family: var(--sans); font-size: 12px; letter-spacing: 0; }
+.map-first .rl-stats b, .map-first .compare-values b, .map-first .range-label output, .command-speed #speed-value { font-family: var(--sans); font-weight: 600; font-variant-numeric: tabular-nums; }
+.command-speed #speed-value { font-size: 12px; line-height: 1.5; letter-spacing: .1px; }
+.map-first .log-entry { font-size: 13px; line-height: 1.7; color: #c4d9cc; }
+.map-first .log-entry time { font-family: var(--sans); font-size: 12px; color: #a7c3b1; font-variant-numeric: tabular-nums; }
+.metro-select-caption { font: 600 11px/1.5 var(--sans); letter-spacing: .6px; color: #b9cfc1; }
+.metro-select-option-description { font-size: 12px; line-height: 1.5; color: #b6cabe; }
+.metro-select-option-label { font-weight: 500; }
+
+/* The panel speed field follows the same inset as the settings above it. */
+.map-first #speed-slot { padding: 19px var(--panel-gutter) 21px; border-top-color: #86b49825; }
+.map-first #speed-slot .command-speed { gap: 9px; }
+.map-first #speed-slot .command-speed > label { align-items: baseline; font-size: 13px; line-height: 1.5; color: #c6d8cd; }
+#speed-slot #speed, .map-commandbar .command-speed #speed { display: block; width: 100%; height: 22px; min-height: 22px; padding: 0; margin: 0; border: 0; border-radius: 5px; appearance: none; -webkit-appearance: none; background: transparent; cursor: pointer; }
+#speed-slot #speed:focus-visible, .map-commandbar .command-speed #speed:focus-visible { outline: 2px solid #b4edcf; outline-offset: 4px; }
+#speed::-webkit-slider-runnable-track { height: 4px; border: 0; border-radius: 99px; background: linear-gradient(to right, #a0e5c4 0 var(--range-fill,9.25%), #385044 var(--range-fill,9.25%) 100%); }
+#speed::-webkit-slider-thumb { width: 13px; height: 13px; margin-top: -4.5px; border: 2px solid #d2f5e2; border-radius: 50%; appearance: none; -webkit-appearance: none; background: #a0e5c4; box-shadow: 0 0 0 3px #a0e5c414; }
+#speed::-moz-range-track { height: 4px; border: 0; border-radius: 99px; background: #385044; }
+#speed::-moz-range-progress { height: 4px; border-radius: 99px; background: #a0e5c4; }
+#speed::-moz-range-thumb { width: 10px; height: 10px; border: 2px solid #d2f5e2; border-radius: 50%; background: #a0e5c4; box-shadow: 0 0 0 3px #a0e5c414; }
+
+/* Custom scrollbars are shared by drawers, menus, dialogs and nested journals. */
+* { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
+.panel-scroll, .metro-select-menu, .terrain-palette, .activity-log, dialog, textarea { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
+.panel-scroll, .activity-log, dialog { scrollbar-gutter: stable; }
+*::-webkit-scrollbar, .panel-scroll::-webkit-scrollbar, .metro-select-menu::-webkit-scrollbar, .terrain-palette::-webkit-scrollbar, .activity-log::-webkit-scrollbar, dialog::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { border-radius: 99px; background: var(--scroll-track); }
+*::-webkit-scrollbar-thumb, .panel-scroll::-webkit-scrollbar-thumb, .metro-select-menu::-webkit-scrollbar-thumb { min-height: 34px; border: 2px solid var(--scroll-track); border-radius: 99px; background: var(--scroll-thumb); background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:hover { background: var(--scroll-hover); background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:active { background: #b9e8cc; background-clip: padding-box; }
+*::-webkit-scrollbar-corner { background: transparent; }
+@supports selector(::-webkit-scrollbar) {
+  .panel-scroll, .metro-select-menu, .terrain-palette, .activity-log, dialog, textarea { scrollbar-width: auto; scrollbar-color: auto; }
+}
+.map-first .rail { scrollbar-width: none; }
+.map-first .rail::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+/* Live north indicator: the needle rotates, while its readout stays upright. */
+#compass.north-indicator { display: grid; justify-items: center; align-content: center; gap: 1px; width: 52px; min-height: 76px; padding: 7px 5px; border: 1px solid #8fbc9f4a; border-radius: 11px; background: #11221be6; color: #d7ecdf; box-shadow: 0 5px 20px #0003; backdrop-filter: blur(16px); pointer-events: auto; cursor: pointer; z-index: 8; transition: background .15s, border-color .15s; }
+#compass.north-indicator:hover:not(:disabled) { border-color: #b0e4c58c; background: #223c2ded; }
+#compass.north-indicator:focus-visible { outline: 2px solid #b4edcf; outline-offset: 4px; }
+#compass.north-indicator:disabled { opacity: .5; cursor: default; }
+#compass .compass-north { display: block; color: #b9d7c4; font: 600 11px/1.3 var(--sans); letter-spacing: .8px; }
+#compass .compass-needle { display: block; width: 29px; height: 29px; fill: #9ce7c62b; stroke: #c0efd4; stroke-width: 1.3; transform-origin: 50% 50%; transition: none; }
+#compass .compass-bearing { display: block; color: #e0f1e6; font: 600 12px/1.4 var(--sans); letter-spacing: .25px; font-variant-numeric: tabular-nums; }
+
+@media (min-width: 1750px) { .map-first { --panel-gutter: 23px; } }
+@media (max-width: 1380px) { .map-first { --panel-gutter: 17px; } }
+@media (max-width: 570px) {
+  .map-first .panel-heading h2 { font-size: 21px; }
+  .map-first .camera-dock button { padding-left: 6px; padding-right: 6px; }
+  .map-first .metric strong { font-size: 28px; }
+  #compass.north-indicator { width: 48px; min-height: 72px; padding: 6px 4px; }
+  #compass .compass-needle { width: 27px; height: 27px; }
+}
+@media (prefers-reduced-motion: reduce) { #compass.north-indicator { transition: none; } }
+
+/* Compass and zoom form one aligned column along the map's right edge. */
+.map-first { --map-navigation-right: var(--map-edge); --map-navigation-width: 52px; --map-zoom-bottom: 124px; --map-zoom-height: 78px; }
+.map-first.insights-open { --map-navigation-right: calc(var(--map-edge) + var(--map-panel) + 12px); }
+.map-first .lighting-control, .map-first.insights-open .lighting-control,
+.map-first .map-zoom, .map-first.insights-open .map-zoom,
+.map-first #compass.north-indicator { right: var(--map-navigation-right); }
+.map-first .map-zoom, .map-first.learning-mode .map-zoom { bottom: var(--map-zoom-bottom); width: var(--map-navigation-width); height: var(--map-zoom-height); padding: 4px; border-radius: 11px; }
+.map-first .map-zoom button { width: 100%; height: 34px; flex: none; }
+.map-first #compass.north-indicator { width: var(--map-navigation-width); bottom: calc(var(--map-zoom-bottom) + var(--map-zoom-height) + 12px); }
+@media (max-width: 1200px) { .map-first { --map-zoom-bottom: 180px; } }
+@media (max-width: 980px) { .map-first { --map-zoom-bottom: 265px; } }
+@media (max-width: 820px) { .map-first.insights-open { --map-navigation-right: var(--map-edge); } }
+@media (max-width: 570px) {
+  .map-first { --map-navigation-width: 48px; --map-zoom-bottom: 264px; --map-zoom-height: 72px; }
+  .map-first.learning-mode { --map-zoom-bottom: 286px; }
+  .map-first .map-zoom button { height: 31px; }
+}
+.map-first.immersive #compass.north-indicator { display: none; }
+@media (max-height: 640px) { .map-first #compass.north-indicator { display: none; } }
+
+/* The header toggle remains available when the navigation rail is hidden. */
+.map-first.sidebar-collapsed { --map-rail: 0px; }
+.map-first.sidebar-collapsed .rail { display: none !important; }
+.map-first .topbar .sidebar-toggle { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 36px; height: 34px; padding: 0; border: 1px solid #89b79c35; border-radius: 7px; background: transparent; color: #bdd5c6; }
+.map-first .topbar .sidebar-toggle svg { width: 17px; height: 17px; }
+.map-first .topbar .sidebar-toggle:hover, .map-first .topbar .sidebar-toggle[aria-expanded="false"] { border-color: #9ce7c667; background: #9ce7c614; color: #d8f5e4; }
+.map-first .topbar .sidebar-toggle:focus-visible { outline: 2px solid #b4edcf; outline-offset: 3px; }
+@media (max-width: 570px) { .map-first .topbar .sidebar-toggle { display: none; } }
 </style>
 </head>
 <body class="map-first">
@@ -977,23 +1352,26 @@ output { font-size: var(--type-label); font-weight: 500; }
     <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+    <symbol id="i-tack" viewBox="0 0 24 24"><path d="m15 3 6 6-4 1-4 4 1 3-2 2-7-7 2-2 3 1 4-4 1-4ZM9 15l-6 6"/></symbol>
+    <symbol id="i-sidebar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></symbol>
   </defs></svg>
   <header class="topbar">
+    <button class="icon-button sidebar-toggle" id="sidebar-toggle" type="button" aria-label="Hide sidebar" title="Hide sidebar" aria-controls="workspace-sidebar" aria-expanded="true"><svg><use href="#i-sidebar"/></svg></button>
     <a class="brand" href="#" aria-label="MetroMind AI home"><span class="brand-mark"><i></i><i></i><i></i></span><span>METROMIND<span class="brand-ai">AI</span><small>URBAN INTELLIGENCE LAB</small></span></a>
     <div class="top-divider"></div><div class="studio-label">City Studio <span class="version-tag">3D</span></div>
+    <div class="map-identity" title="Current generated map"><span>Map</span><h1 id="city-name">Downtown</h1><span id="scene-grid-label" hidden>900 NODES</span></div>
     <div class="top-spacer"></div><span class="local-indicator"><i></i> Local workspace</span>
     <button class="icon-button workspace-menu" id="workspace-menu" aria-label="Open workspace menu" title="Workspace menu"><svg><use href="#i-layers"/></svg></button>
     <button class="button subtle" id="load-btn" title="Load a saved workspace"><svg><use href="#i-upload"/></svg><span>Open</span></button>
     <button class="button subtle" id="save-btn" aria-label="Save city"><svg><use href="#i-save"/></svg><span>Save city</span></button>
     <button class="button export-button" id="export-btn" aria-label="Export"><svg><use href="#i-download"/></svg><span>Export</span><svg class="small"><use href="#i-chevron"/></svg></button>
+    <button class="icon-button header-focus" id="fullscreen-btn" title="Focus on the map (G)" aria-label="Focus on the map" aria-pressed="false"><svg><use href="#i-focus"/></svg></button>
     <button class="avatar" id="about-btn" title="About City Studio">M<span></span></button>
   </header>
   <div class="workspace">
-    <nav class="rail" aria-label="Workspace tools">
-      <button class="rail-button active" id="nav-simulation" aria-controls="control-panel" title="Simulation controls" aria-label="Simulation controls"><svg><use href="#i-city"/></svg><span>Studio</span></button>
+    <nav class="rail" id="workspace-sidebar" aria-label="Workspace tools">
       <button class="rail-button" id="nav-learning" aria-controls="control-panel" title="Reinforcement learning" aria-label="Reinforcement learning"><svg><use href="#i-brain"/></svg><span>Learning</span></button>
-      <button class="rail-button" id="nav-compare" title="Compare algorithms (X)" aria-label="Compare algorithms"><svg><use href="#i-chart"/></svg><span>Compare</span></button>
       <button class="rail-button" id="nav-layers" title="Map layers" aria-label="Map layers"><svg><use href="#i-layers"/></svg><span>Layers</span></button>
       <div class="rail-spacer"></div>
       <button class="rail-button" id="nav-settings" title="Display settings" aria-label="Display settings"><svg><use href="#i-settings"/></svg><span>Display</span></button>
@@ -1001,12 +1379,12 @@ output { font-size: var(--type-label); font-weight: 500; }
       <div class="rail-bottom">MM<span>11.3D</span></div>
     </nav>
     <aside class="control-panel" id="control-panel" aria-label="Simulation settings">
-      <div class="panel-heading"><div><span class="eyebrow">YOUR WORKSPACE</span><h2>Simulation</h2></div><button class="icon-button mobile-close" id="close-controls" aria-label="Close controls"><svg><use href="#i-close"/></svg></button><span class="panel-index">01</span></div>
+      <div class="panel-heading"><div><span class="eyebrow">YOUR WORKSPACE</span><h2>Simulation</h2></div><div class="panel-heading-actions"><button class="icon-button panel-pin" id="pin-controls" aria-label="Pin controls" aria-pressed="false" title="Keep controls open"><svg><use href="#i-tack"/></svg></button><button class="icon-button mobile-close" id="close-controls" aria-label="Close controls"><svg><use href="#i-close"/></svg></button></div><span class="panel-index">01</span></div>
       <div class="panel-scroll">
         <div class="tabbar" role="tablist"><button class="tab active" id="tab-search" role="tab" aria-selected="true" aria-controls="search-settings"><svg><use href="#i-route"/></svg>Pathfinding</button><button class="tab" id="tab-learning" role="tab" aria-selected="false" aria-controls="learning-settings"><svg><use href="#i-brain"/></svg>Learning</button></div>
         <div id="search-settings" role="tabpanel">
           <section class="control-section"><div class="section-label">SEARCH ALGORITHM <span>01</span></div>
-            <div class="select-wrap"><svg><use href="#i-route"/></svg><select id="algorithm" aria-label="Search algorithm"><option value="astar">A* Search</option><option value="dijkstra">Dijkstra</option><option value="bidir">Bidirectional Search</option><option value="dstar">D* Lite</option><option value="theta">Theta* · Any-angle</option><option value="jps">Jump Point Search</option><option value="greedy">Greedy Best-first</option><option value="bfs">Breadth-first Search</option><option value="dfs">Depth-first Search</option></select><svg class="chevron"><use href="#i-chevron"/></svg></div>
+            <div id="algorithm-slot"></div>
             <div class="algorithm-card"><div><span class="status-dot"></span><strong id="algorithm-type">HEURISTIC SEARCH</strong><span id="algorithm-badge">Optimal*</span></div><p id="algorithm-description">Balances the journey so far with the distance ahead. A smart starting point for city routing.</p><code id="algorithm-formula">f(n) = g(n) + w · h(n)</code></div>
             <label class="field-label" for="heuristic">Distance heuristic <span class="hint" title="A lower-bound estimate of remaining travel cost">?</span></label><div class="select-wrap compact"><select id="heuristic"><option value="manhattan">Manhattan</option><option value="euclidean">Euclidean</option><option value="octile">Octile</option><option value="chebyshev">Chebyshev</option></select><svg class="chevron"><use href="#i-chevron"/></svg></div>
             <label class="range-label" for="weight">Heuristic weight <output id="weight-value">1.0</output></label><input id="weight" type="range" min="0" max="3" step="0.1" value="1">
@@ -1028,41 +1406,65 @@ output { font-size: var(--type-label); font-weight: 500; }
           </section>
         </div>
         <section class="control-section environment-section"><div class="section-label">BUILD YOUR ENVIRONMENT <span>02</span></div>
+          <div id="environment-slot"></div>
           <div class="preset-grid">
             <button class="preset active" data-preset="downtown"><span class="preset-art downtown-art"><i></i><i></i><i></i><i></i><i></i><i></i></span><span>Downtown<small>Urban blocks</small></span><b>↗</b></button>
             <button class="preset" data-preset="manhattan"><span class="preset-art manhattan-art"><i></i><i></i><i></i><i></i><i></i><i></i></span><span>Manhattan<small>Street network</small></span><b>↗</b></button>
             <button class="preset" data-preset="recursive"><span class="preset-art maze-art"></span><span>Labyrinth<small>Complex routes</small></span><b>↗</b></button>
             <button class="preset" data-preset="terrain"><span class="preset-art terrain-art"></span><span>Highlands<small>Weighted terrain</small></span><b>↗</b></button>
           </div>
-          <div class="input-pair environment-fields"><label>Grid size<select id="grid-size"><option value="15">15 × 15</option><option value="20">20 × 20</option><option value="30" selected>30 × 30</option><option value="40">40 × 40</option><option value="50">50 × 50</option><option value="60">60 × 60</option></select></label><label>Seed<input type="number" id="seed" min="1" max="999999" value="2084"></label></div>
+          <label class="environment-seed">Seed<input type="number" id="seed" min="1" max="999999" value="2084"></label>
           <div class="button-pair"><button class="button" id="regenerate"><svg><use href="#i-shuffle"/></svg>Regenerate</button><button class="button subtle" id="more-maps">More maps <svg class="small"><use href="#i-chevron"/></svg></button></div>
         </section>
-        <section class="control-section"><div class="section-label">SIMULATION SPEED <output id="speed-value">12 steps/s</output></div><input id="speed" aria-label="Simulation speed" type="range" min="1" max="120" value="12"><div class="range-ends"><span>Observe</span><span>Accelerate</span></div></section>
+        <section class="control-section" id="speed-slot" aria-label="Simulation speed"></section>
         <div class="panel-tip"><svg><use href="#i-help"/></svg><p>Build a world. Explore a route.<br><span>Use the map tools to make it yours.</span></p></div>
       </div>
     </aside>
     <main class="main-workspace">
-      <div class="scene-heading"><div><div class="scene-eyebrow"><span class="live-dot"></span> SIMULATION ENVIRONMENT <span class="slash">/</span><span id="scene-grid-label">900 NODES</span></div><h1 id="city-name">New Metro District<span class="title-period">.</span></h1><p>A living sandbox for smarter journeys.</p></div><div class="scene-heading-actions"><button class="button free-build-entry" id="free-build-btn" aria-label="Free Build" aria-pressed="false" title="Free Build editor"><svg><use href="#i-road"/></svg><span>Free Build</span></button><button class="button mobile-toggle" id="toggle-controls" aria-label="Controls" aria-controls="control-panel" aria-expanded="false"><svg><use href="#i-settings"/></svg><span>Controls</span></button><button class="button subtle" id="compare-btn" aria-label="Compare algorithms" title="Compare algorithms (X)"><svg><use href="#i-chart"/></svg><span>Compare</span><kbd>X</kbd></button><button class="icon-button" id="fullscreen-btn" title="Focus on the map (G)" aria-label="Focus on the map" aria-pressed="false"><svg><use href="#i-focus"/></svg></button><button class="button mobile-toggle" id="toggle-analytics" title="Analytics" aria-label="Open analytics" aria-controls="analytics-panel" aria-expanded="false"><svg><use href="#i-chart"/></svg><span>Insights</span></button></div></div>
       <div class="viewport" id="viewport">
         <canvas id="city-canvas" tabindex="0" aria-label="Interactive 3D city. Use the tools to edit terrain, start and goal. Drag to orbit, scroll to zoom."></canvas>
         <div class="viewport-vignette"></div>
-        <div class="builder-workspace" id="builder-workspace" hidden aria-label="Free Build editor">
-          <div class="builder-toolbar">
-            <div class="builder-heading"><span class="builder-mode"><i></i>FREE BUILD<small id="build-area">Auto-grow canvas</small></span><div class="builder-history"><button class="icon-button" id="build-undo" aria-label="Undo build stroke" title="Undo (Ctrl+Z)" disabled><svg><use href="#i-back"/></svg></button><button class="icon-button" id="build-redo" aria-label="Redo build stroke" title="Redo (Ctrl+Y)" disabled><svg><use href="#i-step"/></svg></button></div><button class="button subtle" id="build-blank">New canvas</button><button class="button builder-done" id="builder-done"><svg><use href="#i-check"/></svg>Done</button></div>
-            <div class="builder-tools" aria-label="Build tools"><button class="button active" id="build-tool-road" data-build-tool="road"><svg><use href="#i-road"/></svg>Road</button><button class="button" id="build-tool-wall" data-build-tool="wall"><svg><use href="#i-city"/></svg>Building</button><button class="button" id="build-tool-erase" data-build-tool="erase"><svg><use href="#i-erase"/></svg>Erase</button><button class="icon-button" id="build-tool-start" data-build-tool="start" aria-label="Place build origin" title="Place origin"><svg><use href="#i-pin"/></svg></button><button class="icon-button" id="build-tool-goal" data-build-tool="goal" aria-label="Place build destination" title="Place destination"><svg><use href="#i-flag"/></svg></button></div>
-            <div class="builder-options"><label>Surface<select id="build-surface"><option value="road">Street · 1×</option><option value="highway">Highway · 0.5×</option><option value="traffic">Traffic · 3×</option><option value="mud">Mud · 10×</option></select></label><label>Brush<select id="brush-size"><option value="1">Fine · 1 block</option><option value="3">Medium · 3 blocks</option><option value="5">Wide · 5 blocks</option></select></label><label class="builder-guides"><input type="checkbox" id="grid-guides">Guides</label></div>
+        <div class="workspace-actions" id="workspace-actions" role="toolbar" aria-label="Workspace panels">
+          <button class="button free-build-entry" id="free-build-btn" aria-label="Free Build" aria-pressed="false" title="Free Build editor"><svg><use href="#i-road"/></svg><span>Free Build</span></button>
+          <button class="button" id="nav-simulation" aria-controls="control-panel" aria-expanded="false" title="Controls" aria-label="Controls"><svg><use href="#i-settings"/></svg><span>Controls</span></button>
+          <button class="button" id="nav-compare" title="Compare algorithms (X)" aria-label="Compare algorithms"><svg><use href="#i-chart"/></svg><span>Compare</span></button>
+          <button class="button" id="toggle-analytics" aria-label="Insights" aria-controls="analytics-panel" aria-expanded="false" title="Live insights"><svg><use href="#i-chart"/></svg><span>Insights</span></button>
+        </div>
+        <div class="map-commandbar" id="map-commandbar" role="toolbar" aria-label="Simulation tools">
+          <div class="command-search" id="command-search"><label for="algorithm">Algorithm</label><div class="select-wrap compact"><select id="algorithm" aria-label="Search algorithm"><option value="astar">A* Search</option><option value="dijkstra">Dijkstra</option><option value="bidir">Bidirectional Search</option><option value="dstar">D* Lite</option><option value="theta">Theta* · Any-angle</option><option value="jps">Jump Point Search</option><option value="greedy">Greedy Best-first</option><option value="bfs">Breadth-first Search</option><option value="dfs">Depth-first Search</option></select></div></div>
+          <div class="command-learning" id="command-learning" hidden><label>Episodes<input id="quick-episodes" type="number" min="10" max="100000" step="100" value="3000"></label><button class="button" id="quick-policy"><svg><use href="#i-play"/></svg>Test policy</button></div>
+          <div class="command-speed" id="command-speed"><label for="speed">Speed <output id="speed-value">12 steps/s</output></label><input id="speed" aria-label="Simulation speed" type="range" min="1" max="120" value="12"></div>
+        </div>
+        <div class="map-environment" id="map-environment" role="group" aria-label="Map settings">
+          <div class="environment-primary">
+          <label class="command-grid" id="command-grid">Grid <select id="grid-size"><option value="15">15 × 15</option><option value="20">20 × 20</option><option value="30" selected>30 × 30</option><option value="40">40 × 40</option><option value="50">50 × 50</option><option value="60">60 × 60</option><option value="70">70 × 70</option><option value="80">80 × 80</option><option value="90">90 × 90</option><option value="100">100 × 100</option></select></label>
+          <div class="command-map"><button class="button" id="quick-maps"><svg><use href="#i-layers"/></svg>Maps</button><button class="icon-button" id="quick-regenerate" aria-label="Regenerate map" title="Regenerate with a new seed"><svg><use href="#i-shuffle"/></svg></button></div>
           </div>
-          <div class="builder-hint"><svg><use href="#i-help"/></svg><span id="build-help">Draw beyond the edge to expand the canvas. Up to 100 × 100 blocks.</span></div>
+          <div class="command-switches"><label title="Allow eight directions without cutting corners"><input type="checkbox" id="quick-diagonal">Diagonal</label><label title="Adapt the route when the city changes"><input type="checkbox" id="quick-replan" checked>Replan</label></div>
+        </div>
+
+        <div class="builder-workspace" id="builder-workspace" hidden aria-label="Free Build editor">
+          <div class="builder-toolbar" id="builder-toolbar" role="toolbar" aria-label="Free Build tools">
+            <span class="builder-mode"><i></i>BUILD</span>
+            <div class="builder-tools" aria-label="Build tools"><button class="button active" id="build-tool-road" data-build-tool="road" aria-label="Road" title="Draw road (P)"><svg><use href="#i-road"/></svg><span>Road</span></button><button class="button" id="build-tool-wall" data-build-tool="wall" aria-label="Building" title="Place building (1)"><svg><use href="#i-city"/></svg><span>Building</span></button><button class="button" id="build-tool-erase" data-build-tool="erase" aria-label="Erase" title="Erase (4)"><svg><use href="#i-erase"/></svg><span>Erase</span></button><button class="icon-button" id="build-tool-start" data-build-tool="start" aria-label="Place build origin" title="Place origin (2)"><svg><use href="#i-pin"/></svg></button><button class="icon-button" id="build-tool-goal" data-build-tool="goal" aria-label="Place build destination" title="Place destination (3)"><svg><use href="#i-flag"/></svg></button></div>
+            <div class="builder-options"><label>Surface<select id="build-surface"><option value="road">Street · 1×</option><option value="highway">Highway · 0.5×</option><option value="traffic">Traffic · 3×</option><option value="mud">Mud · 10×</option></select></label><label>Brush width<select id="brush-size"><option value="1">1 block</option><option value="3">3 blocks</option><option value="5">5 blocks</option></select></label></div>
+            <label class="builder-guides"><input type="checkbox" id="grid-guides">Guides</label>
+            <div class="builder-history"><button class="icon-button" id="build-undo" aria-label="Undo build stroke" title="Undo (Ctrl+Z)" disabled><svg><use href="#i-back"/></svg></button><button class="icon-button" id="build-redo" aria-label="Redo build stroke" title="Redo (Ctrl+Y)" disabled><svg><use href="#i-step"/></svg></button></div>
+            <button class="button subtle" id="build-blank"><svg><use href="#i-plus"/></svg>New canvas</button>
+            <small id="build-area">30 × 30 · auto-grow</small>
+            <button class="button builder-done" id="builder-done"><svg><use href="#i-check"/></svg><span>Done</span></button>
+          </div>
+          <p class="sr-only" id="build-help">Draw beyond the edge to expand the canvas. Up to 200 × 200 blocks.</p>
         </div>
         <div class="view-label"><span class="live-dot"></span><span id="view-name">PERSPECTIVE</span><span class="view-divider"></span><span id="city-seed">SEED 2084</span></div>
         <div class="lighting-control" aria-label="City lighting"><button data-light="day" title="Daylight" aria-label="Daylight"><svg><use href="#i-sun"/></svg></button><button data-light="dusk" class="active" title="Golden hour" aria-label="Golden hour"><span class="sunset-icon"></span></button><button data-light="night" title="Night" aria-label="Night"><svg><use href="#i-moon"/></svg></button></div>
-        <div class="map-tools" id="map-tools" aria-label="City editing tools"><button class="map-tool tool-expander" id="tools-expand" aria-label="More terrain tools" aria-expanded="false" data-tooltip="Terrain & elevation tools"><svg><use href="#i-terrain"/></svg></button></div>
+        <div class="map-tools" id="map-tools" aria-label="City editing tools"><button class="map-tool tool-expander" id="tools-expand" aria-label="More terrain tools" aria-controls="terrain-palette" aria-expanded="false" data-tooltip="Terrain & elevation tools"><svg><use href="#i-terrain"/></svg></button></div>
+        <section class="terrain-palette" id="terrain-palette" hidden aria-label="Terrain and elevation tools"><div class="terrain-heading"><h2>Terrain & elevation</h2><button class="icon-button" id="terrain-close" aria-label="Close terrain tools"><svg><use href="#i-close"/></svg></button></div><div class="terrain-section"><h3>Road surfaces</h3><div class="terrain-tool-grid" id="terrain-surfaces"></div></div><div class="terrain-section"><h3>Elevation</h3><div class="terrain-tool-grid" id="terrain-elevation"></div></div></section>
         <div class="cell-tooltip" id="cell-tooltip" hidden></div>
-        <div class="north-indicator"><span>N</span><svg viewBox="0 0 40 40"><path d="m20 5 7 23-7-5-7 5 7-23Z"/></svg></div>
+        <button class="north-indicator" id="compass" type="button" aria-label="Reset camera bearing to north" title="Reset camera bearing to north" disabled><span class="compass-north" aria-hidden="true">N</span><svg class="compass-needle" id="compass-needle" viewBox="0 0 40 40" aria-hidden="true"><path d="m20 5 7 23-7-5-7 5 7-23Z"/></svg><span class="compass-bearing" id="compass-bearing" aria-hidden="true">000°</span></button>
         <div class="map-legend"><span><i style="--legend:#66d9bd"></i>Route</span><span><i style="--legend:#6baabb"></i>Explored</span><span><i style="--legend:#e1b979"></i>Frontier</span><span><i style="--legend:#b28baf"></i>Destination</span></div>
         <div class="camera-dock"><button class="active" data-camera="isometric" title="Isometric view"><svg><use href="#i-city"/></svg><span>3D</span></button><button data-camera="top" title="Top-down view"><svg><use href="#i-layers"/></svg><span>Top</span></button><button data-camera="street" title="Street-level view"><svg><use href="#i-eye"/></svg><span>Street</span></button><span></span><button id="orbit-btn" title="Automatic camera orbit" aria-label="Automatic camera orbit" aria-pressed="false"><svg><use href="#i-reset"/></svg></button><button id="reset-camera" title="Fit the whole city" aria-label="Fit city"><svg><use href="#i-focus"/></svg></button></div>
         <div class="map-zoom" aria-label="Map zoom"><button id="zoom-in" aria-label="Zoom in" title="Zoom in"><svg><use href="#i-plus"/></svg></button><button id="zoom-out" aria-label="Zoom out" title="Zoom out"><svg><use href="#i-minus"/></svg></button></div>
-        <div class="map-summary" aria-label="Simulation summary"><button id="quick-algorithm" aria-label="Choose search algorithm" aria-controls="control-panel" aria-expanded="false"><svg><use href="#i-route"/></svg><span id="quick-algorithm-name">A* Search</span><svg class="small"><use href="#i-chevron"/></svg></button><span class="summary-stat"><b id="quick-visited">0</b> explored</span><span class="summary-stat"><b id="quick-cost">—</b> travel cost</span></div>
         <button class="button restore-map-ui" id="restore-map-ui" hidden><svg><use href="#i-focus"/></svg>Show controls <kbd>G</kbd></button>
         <div class="map-scale"><span></span><small id="map-scale-label">5 city blocks</small></div>
         <div class="scene-loading" id="scene-loading"><span class="loading-mark"></span><strong>Building your city</strong><small>Architecture. Atmosphere. Possibility.</small></div>
@@ -1070,7 +1472,7 @@ output { font-size: var(--type-label); font-weight: 500; }
       </div>
       <div class="transport"><div class="playback-buttons"><button class="icon-button" id="back-btn" title="Previous step (B)" aria-label="Previous step"><svg><use href="#i-back"/></svg></button><button class="run-button" id="run-btn"><svg><use href="#i-play"/></svg><span>Run simulation</span><kbd>␣</kbd></button><button class="icon-button" id="step-btn" title="Next step (S)" aria-label="Next step"><svg><use href="#i-step"/></svg></button><button class="icon-button" id="finish-btn" title="Finish search" aria-label="Finish search"><svg><use href="#i-fast"/></svg></button><span class="transport-divider"></span><button class="icon-button" id="reset-btn" title="Reset path (R)" aria-label="Reset path"><svg><use href="#i-reset"/></svg></button></div><div class="history-control"><div><span id="playback-label">READY TO EXPLORE</span><span id="history-label">STEP 000 / 000</span></div><input id="history" type="range" value="0" min="0" max="1" aria-label="Search history" disabled></div><div class="transport-state"><span class="live-dot" id="state-dot"></span><span id="state-label">Ready</span></div></div>
     </main>
-    <aside class="analytics-panel" id="analytics-panel" aria-label="Live simulation analytics"><div class="panel-heading"><div><span class="eyebrow">EVERY DECISION, VISIBLE</span><h2>Live insights</h2></div><span class="live-badge">LIVE</span><button class="icon-button mobile-close" id="close-analytics" aria-label="Close analytics"><svg><use href="#i-close"/></svg></button></div>
+    <aside class="analytics-panel" id="analytics-panel" aria-label="Live simulation analytics"><div class="panel-heading"><div><span class="eyebrow">EVERY DECISION, VISIBLE</span><h2>Live insights</h2></div><span class="live-badge">LIVE</span><div class="panel-heading-actions"><button class="icon-button panel-pin" id="pin-insights" aria-label="Pin insights" aria-pressed="false" title="Keep insights open"><svg><use href="#i-tack"/></svg></button><button class="icon-button mobile-close" id="close-analytics" aria-label="Close analytics"><svg><use href="#i-close"/></svg></button></div></div>
       <div class="panel-scroll"><div class="analytics-tabs"><button class="active" id="insights-tab">Overview</button><button id="activity-tab">Activity <span id="log-count">0</span></button></div>
         <div id="insights-content"><div class="metrics-grid"><div class="metric"><span>Nodes explored</span><strong id="stat-visited">0<small>/ 900</small></strong><div class="metric-line"><i id="coverage-bar"></i></div></div><div class="metric"><span>Frontier nodes</span><strong id="stat-frontier">0</strong><small class="metric-caption">Awaiting discovery</small></div><div class="metric"><span>Route length</span><strong id="stat-path">—</strong><small class="metric-caption">route vertices</small></div><div class="metric"><span>Travel cost</span><strong class="mint" id="stat-cost">—</strong><small class="metric-caption">weighted units</small></div><div class="metric"><span>Compute time</span><strong id="stat-time">0<small>ms</small></strong><small class="metric-caption">algorithm execution</small></div><div class="metric"><span>Search coverage</span><strong id="stat-coverage">0<small>%</small></strong><small class="metric-caption">of walkable nodes</small></div></div>
           <section class="insight-section"><div class="section-label">JOURNEY <span id="route-badge" class="tiny-tag">NOT STARTED</span></div><div class="journey"><div><i class="origin-dot"></i><span>Origin<small id="origin-label">BLOCK 15 · AVE 03</small></span><button class="icon-button" id="edit-start" title="Place origin" aria-label="Place origin"><svg><use href="#i-pin"/></svg></button></div><span class="journey-connector"></span><div><i class="goal-dot"></i><span>Destination<small id="goal-label">BLOCK 15 · AVE 26</small></span><button class="icon-button" id="edit-goal" title="Place destination" aria-label="Place destination"><svg><use href="#i-flag"/></svg></button></div></div></section>
@@ -2148,6 +2550,7 @@ output { font-size: var(--type-label); font-weight: 500; }
    Kept independent of the DOM and WebGL so experiments can be reproduced. */
 (function (scope) {
   'use strict';
+  const limits = Object.freeze({ grid: 100, freeBuild: 200 });
   const terrain = Object.freeze([
     { id: 0, name: 'Street', cost: 1 },
     { id: 1, name: 'Building', cost: Infinity },
@@ -2192,7 +2595,7 @@ output { font-size: var(--type-label); font-weight: 500; }
   }
   class Grid {
     constructor(size = 30) {
-      if (!Number.isInteger(size) || size < 4 || size > 100) throw new Error('Grid size must be an integer from 4 to 100.');
+      if (!Number.isInteger(size) || size < 4 || size > limits.freeBuild) throw new Error(`Grid size must be an integer from 4 to ${limits.freeBuild}.`);
       this.size = this.N = this.rows = this.cols = size; this.count = size * size;
       this.types = this.terrain = new Uint8Array(this.count);
       this.elevations = this.elevation = new Float32Array(this.count);
@@ -2248,9 +2651,10 @@ output { font-size: var(--type-label); font-weight: 500; }
       const required = oldSize + Math.max(left + right, top + bottom);
       // Validate before allocating or changing any state. Padding may shrink at
       // the limit, but a requested cell is never silently omitted or clamped.
-      if (required > 100) throw new Error('Free Build has reached its 100 × 100 cell limit. Draw closer to the existing city.');
+      const limit = this.freeBuild ? limits.freeBuild : limits.grid;
+      if (required > limit) throw new Error(`${this.freeBuild ? 'Free Build' : 'Grid'} has reached its ${limit} × ${limit} cell limit. Draw closer to the existing city.`);
       const desired = oldSize + Math.max(left + right + (left || right ? padding : 0), top + bottom + (top || bottom ? padding : 0));
-      const size = Math.min(100, Math.ceil(desired / 10) * 10), extra = size - oldSize;
+      const size = Math.min(limit, Math.ceil(desired / 10) * 10), extra = size - oldSize;
       const shift = (negative, positive) => {
         const spare = extra - negative - positive;
         if (negative) return negative + Math.min(padding, spare);
@@ -2393,9 +2797,11 @@ output { font-size: var(--type-label); font-weight: 500; }
       const data = typeof input === 'string' ? JSON.parse(input) : input;
       if (!data || typeof data !== 'object') throw new Error('The file must contain a city layout.');
       const v11 = Array.isArray(data.grid) && Array.isArray(data.grid[0]);
+      if (!v11 && data.freeBuild !== undefined && typeof data.freeBuild !== 'boolean') throw new Error('Free Build mode must be true or false.');
       const sourceRows = v11 ? data.rows ?? data.grid.length : data.size ?? data.N;
       const sourceCols = v11 ? data.cols ?? data.grid[0].length : sourceRows;
-      if (![sourceRows, sourceCols].every(x => Number.isInteger(x) && x >= 4 && x <= 100)) throw new Error('Layout dimensions must be between 4 and 100.');
+      const limit = !v11 && data.freeBuild === true ? limits.freeBuild : limits.grid;
+      if (![sourceRows, sourceCols].every(x => Number.isInteger(x) && x >= 4 && x <= limit)) throw new Error(`Layout dimensions must be between 4 and ${limit}.`);
       const size = Math.max(sourceRows, sourceCols), grid = new Grid(size), types = v11 ? null : data.types ?? data.T, elevation = data.elevations ?? data.E;
       if (!v11 && (!Array.isArray(types) || types.length !== grid.count)) throw new Error('Terrain data does not match the grid dimensions.');
       if (!v11 && elevation !== undefined && (!Array.isArray(elevation) || elevation.length !== grid.count)) throw new Error('Elevation data does not match the grid dimensions.');
@@ -2417,7 +2823,6 @@ output { font-size: var(--type-label); font-weight: 500; }
         if (elevation?.some(x => typeof x !== 'number' || !Number.isFinite(x) || x < 0 || x > 12)) throw new Error('Elevations must be finite values from 0 to 12.');
         grid.types.set(types); if (elevation) grid.elevations.set(elevation);
         grid.start = data.start; grid.goal = data.goal;
-        if (data.freeBuild !== undefined && typeof data.freeBuild !== 'boolean') throw new Error('Free Build mode must be true or false.');
         grid.freeBuild = data.freeBuild ?? false;
         for (const key of ['originX', 'originZ']) {
           if (data[key] !== undefined && (typeof data[key] !== 'number' || !Number.isFinite(data[key]) || Math.abs(data[key]) > 10000)) throw new Error('Canvas origins must be finite numbers within the supported world range.');
@@ -2645,7 +3050,7 @@ output { font-size: var(--type-label); font-weight: 500; }
       this.lastRollout = { path, reached: i === this.grid.goal, cost: i === this.grid.goal ? this.grid.pathCost(path) : Infinity }; return this.lastRollout;
     }
   }
-  scope.MetroEngine = { Grid, SearchSession, QLearner, algorithms, terrain, random };
+  scope.MetroEngine = { Grid, SearchSession, QLearner, algorithms, terrain, random, limits };
   if (typeof module !== 'undefined' && module.exports) module.exports = scope.MetroEngine;
 })(globalThis);
 </script>
@@ -2683,6 +3088,7 @@ output { font-size: var(--type-label); font-weight: 500; }
       this.materials = this.makeMaterials(); this.world = new THREE.Group(); this.scene.add(this.world);
       this.overlay = new THREE.Group(); this.scene.add(this.overlay); this.route = new THREE.Group(); this.scene.add(this.route);
       this.markers = new THREE.Group(); this.scene.add(this.markers);
+      this.landscapeEnabled = true; this.particlesEnabled = true; this.ensureEffects();
       this.hover = new THREE.Mesh(new THREE.BoxGeometry(1, .045, 1), new THREE.MeshBasicMaterial({ color: 0xc4fff0, transparent: true, opacity: .48, depthWrite: false })); this.hover.visible = false; this.scene.add(this.hover);
       this.selection = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(.97, .1, .97)), new THREE.LineBasicMaterial({ color: 0x94f9d6, transparent: true, opacity: .9 })); this.selection.visible = false; this.scene.add(this.selection);
       this.events = []; this.bindPointer();
@@ -2726,14 +3132,91 @@ output { font-size: var(--type-label); font-weight: 500; }
       if (transforms[0][9] != null && this.pickMeshes) { mesh.userData.cellIndices = transforms.map(v => v[9]); this.pickMeshes.push(mesh); }
       return mesh;
     }
-    clear(group) { while (group.children.length) { const child = group.children[0]; group.remove(child); child.traverse(node => { if (node.userData.ownedGeometry && node.geometry) node.geometry.dispose(); if (node.userData.ownedMaterial && node.material) { if (node.material.map) node.material.map.dispose(); node.material.dispose(); } }); } }
+    clear(group) { while (group.children.length) { const child = group.children[0]; group.remove(child); child.traverse(node => { if (node.isInstancedMesh) node.dispose(); if (node.userData.ownedGeometry && node.geometry) node.geometry.dispose(); if (node.userData.ownedMaterial && node.material) { if (node.material.map) node.material.map.dispose(); node.material.dispose(); } }); } }
+    ensureEffects() {
+      if(!this.landscape){this.landscape=new THREE.Group();this.landscape.name='Q-value landscape';this.scene.add(this.landscape);}
+      if(!this.particles){this.particles=new THREE.Group();this.particles.name='District lights';this.scene.add(this.particles);}
+      if(this.landscapeEnabled==null)this.landscapeEnabled=true;if(this.particlesEnabled==null)this.particlesEnabled=true;
+      this.landscape.visible=this.landscapeEnabled;this.particles.visible=this.particlesEnabled;
+    }
+    makeLandscape() {
+      this.ensureEffects();this.clear(this.landscape);this.landscapeMesh=null;
+      const count=(this.size||0)**2;this.landscapeHeights=new Float32Array(count);this.landscapeTargets=new Float32Array(count);this.landscapeActive=new Set();
+      if(!count)return;
+      const material=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.52,depthWrite:false,fog:false,toneMapped:false});
+      const mesh=new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1),material,count);mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);mesh.frustumCulled=false;mesh.renderOrder=6;
+      mesh.userData.ownedGeometry=mesh.userData.ownedMaterial=true;this.landscapeMesh=mesh;this.landscape.add(mesh);
+      for(let i=0;i<count;i++){this.tmp.position.set(0,-5,0);this.tmp.scale.set(0,0,0);this.tmp.rotation.set(0,0,0);this.tmp.updateMatrix();mesh.setMatrixAt(i,this.tmp.matrix);mesh.setColorAt(i,new THREE.Color(0x73d9bc));}
+      mesh.instanceMatrix.needsUpdate=true;mesh.instanceColor.needsUpdate=true;
+      if(this.learningValues&&this.learningVisits)this.setLearningValues(this.learningValues,this.learningVisits);
+    }
+    setLandscape(enabled) {this.landscapeEnabled=Boolean(enabled);this.ensureEffects();if(this.landscapeEnabled&&!this.landscapeMesh&&this.size)this.makeLandscape();if(this.landscapeEnabled)this.updateLandscape(0,this.reducedMotion);}
+    setLearningValues(values,visits) {
+      this.ensureEffects();const count=(this.size||0)**2;
+      // Copy each update: the learner mutates its typed arrays in place.
+      this.learningValues=values?Float32Array.from({length:count},(_,i)=>Number(values[i])):null;
+      this.learningVisits=visits?Float32Array.from({length:count},(_,i)=>Number(visits[i])):null;
+      if(!this.landscapeMesh&&count){this.makeLandscape();return;}
+      if(!this.landscapeMesh)return;
+      const color=new THREE.Color();
+      for(let i=0;i<count;i++){
+        const value=this.learningValues?.[i],seen=this.learningVisits?.[i];
+        const active=Number.isFinite(value)&&Number.isFinite(seen)&&seen>0&&this.isDeveloped(i)&&this.terrain[i]!==1;
+        // Height encodes |best Q| with a fixed, bounded log scale. Hue preserves
+        // its sign: negative values are blue/violet, positive values are mint.
+        const magnitude=active?Math.min(4.3,Math.log1p(Math.abs(value))*.72):0;
+        this.landscapeTargets[i]=active?.1+magnitude:0;
+        if(active){color.setHSL(value<0?.62+Math.min(1,magnitude/4.3)*.12:.43,.64,.54);this.landscapeMesh.setColorAt(i,color);}
+        if(active||this.landscapeHeights[i]>0)this.landscapeActive.add(i);
+      }
+      this.landscapeMesh.instanceColor.needsUpdate=true;
+      this.updateLandscape(0,!values||!visits||this.reducedMotion);
+    }
+    updateLandscape(dt,snap=false) {
+      if(!this.landscapeMesh||(!this.landscapeEnabled&&!snap))return;
+      const amount=snap||this.reducedMotion?1:1-Math.exp(-Math.max(0,dt)*7);let changed=false;
+      for(const i of this.landscapeActive){
+        const target=this.landscapeTargets[i],before=this.landscapeHeights[i];let height=before+(target-before)*amount;
+        if(Math.abs(target-height)<.002)height=target;
+        this.landscapeHeights[i]=height;
+        if(height===before&&dt>0&&!snap)continue;
+        const p=this.point(i,.065);this.tmp.position.set(p.x,height>0?p.y+height*.5:-5,p.z);this.tmp.scale.set(height>0?.52:0,height,height>0?.52:0);this.tmp.rotation.set(0,0,0);this.tmp.updateMatrix();this.landscapeMesh.setMatrixAt(i,this.tmp.matrix);changed=true;
+        if(height===0&&target===0)this.landscapeActive.delete(i);
+      }
+      if(changed)this.landscapeMesh.instanceMatrix.needsUpdate=true;
+    }
+    makeParticles() {
+      this.ensureEffects();this.clear(this.particles);this.particleMesh=null;this.particleStates=[];this.particleTime=0;
+      if(!this.size)return;
+      const count=({high:100,balanced:70,low:36})[this.quality]||70,n=this.size,ox=this.originX??-n/2,oz=this.originZ??-n/2,seed=Number(this.grid?.seed)||0;
+      const positions=new Float32Array(count*3),colors=new Float32Array(count*3),palette=[0x8df2c4,0x75cfff,0xe8bd78,0xbca0ed],color=new THREE.Color();let roof=1;
+      for(let i=0;i<n*n;i++)if(this.isDeveloped(i))roof=Math.max(roof,this.level(i)+(this.buildingHeights?.[i]||0));
+      for(let i=0;i<count;i++){
+        const key=seed*.013+i*17;this.particleStates.push({x:ox+.25+hash(key+1)*(n-.5),z:oz+.25+hash(key+3)*(n-.5),y:roof+1.2+hash(key+7)*3.5,phase:hash(key+11)*Math.PI*2,speed:.18+hash(key+19)*.22});
+        color.setHex(palette[i%palette.length]);colors.set([color.r,color.g,color.b],i*3);
+      }
+      const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.BufferAttribute(colors,3));
+      const material=new THREE.PointsMaterial({size:.42,vertexColors:true,transparent:true,opacity:.8,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,toneMapped:false});
+      material.onBeforeCompile=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <map_particle_fragment>','#include <map_particle_fragment>\nfloat lightRadius=length(gl_PointCoord-vec2(0.5))*2.0;\nif(lightRadius>1.0)discard;\ndiffuseColor.a*=pow(1.0-lightRadius,1.7);');};
+      material.customProgramCacheKey=()=> 'metro-district-lights-v1';
+      const mesh=new THREE.Points(geometry,material);mesh.frustumCulled=false;mesh.renderOrder=4;mesh.userData.ownedGeometry=mesh.userData.ownedMaterial=true;this.particleMesh=mesh;this.particles.add(mesh);this.updateParticles(0,true);
+    }
+    setParticles(enabled) {this.particlesEnabled=Boolean(enabled);this.ensureEffects();if(this.particlesEnabled&&!this.particleMesh&&this.size)this.makeParticles();}
+    updateParticles(dt,force=false) {
+      if(!this.particleMesh||(!this.particlesEnabled&&!force))return;
+      if(!this.reducedMotion)this.particleTime=(this.particleTime||0)+Math.max(0,dt);
+      const time=this.particleTime||0,n=this.size,ox=this.originX??-n/2,oz=this.originZ??-n/2,positions=this.particleMesh.geometry.attributes.position;
+      this.particleStates.forEach((p,i)=>{const phase=p.phase+time*p.speed;positions.setXYZ(i,Math.max(ox+.1,Math.min(ox+n-.1,p.x+Math.sin(phase)*.65)),p.y+Math.sin(phase*.7)*.35,Math.max(oz+.1,Math.min(oz+n-.1,p.z+Math.cos(phase*.83)*.65)));});positions.needsUpdate=true;
+    }
     setGrid(grid) {
       if(this.pendingRebuild){clearTimeout(this.pendingRebuild);this.pendingRebuild=null;}
-      const previousSize=this.size,previousOriginX=this.originX,previousOriginZ=this.originZ;
+      const previousGrid=this.grid,previousSize=this.size,previousOriginX=this.originX,previousOriginZ=this.originZ;
       this.grid = grid; this.size = grid.size || grid.N || 30; this.terrain = grid.terrain || grid.T; this.elevation = grid.elevation || grid.E || new Float32Array(this.size * this.size);this.framingPoints=null;
       this.originX=Number.isFinite(grid.originX)?grid.originX:-this.size/2;this.originZ=Number.isFinite(grid.originZ)?grid.originZ:-this.size/2;
       this.freeBuild=Boolean(grid.freeBuild);this.developed=grid.developed;
+      if(previousGrid!==grid||previousSize!==this.size||previousOriginX!==this.originX||previousOriginZ!==this.originZ){this.learningValues=null;this.learningVisits=null;}
       this.clear(this.world); this.clear(this.overlay); this.clear(this.route); this.path = null; this.visited=[];this.frontier=[]; this.pickMeshes=[]; this.buildingHeights=new Float32Array(this.size*this.size);
+      this.routeAgent=this.routeHalo=null;this.routePoints=[];this.routeLengths=[];this.routeDistance=0;
       const n = this.size, half = n / 2, centerX=this.originX+half,centerZ=this.originZ+half,m = this.materials;
       if(!this.freeBuild){
         const base = new THREE.Mesh(new THREE.BoxGeometry(n + 1.7, .75, n + 1.7), m.edge); base.position.set(centerX,-.4,centerZ); base.receiveShadow = true; base.castShadow = true; base.userData.ownedGeometry = true; this.world.add(base);
@@ -2786,8 +3269,10 @@ output { font-size: var(--type-label); font-weight: 500; }
       const markerKey=[this.size,grid.start,grid.goal].join(':');
       if(this.markerKey!==markerKey){this.makeMarkers();this.markerKey=markerKey;}
       else this.markers.children.forEach(marker=>marker.position.copy(this.point(marker.userData.cellIndex,.1)));
-      if(previousSize!==n||previousOriginX!==this.originX||previousOriginZ!==this.originZ)this.carStates=[];
+      if(previousGrid!==grid)this.carStates=[];
+      else if(previousSize!==n||previousOriginX!==this.originX||previousOriginZ!==this.originZ)this.remapTrafficStates(previousSize,previousOriginX,previousOriginZ);
       this.makeTraffic(); this.setTraffic(this.trafficVisible); this.makeOverlay(); this.setLayer(this.layer, this.layerData); this.setMode(this.mode); this.lastRebuild=performance.now();
+      this.makeLandscape();this.makeParticles();
       this.controls.minDistance=this.freeBuild?2:Math.max(2,n*.12);this.controls.maxDistance=Math.max(150,n*12);this.camera.far=Math.max(500,n*20);this.camera.updateProjectionMatrix();if(previousSize!==n&&!this.cameraTouched&&!this.editorEnabled)this.fitCamera(this.cameraPreset,false);
     }
     isDeveloped(i) {return i>=0&&i<this.size*this.size&&(!this.freeBuild||!this.developed||this.developed[i]===1);}
@@ -2847,29 +3332,190 @@ output { font-size: var(--type-label); font-weight: 500; }
     setLayer(layer,data){this.layer=layer;this.layerData=data||this.layerData;this.paintOverlay();}
     setPath(path){
       if(path&&this.path&&path.length===this.path.length&&this.path.every((v,i)=>v===path[i]))return;
-      this.clear(this.route);this.path=path&&path.length>1?Array.from(path):null;this.routeCurve=null;if(!this.path)return;
+      this.clear(this.route);this.routeAgent=this.routeHalo=null;this.routePoints=[];this.routeLengths=[];this.routeDistance=0;this.routeTime=0;this.path=path&&path.length>1?Array.from(path):null;this.routeCurve=null;if(!this.path)return;
       const points=[];for(let k=0;k<this.path.length;k++){const p=this.point(this.path[k],.19);if(!k||p.distanceTo(points[points.length-1])>.01)points.push(p);}if(points.length<2)return;
       // Linear segments follow the searched cells exactly, so curves never cut a blocked corner.
-      const lineGeometry=new THREE.BufferGeometry().setFromPoints(points);const glow=new THREE.Line(lineGeometry,new THREE.LineBasicMaterial({color:0x9fffd6,transparent:true,opacity:.95,linewidth:2}));glow.renderOrder=5;glow.userData.ownedGeometry=true;glow.userData.ownedMaterial=true;this.route.add(glow);
-      const tubes=[];for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i],mid=a.clone().add(b).multiplyScalar(.5),delta=b.clone().sub(a);const mesh=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,delta.length(),6),new THREE.MeshBasicMaterial({color:0x89e8ba}));mesh.position.copy(mid);mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());mesh.userData.ownedGeometry=true;mesh.userData.ownedMaterial=true;this.route.add(mesh);tubes.push(mesh);}
+      const routeMaterial=(color,opacity=1)=>new THREE.MeshBasicMaterial({color,transparent:true,opacity,depthTest:false,depthWrite:false,fog:false,toneMapped:false});
+      // Instanced cylinders give real thickness on WebGL implementations where
+      // LineBasicMaterial.linewidth is limited to one pixel. Both route passes
+      // are transparent so all city/landscape geometry is drawn before them.
+      const segments=points.length-1,casing=new THREE.InstancedMesh(new THREE.CylinderGeometry(1,1,1,8),routeMaterial(0x135e49,.62),segments),core=new THREE.InstancedMesh(new THREE.CylinderGeometry(1,1,1,8),routeMaterial(0x94f5c7),segments);
+      [casing,core].forEach((mesh,k)=>{mesh.renderOrder=1000+k;mesh.frustumCulled=false;mesh.userData.ownedGeometry=mesh.userData.ownedMaterial=true;});
+      const transform=new THREE.Object3D(),up=new THREE.Vector3(0,1,0);
+      for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i],delta=b.clone().sub(a),length=delta.length();transform.position.copy(a).add(b).multiplyScalar(.5);transform.quaternion.setFromUnitVectors(up,delta.normalize());for(const [mesh,radius]of[[casing,.115],[core,.067]]){transform.scale.set(radius,length,radius);transform.updateMatrix();mesh.setMatrixAt(i-1,transform.matrix);}}
+      casing.instanceMatrix.needsUpdate=core.instanceMatrix.needsUpdate=true;this.route.add(casing,core);
+      const lineGeometry=new THREE.BufferGeometry().setFromPoints(points),glow=new THREE.Line(lineGeometry,new THREE.LineBasicMaterial({color:0xc5ffe3,transparent:true,opacity:.95,depthTest:false,depthWrite:false,fog:false,toneMapped:false}));glow.renderOrder=1002;glow.userData.ownedGeometry=glow.userData.ownedMaterial=true;this.route.add(glow);
       this.routePoints=points;this.routeLengths=[0];for(let i=1;i<points.length;i++)this.routeLengths.push(this.routeLengths[i-1]+points[i].distanceTo(points[i-1]));this.routeDistance=this.routeLengths[this.routeLengths.length-1];
-      this.routeAgent=new THREE.Mesh(new THREE.SphereGeometry(.105,12,8),new THREE.MeshBasicMaterial({color:0xf1fff5}));this.routeAgent.userData.ownedGeometry=true;this.routeAgent.userData.ownedMaterial=true;this.route.add(this.routeAgent);
+      this.routeAgent=new THREE.Mesh(new THREE.SphereGeometry(.19,16,10),routeMaterial(0xf1fff5));this.routeAgent.renderOrder=1011;this.routeAgent.position.copy(points[0]);this.routeAgent.position.y+=.035;this.routeAgent.userData.ownedGeometry=this.routeAgent.userData.ownedMaterial=true;
+      this.routeHalo=new THREE.Mesh(new THREE.SphereGeometry(.32,16,10),routeMaterial(0x8af9c7,.22));this.routeHalo.renderOrder=1010;this.routeHalo.userData.ownedGeometry=this.routeHalo.userData.ownedMaterial=true;this.routeAgent.add(this.routeHalo);this.route.add(this.routeAgent);
+    }
+    remapTrafficStates(oldSize,oldOriginX,oldOriginZ) {
+      const remap=index=>{
+        const x=oldOriginX+index%oldSize+.5,z=oldOriginZ+Math.floor(index/oldSize)+.5,col=Math.round(x-this.originX-.5),row=Math.round(z-this.originZ-.5);
+        return row>=0&&col>=0&&row<this.size&&col<this.size?row*this.size+col:-1;
+      };
+      for(const state of this.carStates||[])for(const key of ['prev','cell','next'])state[key]=remap(state[key]);
+    }
+    trafficRoad(index) {
+      return Number.isInteger(index)&&this.isDeveloped(index)&&[0,2,3].includes(this.terrain[index]);
+    }
+    trafficNeighbors(index) {
+      if(!this.trafficRoad(index))return [];
+      const n=this.size,row=Math.floor(index/n),col=index%n,result=[];
+      for(const other of [row?index-n:-1,col<n-1?index+1:-1,row<n-1?index+n:-1,col?index-1:-1])
+        if(this.trafficRoad(other)&&Math.abs(this.level(other)-this.level(index))<1e-6)result.push(other);
+      return result;
+    }
+    trafficTurnNext(prev,cell) {
+      const neighbors=this.trafficNeighbors(cell),dx=cell%this.size-prev%this.size,dz=Math.floor(cell/this.size)-Math.floor(prev/this.size);
+      // One consistent rotational order pairs lane entries and exits without
+      // crossing movements. Directed edges therefore form closed block circuits.
+      for(const [x,z]of[[dz,-dx],[dx,dz],[-dz,dx],[-dx,-dz]]){
+        const found=neighbors.find(index=>index%this.size-cell%this.size===x&&Math.floor(index/this.size)-Math.floor(cell/this.size)===z);
+        if(found!==undefined)return found;
+      }
+      return -1;
+    }
+    chooseTrafficNext(prev,cell,seed,turns) {
+      return this.trafficCircuitByEdge?.get(prev+':'+cell)?.next??this.trafficTurnNext(prev,cell);
+    }
+    buildTrafficCircuits() {
+      this.trafficCircuitByEdge=new Map();this.trafficCircuits=[];
+      const edges=[];let roads=0;
+      for(let cell=0;cell<this.terrain.length;cell++){const neighbors=this.trafficNeighbors(cell);if(neighbors.length)roads++;for(const prev of neighbors)edges.push({prev,cell});}
+      const seen=new Set(),all=[];
+      for(const edge of edges){
+        const first=edge.prev+':'+edge.cell;if(seen.has(first))continue;
+        const segments=[];let prev=edge.prev,cell=edge.cell,length=0,area=0,minX=Infinity,maxX=-Infinity,minZ=Infinity,maxZ=-Infinity;
+        for(let guard=0;guard<=edges.length;guard++){
+          const key=prev+':'+cell;if(seen.has(key))break;seen.add(key);
+          const next=this.trafficTurnNext(prev,cell),state=this.makeTrafficState(prev,cell,next);if(!state)break;
+          const point=this.point(cell),following=this.point(next);
+          segments.push({prev,cell,next,curve:state.curve,length:state.length,start:length});length+=state.length;area+=point.x*following.z-following.x*point.z;
+          minX=Math.min(minX,point.x);maxX=Math.max(maxX,point.x);minZ=Math.min(minZ,point.z);maxZ=Math.max(maxZ,point.z);
+          prev=cell;cell=next;if(prev+':'+cell===first)break;
+        }
+        if(!segments.length||prev+':'+cell!==first)continue;
+        const circuit={key:first,segments,length,area:Math.abs(area)*.5,extent:Math.max(maxX-minX,maxZ-minZ)};
+        circuit.capacity=Math.max(1,Math.min(8,Math.floor(length/3)));
+        for(let index=0;index<segments.length;index++)this.trafficCircuitByEdge.set(segments[index].prev+':'+segments[index].cell,{...segments[index],circuit,index});
+        all.push(circuit);
+      }
+      // Ignore tiny loops inside broad paved avenues. Cars circulate around
+      // real blocks and district boundaries rather than orbiting a 1-cell square.
+      this.trafficCircuits=all.filter(route=>route.area>=3.5||route.length>=8&&route.extent>=3);
+      if(!this.trafficCircuits.length&&all.length)this.trafficCircuits=[all.reduce((longest,route)=>route.length>longest.length?route:longest)];
+      return roads;
+    }
+    trafficRoutePosition(state) {
+      const segment=this.trafficCircuitByEdge?.get(state.prev+':'+state.cell);
+      return segment&&segment.next===state.next?{circuit:segment.circuit,distance:segment.start+state.s}:null;
+    }
+    trafficFollowingSpace(state) {
+      const route=this.trafficRoutePosition(state);if(!route)return Infinity;
+      let available=Infinity;
+      for(const other of this.carStates){
+        if(other===state)continue;const leader=this.trafficRoutePosition(other);
+        if(!leader||leader.circuit!==route.circuit)continue;
+        const gap=(leader.distance-route.distance+route.circuit.length)%route.circuit.length;
+        available=Math.min(available,Math.max(0,gap-.85));
+      }
+      return available;
+    }
+    makeTrafficState(prev,cell,next,seed=0,s=0,turns=0) {
+      if(!this.trafficNeighbors(cell).includes(prev)||!this.trafficNeighbors(cell).includes(next))return null;
+      const center=this.point(cell,.09),before=this.point(prev,.09),after=this.point(next,.09),incoming=center.clone().sub(before).normalize(),outgoing=after.clone().sub(center).normalize(),lane=.22;
+      const left=direction=>new THREE.Vector3(direction.z,0,-direction.x).multiplyScalar(lane);
+      const entry=center.clone().addScaledVector(incoming,-.5).add(left(incoming)),exit=center.clone().addScaledVector(outgoing,.5).add(left(outgoing));
+      let curve;
+      if(incoming.dot(outgoing)>.99)curve=new THREE.LineCurve3(entry,exit);
+      else if(incoming.dot(outgoing)<-.99)curve=new THREE.CubicBezierCurve3(entry,entry.clone().addScaledVector(incoming,.55),exit.clone().addScaledVector(incoming,.55),exit);
+      else curve=new THREE.QuadraticBezierCurve3(entry,center.clone().add(left(incoming)).add(left(outgoing)),exit);
+      curve.arcLengthDivisions=48;const length=curve.getLength();
+      const state={prev,cell,next,seed,turns,s:Math.max(0,Math.min(length,Number(s)||0)),curve,length};state.pose=this.sampleTrafficState(state);return state;
+    }
+    sampleTrafficState(state) {
+      const u=Math.max(0,Math.min(1,state.s/state.length)),point=state.curve.getPointAt(u),tangent=state.curve.getTangentAt(u),norm=Math.hypot(tangent.x,tangent.z)||1,dx=tangent.x/norm,dz=tangent.z/norm;
+      return {x:point.x,y:point.y,z:point.z,dx,dz,angle:Math.atan2(dx,dz)};
+    }
+    trafficCollision(first,second) {
+      if(Math.abs(first.y-second.y)>.18)return false;
+      const x=second.x-first.x,z=second.z-first.z;
+      if(x*x+z*z>.5*.5)return false;
+      // Separating axes for buffered car footprints: opposing lanes can pass,
+      // while followers and crossing vehicles retain a small clearance.
+      for(const [ax,az]of[[first.dx,first.dz],[first.dz,-first.dx],[second.dx,second.dz],[second.dz,-second.dx]]){
+        const radius=pose=>.205*Math.abs(pose.dx*ax+pose.dz*az)+.115*Math.abs(pose.dz*ax-pose.dx*az);
+        if(Math.abs(x*ax+z*az)>=radius(first)+radius(second))return false;
+      }
+      return true;
+    }
+    advanceTrafficState(state,seconds,maxDistance=Infinity) {
+      let remaining=seconds,budget=maxDistance,transitions=0;
+      while(remaining>1e-10&&budget>1e-10&&transitions<32){
+        const speed=({0:.8,2:1.7,3:.32})[this.terrain[state.cell]]||.8,room=Math.max(0,state.length-state.s),distance=Math.min(room,remaining*speed,budget);
+        state.s+=distance;remaining-=distance/speed;budget-=distance;
+        if(state.s<state.length-1e-10)break;
+        const prev=state.cell,cell=state.next,turns=state.turns+1,next=this.chooseTrafficNext(prev,cell,state.seed,turns),following=this.makeTrafficState(prev,cell,next,state.seed,0,turns);
+        if(!following)return false;Object.assign(state,following);transitions++;
+      }
+      state.pose=this.sampleTrafficState(state);return true;
     }
     makeTraffic(){
-      const oldStates=this.carStates||[];this.carStates=[];const free=[];for(let i=0;i<this.terrain.length;i++)if(this.isDeveloped(i)&&this.terrain[i]!==1&&this.terrain[i]!==4)free.push(i);const count=Math.min(72,Math.floor(free.length/6));const transforms=[],colors=[];
-      for(let k=0;k<count;k++){const a=free[Math.floor(hash(k*71+4)*free.length)],old=oldStates[k],valid=old&&old.a<this.terrain.length&&old.b<this.terrain.length&&this.terrain[old.a]!==1&&this.terrain[old.b]!==1;this.carStates.push(valid?old:{a,b:a,t:hash(k+8),seed:k,prev:-1});transforms.push([0,-10,0,.18,.105,.34]);colors.push([0xc6d2d2,0xaeb8b5,0xd8d4c6,0xa85245,0x506f85,0xc8a760][k%6]);}
-      this.carBodies=this.batch(this.box,this.materials.car,transforms,colors);this.carCabins=this.batch(this.box,this.materials.carGlass,transforms);this.carLights=this.batch(this.box,this.materials.light,transforms);if(this.carBodies){this.world.add(this.carBodies,this.carCabins,this.carLights);this.carBodies.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.carCabins.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.carLights.instanceMatrix.setUsage(THREE.DynamicDrawUsage);}
+      const previous=this.carStates||[],states=[],used=new Set(),seed=Number(this.grid?.seed)||0;
+      for(const mesh of [this.carBodies,this.carCabins,this.carLights])if(mesh?.parent){mesh.parent.remove(mesh);mesh.dispose();}
+      this.carBodies=this.carCabins=this.carLights=null;
+      const roads=this.buildTrafficCircuits(),routes=this.trafficCircuits,capacities=new Map(routes.map(route=>[route,0])),capacity=routes.reduce((sum,route)=>sum+route.capacity,0),count=roads?Math.min(72,Math.max(1,Math.floor(roads/8)),capacity):0;
+      for(const old of previous){
+        if(states.length>=count)break;if(!Number.isFinite(old.s)||!Number.isFinite(old.seed)||!Number.isFinite(old.turns))continue;
+        const restored=this.makeTrafficState(old.prev,old.cell,old.next,old.seed,old.s,old.turns),route=restored&&this.trafficRoutePosition(restored),key=old.prev+':'+old.cell;
+        if(!restored||!route||!capacities.has(route.circuit)||states.some(other=>this.trafficCollision(restored.pose,other.pose)))continue;
+        Object.assign(old,restored);states.push(old);used.add(key);capacities.set(route.circuit,capacities.get(route.circuit)+1);
+      }
+      const allocations=new Map(capacities);
+      while(Array.from(allocations.values()).reduce((sum,value)=>sum+value,0)<count){
+        const candidates=routes.filter(route=>allocations.get(route)<route.capacity);if(!candidates.length)break;
+        candidates.sort((a,b)=>(allocations.get(a)+1)/a.length-(allocations.get(b)+1)/b.length||a.key.localeCompare(b.key));const route=candidates[0];allocations.set(route,allocations.get(route)+1);
+      }
+      for(const route of routes){
+        const assigned=allocations.get(route),existing=capacities.get(route);if(assigned<=existing)continue;
+        const phase=hash(seed*13+route.segments[0].prev*71+route.segments[0].cell*193)*route.length;
+        for(let slot=0,attempts=0;capacities.get(route)<assigned&&attempts<assigned*12;slot++,attempts++){
+          const distance=(phase+(slot+.5)*route.length/assigned+(Math.floor(slot/assigned)*.173))%route.length;
+          const segment=route.segments.find(part=>distance<part.start+part.length)||route.segments[route.segments.length-1],key=segment.prev+':'+segment.cell;
+          if(used.has(key))continue;
+          const state=this.makeTrafficState(segment.prev,segment.cell,segment.next,seed*131+states.length,distance-segment.start),position=this.trafficRoutePosition(state);
+          if(states.some(other=>{const otherRoute=this.trafficRoutePosition(other);if(otherRoute?.circuit===route){const delta=Math.abs(otherRoute.distance-position.distance);if(Math.min(delta,route.length-delta)<.9)return true;}return this.trafficCollision(state.pose,other.pose);}))continue;
+          states.push(state);used.add(key);capacities.set(route,capacities.get(route)+1);
+        }
+      }
+      this.carStates=states;const transforms=states.map(()=>[0,0,0,.18,.105,.34]),colors=states.map((state,k)=>[0xc6d2d2,0xaeb8b5,0xd8d4c6,0xa85245,0x506f85,0xc8a760][k%6]);
+      this.carBodies=this.batch(this.box,this.materials.car,transforms,colors);this.carCabins=this.batch(this.box,this.materials.carGlass,transforms);this.carLights=this.batch(this.box,this.materials.light,transforms);
+      if(this.carBodies){this.world.add(this.carBodies,this.carCabins,this.carLights);for(const mesh of [this.carBodies,this.carCabins,this.carLights])mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);this.writeTrafficTransforms();this.setTraffic(this.trafficVisible);}
     }
-    updateTraffic(dt){
-      if(!this.carBodies||!this.trafficVisible)return;const n=this.size;
-      this.carStates.forEach((c,k)=>{
-        c.t+=dt*(this.terrain[c.b]===2?1.7:this.terrain[c.b]===3?.32:.8);
-        if(c.t>=1||c.a===c.b){c.prev=c.a;c.a=c.b;const row=Math.floor(c.a/n),col=c.a%n,neighbors=[];if(row)neighbors.push(c.a-n);if(row<n-1)neighbors.push(c.a+n);if(col)neighbors.push(c.a-1);if(col<n-1)neighbors.push(c.a+1);let available=neighbors.filter(i=>this.isDeveloped(i)&&this.terrain[i]!==1&&this.terrain[i]!==4&&Math.abs(this.level(i)-this.level(c.a))<.3);if(available.length>1)available=available.filter(i=>i!==c.prev);c.b=available.length?available[Math.floor(hash(k*13+Math.floor(this.elapsed*2))*available.length)]:c.a;c.t=0;}
-        const a=this.point(c.a,.09),b=this.point(c.b,.09),direction=b.clone().sub(a),f=c.t,angle=Math.atan2(direction.x,direction.z);const x=a.x+(b.x-a.x)*f+Math.cos(angle)*.13,z=a.z+(b.z-a.z)*f-Math.sin(angle)*.13,y=a.y+(b.y-a.y)*f;
+    writeTrafficTransforms() {
+      if(!this.carBodies)return;
+      this.carStates.forEach((state,k)=>{
+        const pose=state.pose=this.sampleTrafficState(state),{x,y,z,angle,dx,dz}=pose;
         this.tmp.rotation.set(0,angle,0);this.tmp.position.set(x,y,z);this.tmp.scale.set(.18,.105,.34);this.tmp.updateMatrix();this.carBodies.setMatrixAt(k,this.tmp.matrix);
         this.tmp.position.y=y+.075;this.tmp.scale.set(.145,.065,.17);this.tmp.updateMatrix();this.carCabins.setMatrixAt(k,this.tmp.matrix);
-        this.tmp.position.set(x+Math.sin(angle)*.17,y+.02,z+Math.cos(angle)*.17);this.tmp.scale.set(.14,.025,.02);this.tmp.updateMatrix();this.carLights.setMatrixAt(k,this.tmp.matrix);
-      });this.carBodies.instanceMatrix.needsUpdate=true;this.carCabins.instanceMatrix.needsUpdate=true;this.carLights.instanceMatrix.needsUpdate=true;
+        this.tmp.position.set(x+dx*.17,y+.02,z+dz*.17);this.tmp.scale.set(.14,.025,.02);this.tmp.updateMatrix();this.carLights.setMatrixAt(k,this.tmp.matrix);
+      });
+      for(const mesh of [this.carBodies,this.carCabins,this.carLights])mesh.instanceMatrix.needsUpdate=true;
+    }
+    updateTraffic(dt){
+      if(!this.carBodies||!this.trafficVisible||this.reducedMotion||!Number.isFinite(dt)||dt<=0)return;
+      const time=Math.min(dt,2),steps=Math.ceil(time/(1/60)),step=time/steps;
+      for(let tick=0;tick<steps;tick++){
+        for(let k=0;k<this.carStates.length;k++){
+          const state=this.carStates[k];
+          if(!this.trafficNeighbors(state.cell).includes(state.prev)||!this.trafficNeighbors(state.cell).includes(state.next))continue;
+          const candidate={...state};if(!this.advanceTrafficState(candidate,step,this.trafficFollowingSpace(state)))continue;
+          if(this.carStates.some((other,index)=>index!==k&&this.trafficCollision(candidate.pose,other.pose)))continue;
+          Object.assign(state,candidate);
+        }
+      }
+      this.writeTrafficTransforms();
     }
     setMode(mode){
       this.mode=mode;const modes={day:{bg:0x263a47,sky:0xc7dfee,ground:0x5c6260,ambient:.7,sun:1.65,sunColor:0xfff0d7,rim:.35,emissive:.04,exposure:1.05},dusk:{bg:0x101b24,sky:0xaacfe1,ground:0x393b31,ambient:.5,sun:1.25,sunColor:0xffcda0,rim:.4,emissive:.28,exposure:1.08},night:{bg:0x080f19,sky:0x809fca,ground:0x17262e,ambient:.38,sun:.3,sunColor:0xb7d6ff,rim:.45,emissive:.75,exposure:1.2}};const c=modes[mode]||modes.dusk;
@@ -2910,6 +3556,32 @@ output { font-size: var(--type-label); font-weight: 500; }
     setCamera(name){this.cameraPreset=name;this.cameraFraming='explore';this.cameraTouched=false;this.fitCamera(name);}
     fitCity(){this.cameraFraming='fit';this.cameraTouched=false;this.fitCamera(this.cameraPreset);}
     setOrbit(value){this.controls.autoRotate=Boolean(value)&&!this.reducedMotion;}
+    getBearing(){
+      // The district's north is -Z. Bearing describes the viewing direction,
+      // so a camera east of its target looks west (270 degrees).
+      const x=this.camera.position.x-this.controls.target.x,z=this.camera.position.z-this.controls.target.z;
+      if(!Number.isFinite(x)||!Number.isFinite(z))return NaN;
+      if(Math.hypot(x,z)<1e-8)return 0;
+      const degrees=(THREE.MathUtils.radToDeg(Math.atan2(-x,z))+360)%360;
+      return degrees<1e-8||360-degrees<1e-8?0:degrees;
+    }
+    resetNorth(){
+      const target=this.controls.target.clone(),offset=this.camera.position.clone().sub(target);
+      if(![target.x,target.y,target.z,offset.x,offset.y,offset.z].every(Number.isFinite))return false;
+      const radius=Math.hypot(offset.x,offset.z),zoom=this.camera.zoom,damping=this.controls.enableDamping;
+      this.cameraTween=null;this.cameraTouched=true;this.controls.autoRotate=false;
+      // A disabled-damping update drains OrbitControls' pending rotation/pan
+      // through its public API. Restore the chosen framing before the next
+      // render, so inertia cannot pull the camera away from north afterward.
+      this.controls.enableDamping=false;
+      try{
+        this.controls.update();
+        this.controls.target.copy(target);this.camera.position.set(target.x,target.y+offset.y,target.z+radius);
+        if(this.camera.zoom!==zoom){this.camera.zoom=zoom;this.camera.updateProjectionMatrix();}
+        this.controls.update();
+      }finally{this.controls.enableDamping=damping;}
+      return true;
+    }
     setTool(tool){this.tool=tool;this.controls.mouseButtons.LEFT=tool==='view'?THREE.MOUSE.ROTATE:null;this.controls.touches.ONE=tool==='view'?THREE.TOUCH.ROTATE:null;this.canvas.style.cursor=tool==='view'?'grab':'crosshair';this.setBrush(this.brushSize);}
     setEditor(enabled,options={}){
       this.editorEnabled=Boolean(enabled);this.paintDown=false;this.lastPaintWorld=null;this.hover.visible=this.selection.visible=false;
@@ -2919,7 +3591,7 @@ output { font-size: var(--type-label); font-weight: 500; }
     }
     setBrush(size){this.brushSize=Math.max(1,Math.min(15,Math.round(Number(size)||1)));const footprint=this.editorEnabled&&this.tool!=='start'&&this.tool!=='goal'?this.brushSize:1;this.hover.scale.set(footprint,1,footprint);this.selection.scale.set(footprint,1,footprint);}
     setGridGuides(visible){this.gridGuides=Boolean(visible);if(this.gridLines)this.gridLines.visible=!this.freeBuild||this.gridGuides;}
-    setQuality(quality){this.quality=quality;this.renderer.setPixelRatio(Math.min(global.devicePixelRatio||1,quality==='high'?2:1.35));this.renderer.shadowMap.enabled=quality!=='low';const resolution=quality==='high'?2048:1024;if(this.sun.shadow.mapSize.x!==resolution){this.sun.shadow.mapSize.set(resolution,resolution);if(this.sun.shadow.map){this.sun.shadow.map.dispose();this.sun.shadow.map=null;}this.renderer.shadowMap.needsUpdate=true;}this.resize(this.width,this.height);}
+    setQuality(quality){this.quality=quality;this.renderer.setPixelRatio(Math.min(global.devicePixelRatio||1,quality==='high'?2:1.35));this.renderer.shadowMap.enabled=quality!=='low';const resolution=quality==='high'?2048:1024;if(this.sun.shadow.mapSize.x!==resolution){this.sun.shadow.mapSize.set(resolution,resolution);if(this.sun.shadow.map){this.sun.shadow.map.dispose();this.sun.shadow.map=null;}this.renderer.shadowMap.needsUpdate=true;}if(this.particleMesh)this.makeParticles();this.resize(this.width,this.height);}
     zoom(factor){if(!Number.isFinite(factor)||factor<=0)return;const offset=this.camera.position.clone().sub(this.controls.target),distance=Math.max(this.controls.minDistance,Math.min(this.controls.maxDistance,offset.length()/factor));offset.setLength(distance);this.cameraTween=null;this.cameraTouched=true;this.camera.position.copy(this.controls.target).add(offset);this.controls.update();}
     setTraffic(visible){this.trafficVisible=Boolean(visible);[this.carBodies,this.carCabins,this.carLights].forEach(m=>{if(m)m.visible=this.trafficVisible;});}
     resize(width,height){this.width=Math.max(1,width);this.height=Math.max(1,height);this.renderer.setSize(this.width,this.height,false);this.camera.aspect=this.width/this.height;this.camera.updateProjectionMatrix();this.scaleMarkerLabels();if(!this.cameraTouched)this.fitCamera(this.cameraPreset,false);}
@@ -2951,12 +3623,13 @@ output { font-size: var(--type-label); font-weight: 500; }
       const dt=Math.min(.05,Math.max(0,(time-this.lastTime)/1000||.016));this.lastTime=time;this.elapsed=(this.elapsed||0)+dt;this.frameCount++;if(time-this.fpsTime>650){this.fps=Math.round(this.frameCount*1000/(time-this.fpsTime));this.fpsTime=time;this.frameCount=0;}
       if(this.cameraTween){this.camera.position.lerp(this.cameraTween.position,.065);this.controls.target.lerp(this.cameraTween.target,.065);if(this.camera.position.distanceTo(this.cameraTween.position)<.03)this.cameraTween=null;}
       this.controls.update();if(!this.reducedMotion)this.updateTraffic(dt);
+      this.updateLandscape(dt);this.updateParticles(dt);
       const viewDistance=this.camera.position.distanceTo(this.controls.target),extent=this.size||30;this.scene.fog.near=Math.max(65,viewDistance+extent*.25);this.scene.fog.far=Math.max(135,viewDistance+extent*3);
-      if(this.routeAgent&&this.path&&this.routeDistance){let distance=(this.elapsed*2.1)%this.routeDistance,index=1;while(index<this.routeLengths.length-1&&this.routeLengths[index]<distance)index++;const a=this.routeLengths[index-1],b=this.routeLengths[index],f=(distance-a)/(b-a||1);this.routeAgent.position.copy(this.routePoints[index-1]).lerp(this.routePoints[index],f);this.routeAgent.position.y+=.035;}
-      this.markers.children.forEach((marker,i)=>{if(marker.userData.ring)marker.userData.ring.material.opacity=.8+.2*Math.sin(this.elapsed*2+i);});
+      if(this.routeAgent&&this.path&&this.routeDistance){if(!this.reducedMotion)this.routeTime=(this.routeTime||0)+dt;let distance=((this.routeTime||0)*2.1)%this.routeDistance,index=1;while(index<this.routeLengths.length-1&&this.routeLengths[index]<distance)index++;const a=this.routeLengths[index-1],b=this.routeLengths[index],f=(distance-a)/(b-a||1);this.routeAgent.position.copy(this.routePoints[index-1]).lerp(this.routePoints[index],f);this.routeAgent.position.y+=.035;if(this.routeHalo)this.routeHalo.scale.setScalar(this.reducedMotion?1:1+.1*Math.sin(this.routeTime*3));}
+      this.markers.children.forEach((marker,i)=>{if(marker.userData.ring)marker.userData.ring.material.opacity=this.reducedMotion?1:.8+.2*Math.sin(this.elapsed*2+i);});
       this.renderer.render(this.scene,this.camera);this.stats={fps:this.fps,drawCalls:this.renderer.info.render.calls,triangles:this.renderer.info.render.triangles};
     }
-    destroy(){this.alive=false;cancelAnimationFrame(this.animationFrame);if(this.pendingRebuild)clearTimeout(this.pendingRebuild);this.events.forEach(([type,fn,opts])=>this.canvas.removeEventListener(type,fn,opts));this.controls.dispose();this.clear(this.world);this.clear(this.route);this.clear(this.markers);this.clear(this.overlay);this.renderer.dispose();}
+    destroy(){this.alive=false;cancelAnimationFrame(this.animationFrame);if(this.pendingRebuild)clearTimeout(this.pendingRebuild);this.events.forEach(([type,fn,opts])=>this.canvas.removeEventListener(type,fn,opts));this.controls.dispose();this.clear(this.world);this.clear(this.route);this.clear(this.markers);this.clear(this.overlay);if(this.landscape)this.clear(this.landscape);if(this.particles)this.clear(this.particles);this.landscapeMesh=this.particleMesh=this.routeAgent=this.routeHalo=null;this.renderer.dispose();}
   }
   global.MetroCity=MetroCity;
 })(typeof window!=='undefined'?window:globalThis);
@@ -3308,7 +3981,7 @@ output { font-size: var(--type-label); font-weight: 500; }
   const $ = id => document.getElementById(id), E = globalThis.MetroEngine;
   const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"/></svg>`;
   const escape = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const names = {freebuild:'Free Build Canvas',downtown:'New Metro District',manhattan:'Manhattan Quarter',recursive:'The Labyrinth',maze:'The Labyrinth',terrain:'Highland District',perlin:'Highland District',empty:'A Blank Canvas',corridor:'The Long Way',spiral:'Spiral District',rooms:'Connected Quarters',cross:'The Crossroads',random:'Uncharted City',snake:'Serpentine District',grid:'The Grid'};
+  const names = {freebuild:'Free Build Canvas',downtown:'Downtown',manhattan:'Manhattan Quarter',recursive:'The Labyrinth',maze:'The Labyrinth',terrain:'Highland District',perlin:'Highland District',empty:'A Blank Canvas',corridor:'The Long Way',spiral:'Spiral District',rooms:'Connected Quarters',cross:'The Crossroads',random:'Uncharted City',snake:'Serpentine District',grid:'The Grid'};
   const descriptions = {
     astar:['HEURISTIC SEARCH','Optimal*','Balances the journey so far with the distance ahead. A smart starting point for city routing.','f(n) = g(n) + w · h(n)'],
     dijkstra:['UNIFORM COST','Optimal','Follows the lowest travel cost. Finds the cheapest route across every kind of terrain.','f(n) = g(n)'],
@@ -3326,7 +3999,12 @@ output { font-size: var(--type-label); font-weight: 500; }
   let accumulator = 0, lastFrame = 0, lastUI = 0, pendingEdits = new Set(), editTimer = null, endpointChanged = false;
   let policyResult = null, comparisonToken = 0, reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let editing=false,brushSize=1,buildUndo=[],buildRedo=[],strokeBefore=null,strokeChanged=false,strokeLast=null,strokeLimitReported=false;
-  const settings = {quality:'balanced',traffic:!reducedMotion,reducedMotion};
+  const panelPins={'control-panel':false,'analytics-panel':false},panelFocus={'control-panel':null,'analytics-panel':null};
+  let mobilePanel='control-panel';
+  let compassAngle=null,compassLabel='';
+  let sidebarCollapsed=false;
+  try{sidebarCollapsed=localStorage.getItem('metromind-sidebar-collapsed')==='true';}catch{}
+  const settings = {quality:'balanced',traffic:!reducedMotion,reducedMotion,landscape:true,particles:true};
   const tools = [['view','move','Orbit city','V'],['wall','city','Add building','1'],['start','pin','Place origin','2'],['goal','flag','Place destination','3'],['erase','erase','Erase','4'],['highway','road','Highway · 0.5×','5'],['traffic','traffic','Traffic · 3×','6'],['mud','terrain','Mud · 10×','7'],['raise','plus','Raise elevation','8'],['lower','minus','Lower elevation','9'],['road','road','Draw street','P']];
   const setText = (id,value) => { $(id).textContent = value; };
   function log(message,type='info') {
@@ -3341,11 +4019,42 @@ output { font-size: var(--type-label); font-weight: 500; }
   function setRunButton(){const active=learning?training:playing;$('run-btn').innerHTML=icon(active?'pause':'play')+`<span>${learning?(active?'Pause training':'Train agent'):(active?'Pause simulation':'Run simulation')}</span><kbd>␣</kbd>`;$('run-btn').setAttribute('aria-label',learning?(active?'Pause training':'Train agent'):(active?'Pause simulation':'Run simulation'));}
   function options(){return {diagonal:$('diagonal').checked,heuristic:$('heuristic').value,weight:Number($('weight').value)};}
   function makeSearch(){search=new E.SearchSession(grid,$('algorithm').value,options());pulse=[];announced=false;policyResult=null;if(search.note){log(search.note);message(search.note);}return search;}
-  function updateAlgorithm(){const key=$('algorithm').value,d=descriptions[key];setText('algorithm-type',d[0]);setText('algorithm-badge',d[1]);setText('algorithm-description',d[2]);setText('algorithm-formula',d[3]);setText('footer-algorithm',E.algorithms[key].name.toUpperCase());setText('quick-algorithm-name',learning?'Q-learning':E.algorithms[key].name);const disabled=['bfs','dfs','dijkstra','bidir','dstar'].includes(key);$('heuristic').disabled=disabled;$('weight').disabled=disabled;globalThis.MetroSelect?.sync();}
+  function placeFloatingControls(){
+    const bar=$('map-commandbar'),searchControls=$('command-search'),learningControls=$('command-learning'),speedControls=$('command-speed'),environment=$('map-environment');
+    const controlsVisible=document.body.classList.contains('controls-open'),focused=document.body.classList.contains('immersive');
+    if(controlsVisible){
+      if(searchControls.parentElement!==$('algorithm-slot'))$('algorithm-slot').append(searchControls);
+      if(speedControls.parentElement!==$('speed-slot'))$('speed-slot').append(speedControls);
+      if(environment.parentElement!==$('environment-slot'))$('environment-slot').append(environment);
+    }else{
+      if(searchControls.parentElement!==bar)bar.insertBefore(searchControls,learningControls);
+      if(speedControls.parentElement!==bar)bar.append(speedControls);
+      if(environment.parentElement!==$('viewport'))$('viewport').append(environment);
+    }
+    bar.hidden=controlsVisible||focused;
+    environment.hidden=editing||focused;
+  }
+  function syncQuickControls(){
+    $('command-search').hidden=learning;$('command-learning').hidden=!learning;
+    $('quick-diagonal').checked=$('diagonal').checked;$('quick-replan').checked=$('live-replan').checked;$('quick-episodes').value=$('episodes').value;
+    updateSpeed();
+    placeFloatingControls();
+  }
+  function updateSpeed(){
+    const input=$('speed'),value=Number(input.value),min=Number(input.getAttribute('min')),max=Number(input.getAttribute('max'));
+    input.style.setProperty('--range-fill',Math.max(0,Math.min(100,(value-min)/(max-min)*100))+'%');
+    const unit=value===1?'step':'steps';input.setAttribute('aria-valuetext',value+' '+unit+' per second');setText('speed-value',value+' '+unit+'/s');
+  }
+  function changeSearchSettings(id){
+    if(id==='diagonal'&&learner){training=false;learner=null;policyResult=null;clearLearningStats();}
+    syncQuickControls();resetSearch('Search settings updated.');refreshLayer();
+  }
+  function updateAlgorithm(){const key=$('algorithm').value,d=descriptions[key];setText('algorithm-type',d[0]);setText('algorithm-badge',d[1]);setText('algorithm-description',d[2]);setText('algorithm-formula',d[3]);setText('footer-algorithm',E.algorithms[key].name.toUpperCase());const disabled=['bfs','dfs','dijkstra','bidir','dstar'].includes(key);$('heuristic').disabled=disabled;$('weight').disabled=disabled;globalThis.MetroSelect?.sync();}
   function resetSearch(text='Path cleared. Your city is ready for a new journey.',quiet=false){playing=false;search=null;policyResult=null;pulse=[];announced=false;city?.setSearch(new Set(),new Set(),null);setState('Ready');setRunButton();renderStats();drawPulse();drawMinimap();if(text)message(text);if(!quiet)log(text);}
-  function selectTab(value){if(value===learning)return;playing=false;training=false;learning=value;document.body.classList.toggle('learning-mode',value);setText('quick-algorithm-name',value?'Q-learning':E.algorithms[$('algorithm').value].name);$('quick-algorithm').setAttribute('aria-label',value?'Agent settings':'Choose search algorithm');$('tab-search').classList.toggle('active',!value);$('tab-learning').classList.toggle('active',value);$('tab-search').setAttribute('aria-selected',String(!value));$('tab-learning').setAttribute('aria-selected',String(value));$('search-settings').hidden=value;$('learning-settings').hidden=!value;$('rl-results').hidden=!value;$('nav-simulation').classList.toggle('active',!value);$('nav-learning').classList.toggle('active',value);setRunButton();setState('Ready');city?.setSearch(value?new Set():search?.visited||new Set(),value?new Set():search?.frontier||new Set(),value?policyResult?.path||null:search?.path||null);refreshLayer();renderStats();drawMinimap();drawPulse();}
-  function selectTool(value){tool=value;document.querySelectorAll('[data-tool]').forEach(b=>{b.classList.toggle('active',b.dataset.tool===value);b.setAttribute('aria-pressed',String(b.dataset.tool===value));});if(['highway','traffic','mud','raise','lower'].includes(value)){$('map-tools').classList.add('expanded');$('tools-expand').setAttribute('aria-expanded','true');}city?.setTool(value);if(value!=='view')message(`${tools.find(t=>t[0]===value)[2]}. Click or drag across the city to edit.`);updateBuilder();}
-  function refreshLayer(){if(!city)return;if(learning&&( $('heatmap').checked||$('policy-arrows').checked)&&learner){city.setLayer('policy',{heat:learner.heat,showHeat:$('heatmap').checked,policy:$('policy-arrows').checked?learner.policy:null});}else city.setLayer(layer,{heat:[],policy:null});}
+  function selectTab(value){if(value===learning)return;playing=false;training=false;learning=value;document.body.classList.toggle('learning-mode',value);$('tab-search').classList.toggle('active',!value);$('tab-learning').classList.toggle('active',value);$('tab-search').setAttribute('aria-selected',String(!value));$('tab-learning').setAttribute('aria-selected',String(value));$('search-settings').hidden=value;$('learning-settings').hidden=!value;$('rl-results').hidden=!value;$('nav-learning').classList.toggle('active',value);syncQuickControls();setRunButton();setState('Ready');city?.setSearch(value?new Set():search?.visited||new Set(),value?new Set():search?.frontier||new Set(),value?policyResult?.path||null:search?.path||null);refreshLayer();renderStats();drawMinimap();drawPulse();}
+  function setTerrainPalette(open,restoreFocus=false){const visible=!!open&&!editing;$('terrain-palette').hidden=!visible;$('tools-expand').setAttribute('aria-expanded',String(visible));if(!visible&&!editing&&['highway','traffic','mud','raise','lower','road'].includes(tool))selectTool('view');if(restoreFocus)$('tools-expand').focus();}
+  function selectTool(value){tool=value;document.querySelectorAll('[data-tool]').forEach(b=>{b.classList.toggle('active',b.dataset.tool===value);b.setAttribute('aria-pressed',String(b.dataset.tool===value));});if(!editing&&['highway','traffic','mud','raise','lower','road'].includes(value))setTerrainPalette(true);else if(!editing)setTerrainPalette(false);city?.setTool(value);if(value!=='view')message(`${tools.find(t=>t[0]===value)[2]}. Click or drag across the city to edit.`);updateBuilder();}
+  function refreshLayer(){if(!city)return;const learned=learning&&learner&&learner.version===grid.version;city.setLearningValues(learned?learner.heat:null,learned?learner.counts:null);if(learned&&($('heatmap').checked||$('policy-arrows').checked)){city.setLayer('policy',{heat:learner.heat,showHeat:$('heatmap').checked,policy:$('policy-arrows').checked?learner.policy:null});}else city.setLayer(layer,{heat:[],policy:null});}
   function flushEdits(){clearTimeout(editTimer);editTimer=null;if(!pendingEdits.size)return;const changes=Array.from(pendingEdits);pendingEdits.clear();city?.updateCells(changes);
     const hadSearch=!!search,wasPlaying=playing||!!search?.done;training=false;learner=null;policyResult=null;clearLearningStats();
     if(hadSearch&&$('live-replan').checked&&!endpointChanged){search.replan(changes);announced=false;playing=wasPlaying;pulse=[];log(`${search.algorithm==='dstar'?'Incremental repair':'Route recalculation'} · ${changes.length} edited cells.`);message(playing?'The city changed. Finding a new way through.':'City updated. Resume or step to repair the route.');}
@@ -3362,6 +4071,7 @@ output { font-size: var(--type-label); font-weight: 500; }
   function updateBuilder(){
     document.body.classList.toggle('free-building',editing);document.body.classList.toggle('free-world',!!grid.freeBuild);
     $('builder-workspace').hidden=!editing;$('free-build-btn').setAttribute('aria-pressed',String(editing));
+    if(editing)setTerrainPalette(false);$('free-build-btn').classList.toggle('active',editing);syncQuickControls();
     $('build-undo').disabled=!buildUndo.length;$('build-redo').disabled=!buildRedo.length;
     setText('build-area',grid.size+' × '+grid.size+' · auto-grow');
     $('grid-size').disabled=editing;
@@ -3377,10 +4087,10 @@ output { font-size: var(--type-label); font-weight: 500; }
   function cancelBuildQueue(){clearTimeout(editTimer);editTimer=null;pendingEdits.clear();strokeBefore=null;strokeLast=null;strokeChanged=false;strokeLimitReported=false;}
   function startFreeBuild(){
     if(editing){stopFreeBuild();return;}
-    flushEdits();editing=true;grid.enableFreeBuild(true);buildUndo=[];buildRedo=[];
+    flushEdits();setTerrainPalette(false);editing=true;grid.enableFreeBuild(true);buildUndo=[];buildRedo=[];
     city?.setEditor(true,{brushSize,showGrid:$('grid-guides').checked});city?.setGrid(grid);selectTool('road');
     resetSearch('',true);refreshLayer();syncGridInfo();updateBuilder();closeDrawers();
-    setText('build-help','You are editing this city. Draw beyond the edge, or choose New canvas to start fresh. Limit: 100 × 100 blocks.');
+    setText('build-help',`You are editing this city. Draw beyond the edge, or choose New canvas to start fresh. Limit: ${E.limits.freeBuild} × ${E.limits.freeBuild} blocks.`);
     message('Free Build is active. Drag to draw streets, place buildings, and expand the canvas.');log('Free Build editor opened.');
   }
   function stopFreeBuild(){finishBuildStroke();editing=false;city?.setEditor(false);selectTool('view');updateBuilder();message('Build complete. Your layout is ready to simulate.');log('Free Build editor closed.');}
@@ -3388,7 +4098,7 @@ output { font-size: var(--type-label); font-weight: 500; }
     finishBuildStroke();buildUndo.push(grid.serialize());if(buildUndo.length>30)buildUndo.shift();buildRedo=[];cancelBuildQueue();
     grid=new E.Grid(30).enableFreeBuild(false);preset='freebuild';editing=true;learner=null;clearLearningStats();comparisons=[];comparisonToken++;
     city?.setEditor(true,{brushSize,showGrid:$('grid-guides').checked});city?.setGrid(grid);selectTool('road');resetSearch('',true);refreshLayer();syncGridInfo();updateBuilder();closeDrawers();
-    setText('build-help','Draw a street between the two pins. Unbuilt ground is not a road. Your canvas expands as you draw (up to 100 × 100 blocks).');
+    setText('build-help',`Draw a street between the two pins. Unbuilt ground is not a road. Your canvas expands as you draw (up to ${E.limits.freeBuild} × ${E.limits.freeBuild} blocks).`);
     message('Blank Free Build canvas ready. Draw a road connecting origin and destination.');log('Blank Free Build canvas created.');
   }
   function restoreBuild(snapshot){
@@ -3429,9 +4139,9 @@ output { font-size: var(--type-label); font-weight: 500; }
     const element=$('cell-tooltip'),rect=$('viewport').getBoundingClientRect();element.hidden=false;element.innerHTML='UNBUILT GROUND<small>Draw a street or place a building.</small>';element.style.left=Math.max(12,Math.min(rect.width-210,event.clientX-rect.left+17))+'px';element.style.top=Math.max(50,Math.min(rect.height-70,event.clientY-rect.top+15))+'px';
   }
   function hover(index,event){if(index<0){$('cell-tooltip').hidden=true;setText('hover-coordinates',`${grid.size} × ${grid.size} CITY GRID`);return;}const r=(index/grid.size|0)+1,c=index%grid.size+1;setText('hover-coordinates',`BLOCK ${String(r).padStart(2,'0')} · AVE ${String(c).padStart(2,'0')}`);if(tool==='view'||!event){$('cell-tooltip').hidden=true;return;}const el=$('cell-tooltip'),rect=$('viewport').getBoundingClientRect();el.hidden=false;el.innerHTML=`${E.terrain[grid.types[index]].name.toUpperCase()} · ${r}, ${c}<small>${grid.types[index]===1?'Impassable':E.terrain[grid.types[index]].cost+'× travel cost'}${grid.elevations[index]?' · elevation '+grid.elevations[index].toFixed(1):''}</small>`;el.style.left=Math.max(52,Math.min(rect.width-150,event.clientX-rect.left+16))+'px';el.style.top=Math.max(45,Math.min(rect.height-70,event.clientY-rect.top-30))+'px';}
-  function syncGridInfo(){const n=grid.size,buildings=grid.types.reduce((a,t,i)=>a+(t===1&&(!grid.freeBuild||grid.developed[i])),0),walkable=grid.count-grid.types.reduce((a,t)=>a+(t===1),0);setText('city-name',(names[preset]||'Imported District')+'.');setText('scene-grid-label',`${grid.count.toLocaleString()} NODES`);setText('city-seed','SEED '+grid.seed);setText('minimap-size',`${n} × ${n}`);setText('walkable-label',walkable);setText('building-label',buildings+' buildings');setText('scene-grid-label',`${grid.count.toLocaleString()} NODES`);const sizeSelect=$('grid-size');if(sizeSelect.options&&!Array.from(sizeSelect.options).some(option=>option.value===String(n))){const option=document.createElement('option');option.value=String(n);option.textContent=n+' × '+n+' (custom)';sizeSelect.append(option);}sizeSelect.value=String(n);$('seed').value=grid.seed;document.querySelectorAll('[data-preset]').forEach(b=>b.classList.toggle('active',b.dataset.preset===preset));setText('origin-label',coordinates(grid.start));setText('goal-label',coordinates(grid.goal));setText('hover-coordinates',`${n} × ${n} CITY GRID`);globalThis.MetroSelect?.sync();updateBuilder();}
+  function syncGridInfo(){const n=grid.size,buildings=grid.types.reduce((a,t,i)=>a+(t===1&&(!grid.freeBuild||grid.developed[i])),0),walkable=grid.count-grid.types.reduce((a,t)=>a+(t===1),0);setText('city-name',names[preset]||'Imported District');setText('scene-grid-label',`${grid.count.toLocaleString()} NODES`);setText('city-seed','SEED '+grid.seed);setText('minimap-size',`${n} × ${n}`);setText('walkable-label',walkable);setText('building-label',buildings+' buildings');setText('scene-grid-label',`${grid.count.toLocaleString()} NODES`);const sizeSelect=$('grid-size');if(sizeSelect.options&&!Array.from(sizeSelect.options).some(option=>option.value===String(n))){const option=document.createElement('option');option.value=String(n);option.textContent=n+' × '+n+' (custom)';sizeSelect.append(option);}sizeSelect.value=String(n);$('seed').value=grid.seed;document.querySelectorAll('[data-preset]').forEach(b=>b.classList.toggle('active',b.dataset.preset===preset));setText('origin-label',coordinates(grid.start));setText('goal-label',coordinates(grid.goal));setText('hover-coordinates',`${n} × ${n} CITY GRID`);globalThis.MetroSelect?.sync();updateBuilder();}
   function coordinates(index){if(grid.freeBuild){const point=grid.cellToWorld(index);return 'X '+point.x.toFixed(1)+' · Z '+point.z.toFixed(1);}return `BLOCK ${String((index/grid.size|0)+1).padStart(2,'0')} · AVE ${String(index%grid.size+1).padStart(2,'0')}`;}
-  function generate(value=preset,newSeed=false){if(value==='freebuild'||(editing&&value==='empty')){newFreeCanvas();return;}finishBuildStroke();playing=training=false;preset=value;comparisons=[];comparisonToken++;const size=Number($('grid-size').value)||grid.size,seed=newSeed?Math.floor(Math.random()*999999)+1:Math.max(1,Math.min(999999,Number($('seed').value)||2084));grid=new E.Grid(size).generate(preset,seed);if(editing)grid.enableFreeBuild(true);buildUndo=[];buildRedo=[];learner=null;clearLearningStats();city?.setGrid(grid);refreshLayer();resetSearch('',true);syncGridInfo();renderStats();drawMinimap();message('A new city. A new set of possibilities. Press play to explore.');log(`${names[preset]||preset} generated · ${size} × ${size} · seed ${seed}.`);closeDrawers();}
+  function generate(value=preset,newSeed=false){if(value==='freebuild'||(editing&&value==='empty')){newFreeCanvas();return;}finishBuildStroke();playing=training=false;preset=value;comparisons=[];comparisonToken++;const size=Math.min(E.limits.grid,Number($('grid-size').value)||grid.size),seed=newSeed?Math.floor(Math.random()*999999)+1:Math.max(1,Math.min(999999,Number($('seed').value)||2084));grid=new E.Grid(size).generate(preset,seed);if(editing)grid.enableFreeBuild(true);buildUndo=[];buildRedo=[];learner=null;clearLearningStats();city?.setGrid(grid);refreshLayer();resetSearch('',true);syncGridInfo();renderStats();drawMinimap();message('A new city. A new set of possibilities. Press play to explore.');log(`${names[preset]||preset} generated · ${size} × ${size} · seed ${seed}.`);closeDrawers();}
   function toggleRun(){flushEdits();if(learning){toggleTraining();return;}if(playing){playing=false;setState('Paused');message('Paused. Step through each decision or resume the journey.');log('Search paused.');}else{if(!search||search.done)makeSearch();playing=true;accumulator=0;setState('Exploring');message('Exploring the city, one decision at a time.');log(`${E.algorithms[search.algorithm].name} started · ${options().diagonal?'8':'4'} directions.`);closeDrawers();}setRunButton();renderStats();}
   function finishSearch(){if(learning){toast('Switch to Pathfinding to finish a search.');return;}flushEdits();if(!search||search.done)makeSearch();playing=false;search.finish();renderSearch();setRunButton();}
   function stepSearch(){if(learning){if(!learner)makeLearner();training=false;learner.train(1);renderLearning();setRunButton();return;}flushEdits();playing=false;if(!search)makeSearch();if(!search.done){search.step();renderSearch();if(!search.done)setState('Paused');}setRunButton();}
@@ -3442,14 +4152,14 @@ output { font-size: var(--type-label); font-weight: 500; }
     renderStats();drawMinimap();drawPulse();
   }
   function renderStats(){const s=learning?null:search,visited=s?.visited.size||0,walkable=grid.count-grid.types.reduce((a,t)=>a+(t===1),0),path=learning?(policyResult?.reached?policyResult.path:null):s?.path,cost=learning?policyResult?.cost:s?.cost;const coverage=Math.min(100,visited/Math.max(1,walkable)*100);
-    $('stat-visited').innerHTML=visited.toLocaleString()+`<small>/ ${grid.count.toLocaleString()}</small>`;setText('stat-frontier',s?.frontier.size||0);setText('stat-path',path?path.length:'—');setText('stat-cost',path?Number(cost).toFixed(1):'—');$('stat-time').innerHTML=(s?.elapsed||0).toFixed(1)+'<small>ms</small>';$('stat-coverage').innerHTML=coverage.toFixed(1)+'<small>%</small>';$('coverage-bar').style.width=coverage+'%';setText('quick-visited',visited.toLocaleString());setText('quick-cost',path?Number(cost).toFixed(1):'—');document.body.classList.toggle('has-search',!!(visited||path));
+    $('stat-visited').innerHTML=visited.toLocaleString()+`<small>/ ${grid.count.toLocaleString()}</small>`;setText('stat-frontier',s?.frontier.size||0);setText('stat-path',path?path.length:'—');setText('stat-cost',path?Number(cost).toFixed(1):'—');$('stat-time').innerHTML=(s?.elapsed||0).toFixed(1)+'<small>ms</small>';$('stat-coverage').innerHTML=coverage.toFixed(1)+'<small>%</small>';$('coverage-bar').style.width=coverage+'%';document.body.classList.toggle('has-search',!!(visited||path));
     const cursor=s?.cursor||0,total=s?.history.length||0;setText('history-label',`STEP ${String(cursor).padStart(3,'0')} / ${String(total).padStart(3,'0')}`);$('history').max=Math.max(1,total);$('history').value=cursor;$('history').disabled=!total;$('back-btn').disabled=learning||!cursor;setText('playback-label',learning?(training?'AGENT IS LEARNING':'REINFORCEMENT LEARNING'):playing?'DISCOVERING THE WAY':s?.done?(s.path?'JOURNEY COMPLETE':'NO ROUTE FOUND'):cursor?'SEARCH PLAYBACK':'READY TO EXPLORE');setText('route-badge',learning&&policyResult?.reached?'POLICY FOUND':s?.done?(s.path?'CONNECTED':'NO ROUTE'):playing?'EXPLORING':cursor?'IN PROGRESS':'NOT STARTED');}
   function drawMinimap(canvas=$('minimap'),route=learning?policyResult?.path:search?.path,visited=learning?null:search?.visited,frontier=learning?null:search?.frontier){const x=canvas.getContext('2d'),w=canvas.width,h=canvas.height,n=grid.size;x.fillStyle='#101e19';x.fillRect(0,0,w,h);const cell=Math.min((w-24)/n,(h-18)/n),ox=(w-n*cell)/2,oy=(h-n*cell)/2,colors=['#30473d','#60746b','#41675b','#8e7750','#71624e'];for(let i=0;i<grid.count;i++){if(grid.freeBuild&&!grid.developed[i])continue;x.fillStyle=colors[grid.types[i]];if(visited?.has(i))x.fillStyle='#549488';if(frontier?.has(i))x.fillStyle='#d2ad70';x.fillRect(ox+(i%n)*cell,oy+(i/n|0)*cell,Math.max(1,cell-.5),Math.max(1,cell-.5));}if(route?.length){x.strokeStyle='#a9efc8';x.lineWidth=Math.max(1.2,cell*.42);x.lineJoin='round';x.beginPath();route.forEach((i,k)=>{const px=ox+(i%n+.5)*cell,py=oy+((i/n|0)+.5)*cell;k?x.lineTo(px,py):x.moveTo(px,py);});x.stroke();}[[grid.start,'#baf3d3'],[grid.goal,'#ddadc9']].forEach(([i,color])=>{x.fillStyle=color;x.beginPath();x.arc(ox+(i%n+.5)*cell,oy+((i/n|0)+.5)*cell,Math.max(2.4,cell*.65),0,Math.PI*2);x.fill();});}
   function drawPulse(){const c=$('pulse-chart'),x=c.getContext('2d'),w=c.width,h=c.height;x.clearRect(0,0,w,h);const data=learning?learner?.rewards||[]:pulse.map(v=>v[0]),second=learning?[]:pulse.map(v=>v[1]);setText('chart-title',learning?'REWARD CONVERGENCE':'SEARCH PULSE');setText('chart-value',learning?`${learner?.episodes||0} episodes`:`${search?.cursor||0} steps`);$('chart-key').innerHTML=learning?'<i></i> Episode reward':'<i></i> Explored <i></i> Frontier';if(data.length<2){x.strokeStyle='#668a7930';x.lineWidth=1;x.beginPath();x.moveTo(0,h-12);x.lineTo(w,h-12);x.stroke();return;}const all=data.concat(second),min=Math.min(0,...all),max=Math.max(1,...all),span=max-min||1;const line=(values,color,fill)=>{x.beginPath();values.forEach((v,i)=>{const px=i/(values.length-1)*w,py=h-10-(v-min)/span*(h-20);i?x.lineTo(px,py):x.moveTo(px,py);});x.strokeStyle=color;x.lineWidth=2;x.stroke();if(fill){x.lineTo(w,h);x.lineTo(0,h);x.closePath();const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#9ce7c61f');g.addColorStop(1,'#9ce7c600');x.fillStyle=g;x.fill();}};line(data,'#9ce7c6',true);if(second.length)line(second,'#d5b982',false);}
-  function makeLearner(){learner=new E.QLearner(grid,{alpha:Number($('alpha').value),gamma:Number($('gamma').value),epsilon:Number($('epsilon').value),decay:Number($('decay').value),maxSteps:Number($('max-steps').value),diagonal:$('diagonal').checked});policyResult=null;return learner;}
+  function makeLearner(){learner=new E.QLearner(grid,{alpha:Number($('alpha').value),gamma:Number($('gamma').value),epsilon:Number($('epsilon').value),decay:Number($('decay').value),maxSteps:Number($('max-steps').value),diagonal:$('diagonal').checked});policyResult=null;refreshLayer();return learner;}
   function toggleTraining(){if(training){training=false;setState('Paused');log('Agent training paused.');}else{validateLearning();if(!learner)makeLearner();if(learner.episodes>=Number($('episodes').value)){makeLearner();}training=true;playing=false;city?.setPath(null);setState('Learning');log(`Q-learning started · target ${$('episodes').value} episodes.`);message('Learning through the city. Each journey makes the next decision a little wiser.');closeDrawers();}setRunButton();}
   function validateLearning(){[['episodes',10,100000,3000],['max-steps',10,10000,900],['batch-size',1,100,10],['epsilon',.01,1,1]].forEach(([id,min,max,fallback])=>{const v=Number($(id).value);$(id).value=String(Math.max(min,Math.min(max,Number.isFinite(v)?v:fallback)));});}
-  function clearLearningStats(){['rl-episodes','rl-success'].forEach(id=>setText(id,'0'));setText('rl-reward','—');setText('rl-epsilon',Number($('epsilon').value).toFixed(3));setText('training-percent','0%');$('training-progress').value=0;}
+  function clearLearningStats(){city?.setLearningValues(null,null);['rl-episodes','rl-success'].forEach(id=>setText(id,'0'));setText('rl-reward','—');setText('rl-epsilon',Number($('epsilon').value).toFixed(3));setText('training-percent','0%');$('training-progress').value=0;}
   function renderLearning(){if(!learner)return;const max=Number($('episodes').value),last=learner.rewards.slice(-50),avg=last.reduce((a,b)=>a+b,0)/Math.max(1,last.length);setText('rl-episodes',learner.episodes.toLocaleString());setText('rl-epsilon',learner.epsilon.toFixed(3));setText('rl-reward',avg.toFixed(1));setText('rl-success',learner.successes.toLocaleString());setText('training-percent',Math.min(100,Math.round(learner.episodes/max*100))+'%');$('training-progress').max=max;$('training-progress').value=learner.episodes;refreshLayer();drawPulse();renderStats();if(learner.episodes>=max&&training){training=false;setRunButton();setState('Trained');message(`Training complete. ${learner.episodes.toLocaleString()} episodes, ${learner.successes.toLocaleString()} successful explorations. Test the learned policy.`);log(`Training complete · ${learner.episodes} episodes · avg reward ${avg.toFixed(1)}.`);toast('Training complete. Test what the agent learned.');}}
   function testPolicy(){training=false;setRunButton();if(!learner?.episodes){toast('Train the agent first, then test its policy.','warn');return;}if(learner.version!==grid.version){learner=null;toast('The city changed. Train a new policy first.','warn');return;}policyResult=learner.rollout();city?.setPath(policyResult.path);drawMinimap();renderStats();if(policyResult.reached){setState('Policy found');message(`The agent found its own way. Cost ${policyResult.cost.toFixed(2)}; learned policies do not guarantee optimality.`);log(`Learned policy reached destination · ${policyResult.path.length} cells.`);}else{setState('Keep learning');message(`The policy explored ${policyResult.path.length} cells, then stalled. Increase episodes or exploration and train again.`);log('Policy test stalled before destination. More training may help.','warn');toast('The agent needs more practice. Its partial route is shown.','warn');}}
   function download(filename,content,type){const url=URL.createObjectURL(new Blob([content],{type})),a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast(filename+' downloaded.');}
@@ -3465,7 +4175,16 @@ output { font-size: var(--type-label); font-weight: 500; }
   function showHelp(){const keys=[['Space','Run / pause search or training'],['S','Advance one search step'],['B','Step backward through history'],['F','Advance history / search'],['R','Reset the current path'],['X','Compare all nine algorithms'],['T','Switch to agent learning'],['G','Hide / show map controls'],['E','Open / close Free Build'],['P','Draw a street in Free Build'],['Ctrl+Z / Ctrl+Y','Undo / redo a build stroke'],['V','Orbit the city'],['1–4','Building · origin · goal · erase'],['5–7','Highway · traffic · mud'],['8 / 9','Raise / lower ground'],['Shift + draw','Temporarily erase'],['C','Choose a blank city'],['Esc','Close a dialog or drawer']];showModal('Make yourself at home.',`<p>Drag to orbit. Scroll to zoom. Right-drag to pan. Choose a map tool, then click or drag to shape your city. The minimap gives you a different perspective.</p><div class="shortcut-grid">${keys.map(([k,d])=>`<div class="shortcut-row"><span>${d}</span><kbd>${k}</kbd></div>`).join('')}</div>`);}
   function showLayers(){showModal('Read the city differently.',`<p>Choose what the ground reveals. Your architecture and journey remain in view.</p><div class="modal-grid">${[['base','city','Architecture','Clean streets and a detailed city.'],['search','route','Search activity','Explored cells and the active frontier.'],['cost','terrain','Terrain costs','Highway 0.5× · traffic 3× · mud 10×.']].map(([key,ic,title,desc])=>`<button class="action-card" data-layer="${key}">${icon(ic)}<strong>${title}${layer===key?' ✓':''}</strong><small>${desc}</small></button>`).join('')}</div><p style="margin:20px 0 0">The Learning tab offers Q-value heatmaps and policy arrows after training.</p>`);}
   function showWorkspaceMenu(){showModal('Your city workspace.',`<div class="modal-grid">${[['freebuild','road','Free Build','Draw roads, place buildings and expand the canvas.'],['simulation','route','Simulation','Algorithms, terrain and city generation.'],['learning','brain','Learning','Train an agent and explore its policy.'],['layers','layers','Map layers','Architecture, terrain costs and search activity.'],['display','settings','Display','Lighting, motion and rendering quality.'],['focus','focus','Focus on the city','Hide the interface. Press G or Escape to return.'],['help','help','Help & shortcuts','City navigation and keyboard controls.']].map(([key,ic,title,desc])=>`<button class="action-card" data-workspace="${key}">${icon(ic)}<strong>${title}</strong><small>${desc}</small></button>`).join('')}</div>`);}
-  function showSettings(){showModal('Set the atmosphere.',`<div class="display-settings"><label class="field-label" for="quality-setting">Rendering quality</label><div class="select-wrap compact"><select id="quality-setting"><option value="high">High · crisp shadows, full resolution</option><option value="balanced">Balanced · lighter rendering</option><option value="low">Performance · no shadows</option></select>${icon('chevron')}</div><label class="toggle-row"><span>Street traffic<small>Decorative vehicles follow passable streets.</small></span><input type="checkbox" id="traffic-setting" role="switch" ${settings.traffic?'checked':''}><i></i></label><label class="toggle-row"><span>Reduced motion<small>Keep the camera and vehicles still.</small></span><input type="checkbox" id="motion-setting" role="switch" ${settings.reducedMotion?'checked':''}><i></i></label><label class="toggle-row"><span>Automatic orbit<small>A slow, changing perspective of the district.</small></span><input type="checkbox" id="orbit-setting" role="switch" ${orbit?'checked':''}><i></i></label><p class="settings-note">Everything runs in this browser. The standalone HTML includes its 3D engine and assets, so you can explore offline.</p></div>`);$('quality-setting').value=settings.quality;globalThis.MetroSelect?.sync($('modal'));$('quality-setting').onchange=e=>{settings.quality=e.target.value;city?.setQuality(settings.quality);};$('traffic-setting').onchange=e=>{settings.traffic=e.target.checked;city?.setTraffic(settings.traffic&&!settings.reducedMotion);};$('motion-setting').onchange=e=>{settings.reducedMotion=e.target.checked;document.body.classList.toggle('reduced-motion',settings.reducedMotion);if(city){city.reducedMotion=settings.reducedMotion;city.setTraffic(settings.traffic&&!settings.reducedMotion);city.setOrbit(orbit);}};$('orbit-setting').onchange=e=>setOrbit(e.target.checked);}
+  function showSettings(){
+    showModal('Display',`<div class="display-settings"><label class="field-label" for="quality-setting">Rendering quality</label><div class="select-wrap compact"><select id="quality-setting"><option value="high">High · crisp shadows, full resolution</option><option value="balanced">Balanced · lighter rendering</option><option value="low">Performance · no shadows</option></select>${icon('chevron')}</div><label class="toggle-row"><span>Street traffic<small>Decorative vehicles follow passable streets.</small></span><input type="checkbox" id="traffic-setting" role="switch" ${settings.traffic?'checked':''}><i></i></label><label class="toggle-row"><span>Q-value landscape<small>Live training columns: height shows |Q|; mint is positive, violet is negative.</small></span><input type="checkbox" id="landscape-setting" role="switch" ${settings.landscape?'checked':''}><i></i></label><label class="toggle-row"><span>Floating particles<small>Coloured lights drift above the district.</small></span><input type="checkbox" id="particles-setting" role="switch" ${settings.particles?'checked':''}><i></i></label><label class="toggle-row"><span>Reduced motion<small>Pause the camera, vehicles, particles and route dot.</small></span><input type="checkbox" id="motion-setting" role="switch" ${settings.reducedMotion?'checked':''}><i></i></label><label class="toggle-row"><span>Automatic orbit<small>A slow, changing perspective of the district.</small></span><input type="checkbox" id="orbit-setting" role="switch" ${orbit?'checked':''}><i></i></label><p class="settings-note">Everything runs in this browser. The standalone HTML includes its 3D engine and assets, so you can explore offline.</p></div>`);
+    $('quality-setting').value=settings.quality;globalThis.MetroSelect?.sync($('modal'));
+    $('quality-setting').onchange=e=>{settings.quality=e.target.value;city?.setQuality(settings.quality);};
+    $('traffic-setting').onchange=e=>{settings.traffic=e.target.checked;city?.setTraffic(settings.traffic);};
+    $('landscape-setting').onchange=e=>{settings.landscape=e.target.checked;city?.setLandscape(settings.landscape);refreshLayer();};
+    $('particles-setting').onchange=e=>{settings.particles=e.target.checked;city?.setParticles(settings.particles);};
+    $('motion-setting').onchange=e=>{settings.reducedMotion=e.target.checked;document.body.classList.toggle('reduced-motion',settings.reducedMotion);if(city){city.reducedMotion=settings.reducedMotion;city.setTraffic(settings.traffic);city.setParticles(settings.particles);city.setLandscape(settings.landscape);city.setOrbit(orbit);refreshLayer();}};
+    $('orbit-setting').onchange=e=>setOrbit(e.target.checked);
+  }
   async function compare(){flushEdits();if(learning)selectTab(false);showModal('Nine minds. One city.',`<p>Running every algorithm on the same city, endpoints, and movement settings.</p><div class="comparison-loading"><span class="loading-mark" style="margin:35px auto"></span></div>`,true);comparisons=[];const token=comparisonToken,snapshot=E.Grid.fromJSON(grid.serialize()),searchOptions=options(),results=[];
     for(const algorithm of Object.keys(E.algorithms)){await new Promise(resolve=>setTimeout(resolve,0));if(token!==comparisonToken||!$('modal').open)return;const s=new E.SearchSession(snapshot,algorithm,searchOptions);s.finish();results.push({algorithm,visited:s.visited.size,frontier:s.frontier.size,path:s.path?.length||0,cost:s.path?s.cost:Infinity,ms:s.elapsed,route:s.path,note:s.note,seed:snapshot.seed,size:snapshot.size});}comparisons=results;
     const reachable=comparisons.filter(r=>r.path),cheapest=Math.min(...reachable.map(r=>r.cost)),fewest=Math.min(...reachable.map(r=>r.visited)),maxNodes=Math.max(1,...comparisons.map(r=>r.visited)),minMS=Math.min(...reachable.map(r=>r.ms));const minCostRow=reachable.find(r=>r.cost===cheapest),minNodesRow=reachable.find(r=>r.visited===fewest);
@@ -3474,47 +4193,111 @@ output { font-size: var(--type-label); font-weight: 500; }
   function loadMenu(){let saved=false;try{saved=!!localStorage.getItem('metromind-city-studio');}catch{}showModal('Return to a world.',`<p>Open a City Studio layout, the original 3D format, or a v11 grid export. Rectangular v11 grids retain their layout with blocked padding.</p><div class="modal-grid"><button class="action-card" data-action="import-file">${icon('upload')}<strong>Import a city</strong><small>Choose a JSON layout from your device.</small><span class="filetype">3D + V11 SUPPORTED</span></button><button class="action-card" data-action="load-local" ${saved?'':'disabled'}>${icon('save')}<strong>Saved workspace</strong><small>${saved?'Continue from your last local save.':'No city has been saved in this browser yet.'}</small><span class="filetype">LOCAL BROWSER STORAGE</span></button><button class="action-card" data-action="new-city">${icon('plus')}<strong>Start fresh</strong><small>A new downtown district, full of possibility.</small><span class="filetype">NEW CITY</span></button></div>`);}
   function importCity(content){try{const imported=E.Grid.fromJSON(content);flushEdits();playing=training=false;cancelBuildQueue();grid=imported;preset=grid.preset;editing=!!grid.freeBuild;buildUndo=[];buildRedo=[];city?.setEditor(editing,{brushSize,showGrid:$('grid-guides').checked});learner=null;search=null;policyResult=null;clearLearningStats();comparisons=[];city?.setGrid(grid);selectTool(editing?'road':'view');refreshLayer();resetSearch('',true);syncGridInfo();renderStats();drawMinimap();closeModal();const text=grid.importNote||'Your city is ready. Welcome back.';message(text);toast(text);log('City layout imported. '+grid.importNote);}catch(error){toast(error.message||'This city layout could not be opened.','warn');}}
   function setCamera(value){city?.setCamera(value);document.querySelectorAll('[data-camera]').forEach(b=>b.classList.toggle('active',b.dataset.camera===value));setText('view-name',({isometric:'PERSPECTIVE',top:'TOP-DOWN',street:'STREET LEVEL'})[value]);}
-  function setOrbit(value){orbit=value;city?.setOrbit(value);$('orbit-btn').classList.toggle('active',value);$('orbit-btn').setAttribute('aria-pressed',String(value));}
-  let drawerFocus=null;
-  function syncDrawers(){
-    const controls=$('control-panel').classList.contains('open'),insights=$('analytics-panel').classList.contains('open');
-    document.body.classList.toggle('controls-open',controls);document.body.classList.toggle('insights-open',insights);
-    [['toggle-controls',controls],['nav-simulation',controls&&!learning],['nav-learning',controls&&learning],['quick-algorithm',controls],['toggle-analytics',insights]].forEach(([id,open])=>$(id).setAttribute('aria-expanded',String(open)));
-    $('control-panel').setAttribute('aria-hidden',String(!controls));$('analytics-panel').setAttribute('aria-hidden',String(!insights));
-    $('drawer-backdrop').hidden=innerWidth>820||!(controls||insights);
+  function updateCompass(){
+    const bearing=city?.getBearing?.(),button=$('compass');
+    button.disabled=!Number.isFinite(bearing);
+    if(button.disabled)return;
+    const angle=((bearing%360)+360)%360,label=String(Math.round(angle)%360).padStart(3,'0')+'°';
+    if(angle!==compassAngle){$('compass-needle').style.transform=`rotate(${-angle}deg)`;compassAngle=angle;}
+    if(label!==compassLabel){setText('compass-bearing',label);button.title=`Bearing ${label} · Reset north`;button.setAttribute('aria-label',`Camera bearing ${label}. Reset bearing to north.`);compassLabel=label;}
   }
-  function closeDrawers(restoreFocus=true){globalThis.MetroSelect?.closeAll();const wasOpen=$('control-panel').classList.contains('open')||$('analytics-panel').classList.contains('open');$('control-panel').classList.remove('open');$('analytics-panel').classList.remove('open');syncDrawers();if(wasOpen&&restoreFocus&&drawerFocus)drawerFocus.focus();}
-  function openDrawer(id){const was=$(id).classList.contains('open');const trigger=document.activeElement;closeDrawers(false);if(!was){document.body.classList.remove('immersive');$('restore-map-ui').hidden=true;$('fullscreen-btn').setAttribute('aria-pressed','false');drawerFocus=trigger;$(id).classList.add('open');syncDrawers();$(id==='control-panel'?'close-controls':'close-analytics').focus();}else if(trigger)trigger.focus();}
+  function setOrbit(value){orbit=value;city?.setOrbit(value);$('orbit-btn').classList.toggle('active',value);$('orbit-btn').setAttribute('aria-pressed',String(value));}
+  function syncSidebar(){
+    const visible=!sidebarCollapsed&&innerWidth>570&&!document.body.classList.contains('immersive'),button=$('sidebar-toggle'),rail=$('workspace-sidebar');
+    document.body.classList.toggle('sidebar-collapsed',sidebarCollapsed);rail.inert=!visible;rail.setAttribute('aria-hidden',String(!visible));
+    button.disabled=innerWidth<=570;button.setAttribute('aria-expanded',String(visible));button.setAttribute('aria-label',visible?'Hide sidebar':'Show sidebar');button.title=visible?'Hide sidebar':'Show sidebar';
+  }
+  function toggleSidebar(){
+    sidebarCollapsed=!sidebarCollapsed;
+    try{localStorage.setItem('metromind-sidebar-collapsed',String(sidebarCollapsed));}catch{}
+    syncSidebar();requestAnimationFrame(resize);
+  }
+  function syncDrawers(){
+    syncSidebar();
+    const narrow=innerWidth<=820,focused=document.body.classList.contains('immersive');
+    if(!$(mobilePanel).classList.contains('open'))mobilePanel=$('control-panel').classList.contains('open')?'control-panel':'analytics-panel';
+    const visible={};
+    for(const id of ['control-panel','analytics-panel']){
+      const panel=$(id),open=panel.classList.contains('open'),suspended=narrow&&open&&mobilePanel!==id,pin=id==='control-panel'?'pin-controls':'pin-insights',name=id==='control-panel'?'controls':'insights';
+      panel.classList.toggle('pinned',panelPins[id]);panel.classList.toggle('mobile-front',narrow&&open&&!suspended);panel.classList.toggle('mobile-suspended',suspended);
+      visible[id]=open&&!suspended&&!focused;panel.setAttribute('aria-hidden',String(!visible[id]));
+      $(pin).setAttribute('aria-pressed',String(panelPins[id]));$(pin).setAttribute('aria-label',(panelPins[id]?'Unpin ':'Pin ')+name);$(pin).title=panelPins[id]?'Allow '+name+' to close automatically':'Keep '+name+' open';
+      document.body.classList.toggle(name+'-pinned',panelPins[id]);document.body.classList.toggle(name+'-open',visible[id]);
+    }
+    [['nav-simulation',visible['control-panel']],['nav-learning',visible['control-panel']&&learning],['toggle-analytics',visible['analytics-panel']]].forEach(([id,open])=>$(id).setAttribute('aria-expanded',String(open)));
+    $('nav-simulation').classList.toggle('active',visible['control-panel']);
+    $('toggle-analytics').classList.toggle('active',visible['analytics-panel']);
+    $('drawer-backdrop').hidden=!narrow||focused||!Object.keys(visible).some(id=>visible[id]&&!panelPins[id]);
+    placeFloatingControls();
+  }
+  function closeDrawers(restoreFocus=true){
+    globalThis.MetroSelect?.closeAll();let focus=null;
+    for(const id of ['control-panel','analytics-panel'])if(!panelPins[id]&&$(id).classList.contains('open')){$(id).classList.remove('open');focus=panelFocus[id];}
+    syncDrawers();if(restoreFocus&&focus)focus.focus();
+  }
+  function closePanel(id){
+    panelPins[id]=false;$(id).classList.remove('open');syncDrawers();
+    (panelFocus[id]||$(id==='control-panel'?'nav-simulation':'toggle-analytics')).focus();
+  }
+  function togglePanelPin(id){
+    panelPins[id]=!panelPins[id];if(panelPins[id]){$(id).classList.add('open');mobilePanel=id;}syncDrawers();
+  }
+  function openDrawer(id){
+    const was=$(id).classList.contains('open')&&!$(id).classList.contains('mobile-suspended'),trigger=document.activeElement;
+    setTerrainPalette(false);globalThis.MetroSelect?.closeAll();
+    for(const other of ['control-panel','analytics-panel'])if(other!==id&&!panelPins[other])$(other).classList.remove('open');
+    if(was&&!panelPins[id]){$(id).classList.remove('open');syncDrawers();trigger?.focus();return;}
+    document.body.classList.remove('immersive');$('restore-map-ui').hidden=true;$('fullscreen-btn').setAttribute('aria-pressed','false');
+    panelFocus[id]=trigger;mobilePanel=id;$(id).classList.add('open');syncDrawers();$(id==='control-panel'?'close-controls':'close-analytics').focus();
+  }
   function immersive(){const focused=document.body.classList.toggle('immersive');closeDrawers(false);$('restore-map-ui').hidden=!focused;$('fullscreen-btn').setAttribute('aria-pressed',String(focused));requestAnimationFrame(resize);}
   function resize(){const el=$('viewport');city?.resize(el.clientWidth,el.clientHeight);}
-  tools.forEach(([key,ic,title,shortcut],i)=>{if(i===5||i===8){const sep=document.createElement('div');sep.className='tool-separator advanced-tool';$('map-tools').append(sep);}const b=document.createElement('button');b.className='map-tool'+(i===0?' active':'')+(i>=5?' advanced-tool':'');b.dataset.tool=key;b.dataset.tooltip=`${title} · ${shortcut}`;b.setAttribute('aria-label',title);b.setAttribute('aria-pressed',String(i===0));b.innerHTML=icon(ic);b.onclick=()=>selectTool(key);$('map-tools').append(b);});
-  $('tools-expand').onclick=()=>{const expanded=$('map-tools').classList.toggle('expanded');$('tools-expand').setAttribute('aria-expanded',String(expanded));if(!expanded&&['highway','traffic','mud','raise','lower'].includes(tool))selectTool('view');};
+  tools.forEach(([key,ic,title,shortcut],i)=>{const b=document.createElement('button'),advanced=i>=5;b.className=advanced?'terrain-tool':'map-tool'+(i===0?' active':'');b.dataset.tool=key;b.dataset.tooltip=`${title} · ${shortcut}`;b.setAttribute('aria-label',title);b.setAttribute('aria-pressed',String(i===0));const cost=({road:'1× cost',highway:'0.5× cost',traffic:'3× cost',mud:'10× cost',raise:'+0.5 height',lower:'−0.5 height'})[key];b.innerHTML=icon(ic)+(advanced?`<span class="tool-copy"><span class="tool-name">${title.split(' · ')[0]}</span><small class="tool-cost">${cost} · ${shortcut}</small></span>`:'');b.onclick=()=>selectTool(key);$(advanced?(['raise','lower'].includes(key)?'terrain-elevation':'terrain-surfaces'):'map-tools').append(b);});
+  $('tools-expand').onclick=()=>setTerrainPalette($('terrain-palette').hidden);
+  $('terrain-close').onclick=()=>setTerrainPalette(false,true);
   $('run-btn').onclick=toggleRun;$('step-btn').onclick=stepSearch;$('back-btn').onclick=backSearch;$('finish-btn').onclick=finishSearch;$('reset-btn').onclick=()=>{training=false;resetSearch();refreshLayer();};$('history').oninput=seekHistory;
-  $('tab-search').onclick=()=>{selectTab(false);syncDrawers();};$('tab-learning').onclick=()=>{selectTab(true);syncDrawers();};$('nav-simulation').onclick=()=>{const same=!learning;selectTab(false);if(!same&&$('control-panel').classList.contains('open'))syncDrawers();else openDrawer('control-panel');};$('nav-learning').onclick=()=>{const same=learning;selectTab(true);if(!same&&$('control-panel').classList.contains('open'))syncDrawers();else openDrawer('control-panel');};
-  $('algorithm').onchange=()=>{updateAlgorithm();resetSearch('Algorithm changed. A new perspective on the same city.');};['heuristic','weight','diagonal'].forEach(id=>$(id).addEventListener('change',()=>{if(id==='diagonal'&&learner){training=false;learner=null;policyResult=null;clearLearningStats();}resetSearch('Search settings updated.');refreshLayer();}));
-  [['weight',1],['alpha',2],['gamma',2],['decay',3]].forEach(([id,digits])=>$(id).addEventListener('input',()=>{setText(id+'-value',Number($(id).value).toFixed(digits));if(learner&&id!=='weight')learner.options[id]=Number($(id).value);}));$('speed').oninput=()=>setText('speed-value',$('speed').value+' steps/s');
-  ['episodes','max-steps','batch-size','epsilon'].forEach(id=>$(id).addEventListener('change',()=>{validateLearning();if(learner&&id==='max-steps')learner.options.maxSteps=Number($('max-steps').value);}));['heatmap','policy-arrows'].forEach(id=>$(id).onchange=refreshLayer);$('policy-btn').onclick=testPolicy;$('reset-agent').onclick=()=>{training=false;learner=null;policyResult=null;city?.setPath(null);setRunButton();setState('Ready');refreshLayer();drawPulse();['rl-episodes','rl-success'].forEach(id=>setText(id,'0'));setText('rl-reward','—');setText('rl-epsilon',$('epsilon').value);setText('training-percent','0%');$('training-progress').value=0;renderStats();drawMinimap();message('A fresh start for your agent.');log('Agent memory reset.');};
+  $('tab-search').onclick=()=>{selectTab(false);syncDrawers();};$('tab-learning').onclick=()=>{selectTab(true);syncDrawers();};$('nav-simulation').onclick=()=>openDrawer('control-panel');$('nav-learning').onclick=()=>{const same=learning;selectTab(true);if(!same&&$('control-panel').classList.contains('open')){mobilePanel='control-panel';syncDrawers();}else openDrawer('control-panel');};
+  $('algorithm').onchange=()=>{updateAlgorithm();resetSearch('Algorithm changed. A new perspective on the same city.');};['heuristic','weight','diagonal'].forEach(id=>$(id).addEventListener('change',()=>changeSearchSettings(id)));
+  [['weight',1],['alpha',2],['gamma',2],['decay',3]].forEach(([id,digits])=>$(id).addEventListener('input',()=>{setText(id+'-value',Number($(id).value).toFixed(digits));if(learner&&id!=='weight')learner.options[id]=Number($(id).value);}));$('speed').oninput=updateSpeed;
+  ['episodes','max-steps','batch-size','epsilon'].forEach(id=>$(id).addEventListener('change',()=>{validateLearning();syncQuickControls();if(learner&&id==='max-steps')learner.options.maxSteps=Number($('max-steps').value);}));['heatmap','policy-arrows'].forEach(id=>$(id).onchange=refreshLayer);$('policy-btn').onclick=testPolicy;$('reset-agent').onclick=()=>{training=false;learner=null;policyResult=null;city?.setPath(null);setRunButton();setState('Ready');refreshLayer();drawPulse();['rl-episodes','rl-success'].forEach(id=>setText(id,'0'));setText('rl-reward','—');setText('rl-epsilon',$('epsilon').value);setText('training-percent','0%');$('training-progress').value=0;renderStats();drawMinimap();message('A fresh start for your agent.');log('Agent memory reset.');};
   document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>generate(b.dataset.preset));$('regenerate').onclick=()=>generate(preset,true);$('grid-size').onchange=()=>generate(preset);$('seed').onchange=()=>generate(preset);$('more-maps').onclick=showMaps;$('edit-start').onclick=()=>selectTool('start');$('edit-goal').onclick=()=>selectTool('goal');
   document.querySelectorAll('[data-camera]').forEach(b=>b.onclick=()=>setCamera(b.dataset.camera));document.querySelectorAll('[data-light]').forEach(b=>b.onclick=()=>{light=b.dataset.light;city?.setMode(light);document.querySelectorAll('[data-light]').forEach(x=>x.classList.toggle('active',x===b));});$('orbit-btn').onclick=()=>setOrbit(!orbit);$('reset-camera').onclick=()=>city?.fitCity();$('minimap-button').onclick=()=>setCamera('top');$('zoom-in').onclick=()=>city?.zoom(1.25);$('zoom-out').onclick=()=>city?.zoom(.8);
-  $('compare-btn').onclick=$('nav-compare').onclick=compare;$('export-btn').onclick=showExport;$('save-btn').onclick=saveCity;$('load-btn').onclick=loadMenu;$('more-maps').onclick=showMaps;$('help-btn').onclick=$('shortcuts-footer').onclick=showHelp;$('nav-layers').onclick=showLayers;$('nav-settings').onclick=showSettings;
+  $('compass').onclick=()=>{if(!city)return;setOrbit(false);city.resetNorth();updateCompass();};
+  $('nav-compare').onclick=compare;$('export-btn').onclick=showExport;$('save-btn').onclick=saveCity;$('load-btn').onclick=loadMenu;$('more-maps').onclick=showMaps;$('help-btn').onclick=$('shortcuts-footer').onclick=showHelp;$('nav-layers').onclick=showLayers;$('nav-settings').onclick=showSettings;
   $('about-btn').onclick=()=>showModal('Cities are complex. Stay curious.',`<p>MetroMind AI brings classical pathfinding and reinforcement learning into a living, editable 3D city. Build an environment, experiment with nine algorithms, and watch every decision become visible.</p><p>Architecture, traffic, and lighting are generated locally. Vehicles are visual atmosphere; routing uses the actual terrain, elevation, and movement rules you set. This is a research and learning sandbox.</p><div class="comparison-summary"><span>9 search algorithms</span><span>Q-learning agent</span><span>100% local</span></div>`);
   $('close-modal').onclick=closeModal;$('modal').addEventListener('click',e=>{if(e.target===$('modal')){const r=$('modal').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeModal();}});$('modal').addEventListener('cancel',()=>{comparisonToken++;lastFocus?.focus();});
   $('modal-content').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.map){generate(b.dataset.map);closeModal();return;}if(b.dataset.layer){layer=b.dataset.layer;refreshLayer();closeModal();toast(({base:'Architecture',search:'Search activity',cost:'Terrain costs'})[layer]+' layer selected.');return;}switch(b.dataset.action){case'export-json':exportJSON();break;case'export-csv':exportCSV();break;case'export-log':exportLog();break;case'import-file':$('import-file').click();break;case'load-local':try{importCity(localStorage.getItem('metromind-city-studio'));}catch{toast('Browser storage is unavailable.','warn');}break;case'new-city':generate('downtown',true);closeModal();break;}});
   $('import-file').onchange=async e=>{const file=e.target.files[0];if(file){if(file.size>5000000){toast('Choose a city layout smaller than 5 MB.','warn');return;}importCity(await file.text());e.target.value='';}};
   $('activity-tab').onclick=()=>{$('activity-content').hidden=false;$('insights-content').hidden=true;$('activity-tab').classList.add('active');$('insights-tab').classList.remove('active');};$('insights-tab').onclick=()=>{$('activity-content').hidden=true;$('insights-content').hidden=false;$('activity-tab').classList.remove('active');$('insights-tab').classList.add('active');};$('clear-log').onclick=()=>{journal=[];$('activity-log').replaceChildren();setText('log-count',0);};$('download-log').onclick=exportLog;
-  $('toggle-controls').onclick=()=>openDrawer('control-panel');$('quick-algorithm').onclick=()=>openDrawer('control-panel');$('toggle-analytics').onclick=()=>openDrawer('analytics-panel');$('close-controls').onclick=$('close-analytics').onclick=$('drawer-backdrop').onclick=closeDrawers;$('fullscreen-btn').onclick=$('restore-map-ui').onclick=immersive;
+  $('toggle-analytics').onclick=()=>openDrawer('analytics-panel');$('close-controls').onclick=()=>closePanel('control-panel');$('close-analytics').onclick=()=>closePanel('analytics-panel');$('drawer-backdrop').onclick=()=>closeDrawers();$('fullscreen-btn').onclick=$('restore-map-ui').onclick=immersive;
+  $('pin-controls').onclick=()=>togglePanelPin('control-panel');$('pin-insights').onclick=()=>togglePanelPin('analytics-panel');
+  $('quick-maps').onclick=showMaps;$('quick-regenerate').onclick=()=>generate(preset,true);
+  $('quick-diagonal').onchange=()=>{$('diagonal').checked=$('quick-diagonal').checked;changeSearchSettings('diagonal');};
+  $('live-replan').onchange=syncQuickControls;$('quick-replan').onchange=()=>{$('live-replan').checked=$('quick-replan').checked;syncQuickControls();};
+  $('quick-episodes').onchange=()=>{$('episodes').value=$('quick-episodes').value;validateLearning();syncQuickControls();};$('quick-policy').onclick=testPolicy;
   $('workspace-menu').onclick=showWorkspaceMenu;
+  $('sidebar-toggle').onclick=toggleSidebar;
   $('free-build-btn').onclick=startFreeBuild;$('builder-done').onclick=stopFreeBuild;$('build-blank').onclick=newFreeCanvas;$('build-undo').onclick=undoBuild;$('build-redo').onclick=redoBuild;
   document.querySelectorAll('[data-build-tool]').forEach(button=>button.onclick=()=>{finishBuildStroke();selectTool(button.dataset.buildTool==='road'?$('build-surface').value:button.dataset.buildTool);});
   $('brush-size').onchange=()=>{finishBuildStroke();brushSize=[1,3,5].includes(Number($('brush-size').value))?Number($('brush-size').value):1;updateBuilder();};
   $('build-surface').onchange=()=>{const surface=$('build-surface').value;finishBuildStroke();selectTool(surface);};$('grid-guides').onchange=()=>city?.setGridGuides($('grid-guides').checked);
   document.addEventListener('keydown',event=>{if(!editing||!(event.ctrlKey||event.metaKey)||event.target.closest('input,select,textarea,[contenteditable="true"]'))return;const key=event.key.toLowerCase();if(key==='z'||key==='y'){event.preventDefault();event.stopPropagation();key==='y'||event.shiftKey?redoBuild():undoBuild();}});
   $('modal-content').addEventListener('click',e=>{const action=e.target.closest('button')?.dataset.workspace;if(!action)return;closeModal();if(action==='freebuild'){startFreeBuild();}else if(action==='simulation'||action==='learning'){selectTab(action==='learning');openDrawer('control-panel');}else if(action==='layers')showLayers();else if(action==='display')showSettings();else if(action==='focus')immersive();else if(action==='help')showHelp();});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').open){if(document.body.classList.contains('immersive'))immersive();else closeDrawers();return;}if(e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,select,textarea,[contenteditable="true"]'))return;if($('modal').open)return;const key=e.key.toLowerCase();if(key===' '){e.preventDefault();toggleRun();}else if(key==='s'||key==='f'){e.preventDefault();stepSearch();}else if(key==='b')backSearch();else if(key==='r'){training=false;resetSearch();}else if(key==='x')compare();else if(key==='t'){selectTab(true);if(!$('control-panel').classList.contains('open'))openDrawer('control-panel');else syncDrawers();}else if(key==='e')startFreeBuild();else if(key==='p'&&editing)selectTool('road');else if(key==='g')immersive();else if(key==='?')showHelp();else if(key==='v')selectTool('view');else if(key==='c'){showMaps();}else if(/^[1-9]$/.test(key))selectTool(tools[Number(key)][0]);});
-  function initScene(){try{city=new MetroCity($('city-canvas'),{onCell:paint,onHover:hover,onPaintWorld:paintWorld,onHoverWorld:hoverWorld,onStrokeEnd:finishBuildStroke});city.setEditor(editing,{brushSize,showGrid:$('grid-guides').checked});city.setGrid(grid);city.setTool(tool);city.setLayer(layer);city.setMode(light);city.setQuality(settings.quality);city.setTraffic(settings.traffic);resize();$('scene-loading').hidden=true;$('scene-error').hidden=true;}catch(error){$('scene-loading').hidden=true;$('scene-error').hidden=false;setText('scene-error-text',error.message?.includes('WebGL')?'Enable hardware acceleration in your browser, then try again.':error.message||'The 3D engine could not start.');log('3D rendering unavailable: '+error.message,'warn');}}
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').open){if(!$('terrain-palette').hidden)setTerrainPalette(false,true);else if(document.body.classList.contains('immersive'))immersive();else closeDrawers();return;}if(e.ctrlKey||e.metaKey||e.altKey||e.target.closest('input,select,textarea,[contenteditable="true"]'))return;if($('modal').open)return;const key=e.key.toLowerCase();if(key===' '){e.preventDefault();toggleRun();}else if(key==='s'||key==='f'){e.preventDefault();stepSearch();}else if(key==='b')backSearch();else if(key==='r'){training=false;resetSearch();}else if(key==='x')compare();else if(key==='t'){selectTab(true);if(!$('control-panel').classList.contains('open'))openDrawer('control-panel');else syncDrawers();}else if(key==='e')startFreeBuild();else if(key==='p'&&editing)selectTool('road');else if(key==='g')immersive();else if(key==='?')showHelp();else if(key==='v')selectTool('view');else if(key==='c'){showMaps();}else if(/^[1-9]$/.test(key))selectTool(tools[Number(key)][0]);});
+  function initScene(){
+    try{
+      city=new MetroCity($('city-canvas'),{onCell:paint,onHover:hover,onPaintWorld:paintWorld,onHoverWorld:hoverWorld,onStrokeEnd:finishBuildStroke});
+      city.reducedMotion=settings.reducedMotion;
+      city.setEditor(editing,{brushSize,showGrid:$('grid-guides').checked});city.setGrid(grid);city.setTool(tool);city.setLayer(layer);city.setMode(light);city.setQuality(settings.quality);
+      city.setTraffic(settings.traffic);city.setLandscape(settings.landscape);city.setParticles(settings.particles);
+      city.setSearch(learning?new Set():search?.visited||new Set(),learning?new Set():search?.frontier||new Set(),learning?policyResult?.path||null:search?.path||null);
+      refreshLayer();resize();compassAngle=null;compassLabel='';updateCompass();$('scene-loading').hidden=true;$('scene-error').hidden=true;
+    }catch(error){$('scene-loading').hidden=true;$('scene-error').hidden=false;setText('scene-error-text',error.message?.includes('WebGL')?'Enable hardware acceleration in your browser, then try again.':error.message||'The 3D engine could not start.');log('3D rendering unavailable: '+error.message,'warn');}
+  }
   $('retry-scene').onclick=()=>{city?.destroy();city=null;initScene();};$('city-canvas').addEventListener('webglcontextlost',e=>{e.preventDefault();playing=training=false;setRunButton();$('scene-error').hidden=false;setText('scene-error-text','The graphics context was interrupted. Try again to rebuild the city.');});
   new ResizeObserver(resize).observe($('viewport'));addEventListener('resize',()=>{resize();syncDrawers();});document.addEventListener('visibilitychange',()=>{if(document.hidden){playing=training=false;setRunButton();if(search&&!search.done)setState('Paused');}});
   function frame(time){requestAnimationFrame(frame);const dt=Math.min(200,time-lastFrame||16);lastFrame=time;
+    updateCompass();
     if(playing&&search){accumulator+=dt*Number($('speed').value)/1000;const count=Math.min(32,Math.floor(accumulator));if(count){accumulator-=count;search.step(count);renderSearch();}}
     if(training&&learner){const remaining=Math.max(0,Number($('episodes').value)-learner.episodes),batch=Math.min(remaining,Number($('batch-size').value),Math.max(1,Math.floor(10000/learner.options.maxSteps)));if(batch)learner.train(batch);if(time-lastUI>180||!remaining)renderLearning();}
     if(time-lastUI>180){lastUI=time;setText('fps',(city?.fps||0)+' FPS');if(training)renderLearning();}

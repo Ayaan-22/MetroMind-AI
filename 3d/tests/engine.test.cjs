@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
-const { Grid, SearchSession, QLearner, random } = require('../js/engine.js');
+const { Grid, SearchSession, QLearner, random, limits } = require('../js/engine.js');
 
 const solve = (grid, algorithm, options = {}) => new SearchSession(grid, algorithm, options).finish();
 const close = (a, b) => assert.ok(a === b || Math.abs(a - b) < 1e-6, `${a} differs from ${b}`);
@@ -207,12 +207,12 @@ test('canvas growth in every direction preserves world positions, terrain, eleva
 });
 
 test('growth reaches the full supported limit and rejects overflow atomically', () => {
-  const grid = new Grid(99).enableFreeBuild(false), start = grid.cellToWorld(grid.start), goal = grid.cellToWorld(grid.goal);
-  const change = grid.expandToWorld(grid.originX + 99.5, grid.originZ + 10.5);
-  assert.equal(change.changed, true); assert.equal(grid.size, 100, 'padding shrinks to allow use of the last supported column');
+  const grid = new Grid(199).enableFreeBuild(false), start = grid.cellToWorld(grid.start), goal = grid.cellToWorld(grid.goal);
+  const change = grid.expandToWorld(grid.originX + 199.5, grid.originZ + 10.5);
+  assert.equal(change.changed, true); assert.equal(grid.size, 200, 'padding shrinks to allow use of the last supported column');
   assert.deepEqual(grid.cellToWorld(grid.start), start); assert.deepEqual(grid.cellToWorld(grid.goal), goal);
   const snapshot = grid.serialize(), arrays = { types: grid.types, elevation: grid.elevations, developed: grid.developed }, version = grid.version;
-  assert.throws(() => grid.expandToWorld(grid.originX + 100.5, grid.originZ + 10.5), /100 × 100/);
+  assert.throws(() => grid.expandToWorld(grid.originX + 200.5, grid.originZ + 10.5), /200 × 200/);
   assert.deepEqual(grid.serialize(), snapshot); assert.equal(grid.version, version);
   assert.equal(grid.types, arrays.types); assert.equal(grid.elevations, arrays.elevation); assert.equal(grid.developed, arrays.developed);
   assert.throws(() => grid.expandToWorld(NaN, 0), /finite/);
@@ -220,6 +220,39 @@ test('growth reaches the full supported limit and rejects overflow atomically', 
   assert.deepEqual(grid.serialize(), snapshot);
   const normal = new Grid(4), next = normal.expandToWorld(3, 0);
   assert.equal(normal.types[next.index], 0); assert.equal(normal.developed[next.index], 1);
+});
+
+test('100-cell regular districts generate and round trip while their growth remains bounded', () => {
+  assert.deepEqual(limits, { grid: 100, freeBuild: 200 }); assert.ok(Object.isFrozen(limits));
+  const grid = new Grid(100).generate('downtown', 2084), data = grid.serialize(), restored = Grid.fromJSON(JSON.stringify(data));
+  assert.equal(grid.count, 10000); assert.equal(restored.size, 100); assert.equal(restored.freeBuild, false);
+  assert.deepEqual(restored.serialize(), data); assert.ok(solve(restored, 'astar').path);
+  const before = grid.serialize();
+  assert.throws(() => grid.expandToWorld(grid.originX + 100.5, grid.originZ + .5), /100 × 100/);
+  assert.deepEqual(grid.serialize(), before);
+  assert.throws(() => new Grid(201), /200/);
+});
+
+test('Free Build grows past 100 to 200, preserving its world layout and portable search data', () => {
+  const grid = new Grid(100).enableFreeBuild(false);
+  for (let i = grid.start; i <= grid.goal; i++) grid.set(i, 0);
+  grid.set(grid.start + 1, 2, .5);
+  const start = grid.cellToWorld(grid.start), goal = grid.cellToWorld(grid.goal), street = grid.cellToWorld(grid.start + 1), cost = solve(grid, 'dijkstra').cost;
+  const change = grid.expandToWorld(grid.originX + 199.5, grid.originZ + .5);
+  assert.equal(change.changed, true); assert.equal(grid.size, 200); assert.equal(grid.count, 40000);
+  assert.deepEqual(grid.cellToWorld(grid.start), start); assert.deepEqual(grid.cellToWorld(grid.goal), goal);
+  const retained = grid.worldToCell(street.x, street.z).index;
+  assert.equal(grid.types[retained], 2); assert.equal(grid.elevations[retained], .5); assert.equal(grid.developed[retained], 1);
+  assert.equal(grid.developed[change.index], 0); assert.equal(grid.types[change.index], 1);
+  const data = grid.serialize(), restored = Grid.fromJSON(JSON.stringify(data));
+  assert.equal(restored.size, 200); assert.equal(restored.freeBuild, true);
+  assert.deepEqual(restored.serialize(), data); close(solve(restored, 'astar').cost, cost);
+  assert.deepEqual(restored.cellToWorld(restored.start), start); assert.deepEqual(restored.cellToWorld(restored.goal), goal);
+  assert.throws(() => Grid.fromJSON({ ...data, freeBuild: false }), /between 4 and 100/);
+  assert.throws(() => Grid.fromJSON({ ...data, freeBuild: undefined }), /between 4 and 100/);
+  assert.throws(() => Grid.fromJSON({ ...data, freeBuild: 'true' }), /true or false/);
+  assert.throws(() => Grid.fromJSON({ ...data, size: 201 }), /between 4 and 200/);
+  assert.throws(() => Grid.fromJSON({ rows: 101, cols: 4, grid: [[]], freeBuild: true }), /between 4 and 100/);
 });
 
 test('Free Build imports retain editable bounds and reject inconsistent or malformed metadata', () => {

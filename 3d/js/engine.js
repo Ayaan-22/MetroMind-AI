@@ -2,6 +2,7 @@
    Kept independent of the DOM and WebGL so experiments can be reproduced. */
 (function (scope) {
   'use strict';
+  const limits = Object.freeze({ grid: 100, freeBuild: 200 });
   const terrain = Object.freeze([
     { id: 0, name: 'Street', cost: 1 },
     { id: 1, name: 'Building', cost: Infinity },
@@ -46,7 +47,7 @@
   }
   class Grid {
     constructor(size = 30) {
-      if (!Number.isInteger(size) || size < 4 || size > 100) throw new Error('Grid size must be an integer from 4 to 100.');
+      if (!Number.isInteger(size) || size < 4 || size > limits.freeBuild) throw new Error(`Grid size must be an integer from 4 to ${limits.freeBuild}.`);
       this.size = this.N = this.rows = this.cols = size; this.count = size * size;
       this.types = this.terrain = new Uint8Array(this.count);
       this.elevations = this.elevation = new Float32Array(this.count);
@@ -102,9 +103,10 @@
       const required = oldSize + Math.max(left + right, top + bottom);
       // Validate before allocating or changing any state. Padding may shrink at
       // the limit, but a requested cell is never silently omitted or clamped.
-      if (required > 100) throw new Error('Free Build has reached its 100 × 100 cell limit. Draw closer to the existing city.');
+      const limit = this.freeBuild ? limits.freeBuild : limits.grid;
+      if (required > limit) throw new Error(`${this.freeBuild ? 'Free Build' : 'Grid'} has reached its ${limit} × ${limit} cell limit. Draw closer to the existing city.`);
       const desired = oldSize + Math.max(left + right + (left || right ? padding : 0), top + bottom + (top || bottom ? padding : 0));
-      const size = Math.min(100, Math.ceil(desired / 10) * 10), extra = size - oldSize;
+      const size = Math.min(limit, Math.ceil(desired / 10) * 10), extra = size - oldSize;
       const shift = (negative, positive) => {
         const spare = extra - negative - positive;
         if (negative) return negative + Math.min(padding, spare);
@@ -247,9 +249,11 @@
       const data = typeof input === 'string' ? JSON.parse(input) : input;
       if (!data || typeof data !== 'object') throw new Error('The file must contain a city layout.');
       const v11 = Array.isArray(data.grid) && Array.isArray(data.grid[0]);
+      if (!v11 && data.freeBuild !== undefined && typeof data.freeBuild !== 'boolean') throw new Error('Free Build mode must be true or false.');
       const sourceRows = v11 ? data.rows ?? data.grid.length : data.size ?? data.N;
       const sourceCols = v11 ? data.cols ?? data.grid[0].length : sourceRows;
-      if (![sourceRows, sourceCols].every(x => Number.isInteger(x) && x >= 4 && x <= 100)) throw new Error('Layout dimensions must be between 4 and 100.');
+      const limit = !v11 && data.freeBuild === true ? limits.freeBuild : limits.grid;
+      if (![sourceRows, sourceCols].every(x => Number.isInteger(x) && x >= 4 && x <= limit)) throw new Error(`Layout dimensions must be between 4 and ${limit}.`);
       const size = Math.max(sourceRows, sourceCols), grid = new Grid(size), types = v11 ? null : data.types ?? data.T, elevation = data.elevations ?? data.E;
       if (!v11 && (!Array.isArray(types) || types.length !== grid.count)) throw new Error('Terrain data does not match the grid dimensions.');
       if (!v11 && elevation !== undefined && (!Array.isArray(elevation) || elevation.length !== grid.count)) throw new Error('Elevation data does not match the grid dimensions.');
@@ -271,7 +275,6 @@
         if (elevation?.some(x => typeof x !== 'number' || !Number.isFinite(x) || x < 0 || x > 12)) throw new Error('Elevations must be finite values from 0 to 12.');
         grid.types.set(types); if (elevation) grid.elevations.set(elevation);
         grid.start = data.start; grid.goal = data.goal;
-        if (data.freeBuild !== undefined && typeof data.freeBuild !== 'boolean') throw new Error('Free Build mode must be true or false.');
         grid.freeBuild = data.freeBuild ?? false;
         for (const key of ['originX', 'originZ']) {
           if (data[key] !== undefined && (typeof data[key] !== 'number' || !Number.isFinite(data[key]) || Math.abs(data[key]) > 10000)) throw new Error('Canvas origins must be finite numbers within the supported world range.');
@@ -499,6 +502,6 @@
       this.lastRollout = { path, reached: i === this.grid.goal, cost: i === this.grid.goal ? this.grid.pathCost(path) : Infinity }; return this.lastRollout;
     }
   }
-  scope.MetroEngine = { Grid, SearchSession, QLearner, algorithms, terrain, random };
+  scope.MetroEngine = { Grid, SearchSession, QLearner, algorithms, terrain, random, limits };
   if (typeof module !== 'undefined' && module.exports) module.exports = scope.MetroEngine;
 })(globalThis);

@@ -1,0 +1,117 @@
+/* Readable type and consistent details for the floating workspace. */
+:root {
+  --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --text: #e7f0e9;
+  --muted: #b6c8bd;
+  --faint: #a0b6a8;
+  --scroll-track: #102019;
+  --scroll-thumb: #638c76;
+  --scroll-hover: #96c7ab;
+}
+
+body { font-family: var(--sans); font-kerning: normal; font-size: 14px; line-height: 1.6; }
+button, input, select, textarea { font-family: var(--sans); }
+.map-first { --panel-gutter: 20px; }
+.map-first .panel-heading h2 { font-size: 22px; line-height: 1.3; font-weight: 600; letter-spacing: -.4px; color: #edf5ef; }
+.map-first .eyebrow { font-family: var(--sans); font-size: 11px; line-height: 1.5; letter-spacing: .75px; font-weight: 600; color: #a6bfaf; }
+.map-first .section-label, .map-first .control-section .section-label, .map-first .insight-section .section-label { font-family: var(--sans); font-size: 11px; line-height: 1.6; letter-spacing: .6px; font-weight: 600; color: #b7cdbf; }
+.map-first .section-label > span { color: #a6bdaf; font-size: 11px; }
+.map-first .field-label, .map-first .range-label, .map-first .environment-seed { color: #c6d8cd; font-size: 13px; line-height: 1.5; }
+.map-first .toggle-row { color: #d5e4da; font-size: 13px; }
+.map-first .toggle-row small, .map-first .range-ends { font-size: 12px; line-height: 1.55; color: #afc5b7; }
+.map-first .algorithm-card p, .map-first .insight-note p { font-size: 13px; line-height: 1.7; color: #bdcfc3; }
+.map-first .algorithm-card strong, .map-first .algorithm-card #algorithm-badge { font-size: 11px; font-weight: 600; }
+.map-first .algorithm-card code { font-size: 12px; line-height: 1.7; color: #d4e8dc; }
+.map-first .preset > span:last-of-type { font-size: 13px; line-height: 1.45; font-weight: 600; color: #d1e3d7; }
+.map-first .preset small { font-size: 12px; line-height: 1.5; font-weight: 400; color: #b1c8b8; }
+.map-first .panel-tip p { font-size: 13px; line-height: 1.65; color: #c2d9c9; }
+.map-first .panel-tip p span { font-size: 12px; color: #a9c2b1; }
+.map-first .rail-button span, .map-first .camera-dock button { font-size: 12px; line-height: 1.35; }
+.map-first .metric > span { font-size: 12px; line-height: 1.5; color: #c0d3c7; }
+.map-first .metric strong { font-family: var(--sans); font-size: 30px; line-height: 1.3; font-weight: 600; letter-spacing: -.7px; font-variant-numeric: tabular-nums; }
+.map-first .metric-caption, .map-first .minimap-caption, .map-first .chart-labels { font-size: 12px; line-height: 1.5; color: #adc7b6; }
+.map-first .metric strong small { font-family: var(--sans); font-size: 12px; letter-spacing: 0; }
+.map-first .rl-stats b, .map-first .compare-values b, .map-first .range-label output, .command-speed #speed-value { font-family: var(--sans); font-weight: 600; font-variant-numeric: tabular-nums; }
+.command-speed #speed-value { font-size: 12px; line-height: 1.5; letter-spacing: .1px; }
+.map-first .log-entry { font-size: 13px; line-height: 1.7; color: #c4d9cc; }
+.map-first .log-entry time { font-family: var(--sans); font-size: 12px; color: #a7c3b1; font-variant-numeric: tabular-nums; }
+.metro-select-caption { font: 600 11px/1.5 var(--sans); letter-spacing: .6px; color: #b9cfc1; }
+.metro-select-option-description { font-size: 12px; line-height: 1.5; color: #b6cabe; }
+.metro-select-option-label { font-weight: 500; }
+
+/* The panel speed field follows the same inset as the settings above it. */
+.map-first #speed-slot { padding: 19px var(--panel-gutter) 21px; border-top-color: #86b49825; }
+.map-first #speed-slot .command-speed { gap: 9px; }
+.map-first #speed-slot .command-speed > label { align-items: baseline; font-size: 13px; line-height: 1.5; color: #c6d8cd; }
+#speed-slot #speed, .map-commandbar .command-speed #speed { display: block; width: 100%; height: 22px; min-height: 22px; padding: 0; margin: 0; border: 0; border-radius: 5px; appearance: none; -webkit-appearance: none; background: transparent; cursor: pointer; }
+#speed-slot #speed:focus-visible, .map-commandbar .command-speed #speed:focus-visible { outline: 2px solid #b4edcf; outline-offset: 4px; }
+#speed::-webkit-slider-runnable-track { height: 4px; border: 0; border-radius: 99px; background: linear-gradient(to right, #a0e5c4 0 var(--range-fill,9.25%), #385044 var(--range-fill,9.25%) 100%); }
+#speed::-webkit-slider-thumb { width: 13px; height: 13px; margin-top: -4.5px; border: 2px solid #d2f5e2; border-radius: 50%; appearance: none; -webkit-appearance: none; background: #a0e5c4; box-shadow: 0 0 0 3px #a0e5c414; }
+#speed::-moz-range-track { height: 4px; border: 0; border-radius: 99px; background: #385044; }
+#speed::-moz-range-progress { height: 4px; border-radius: 99px; background: #a0e5c4; }
+#speed::-moz-range-thumb { width: 10px; height: 10px; border: 2px solid #d2f5e2; border-radius: 50%; background: #a0e5c4; box-shadow: 0 0 0 3px #a0e5c414; }
+
+/* Custom scrollbars are shared by drawers, menus, dialogs and nested journals. */
+* { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
+.panel-scroll, .metro-select-menu, .terrain-palette, .activity-log, dialog, textarea { scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
+.panel-scroll, .activity-log, dialog { scrollbar-gutter: stable; }
+*::-webkit-scrollbar, .panel-scroll::-webkit-scrollbar, .metro-select-menu::-webkit-scrollbar, .terrain-palette::-webkit-scrollbar, .activity-log::-webkit-scrollbar, dialog::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { border-radius: 99px; background: var(--scroll-track); }
+*::-webkit-scrollbar-thumb, .panel-scroll::-webkit-scrollbar-thumb, .metro-select-menu::-webkit-scrollbar-thumb { min-height: 34px; border: 2px solid var(--scroll-track); border-radius: 99px; background: var(--scroll-thumb); background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:hover { background: var(--scroll-hover); background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:active { background: #b9e8cc; background-clip: padding-box; }
+*::-webkit-scrollbar-corner { background: transparent; }
+@supports selector(::-webkit-scrollbar) {
+  .panel-scroll, .metro-select-menu, .terrain-palette, .activity-log, dialog, textarea { scrollbar-width: auto; scrollbar-color: auto; }
+}
+.map-first .rail { scrollbar-width: none; }
+.map-first .rail::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+/* Live north indicator: the needle rotates, while its readout stays upright. */
+#compass.north-indicator { display: grid; justify-items: center; align-content: center; gap: 1px; width: 52px; min-height: 76px; padding: 7px 5px; border: 1px solid #8fbc9f4a; border-radius: 11px; background: #11221be6; color: #d7ecdf; box-shadow: 0 5px 20px #0003; backdrop-filter: blur(16px); pointer-events: auto; cursor: pointer; z-index: 8; transition: background .15s, border-color .15s; }
+#compass.north-indicator:hover:not(:disabled) { border-color: #b0e4c58c; background: #223c2ded; }
+#compass.north-indicator:focus-visible { outline: 2px solid #b4edcf; outline-offset: 4px; }
+#compass.north-indicator:disabled { opacity: .5; cursor: default; }
+#compass .compass-north { display: block; color: #b9d7c4; font: 600 11px/1.3 var(--sans); letter-spacing: .8px; }
+#compass .compass-needle { display: block; width: 29px; height: 29px; fill: #9ce7c62b; stroke: #c0efd4; stroke-width: 1.3; transform-origin: 50% 50%; transition: none; }
+#compass .compass-bearing { display: block; color: #e0f1e6; font: 600 12px/1.4 var(--sans); letter-spacing: .25px; font-variant-numeric: tabular-nums; }
+
+@media (min-width: 1750px) { .map-first { --panel-gutter: 23px; } }
+@media (max-width: 1380px) { .map-first { --panel-gutter: 17px; } }
+@media (max-width: 570px) {
+  .map-first .panel-heading h2 { font-size: 21px; }
+  .map-first .camera-dock button { padding-left: 6px; padding-right: 6px; }
+  .map-first .metric strong { font-size: 28px; }
+  #compass.north-indicator { width: 48px; min-height: 72px; padding: 6px 4px; }
+  #compass .compass-needle { width: 27px; height: 27px; }
+}
+@media (prefers-reduced-motion: reduce) { #compass.north-indicator { transition: none; } }
+
+/* Compass and zoom form one aligned column along the map's right edge. */
+.map-first { --map-navigation-right: var(--map-edge); --map-navigation-width: 52px; --map-zoom-bottom: 124px; --map-zoom-height: 78px; }
+.map-first.insights-open { --map-navigation-right: calc(var(--map-edge) + var(--map-panel) + 12px); }
+.map-first .lighting-control, .map-first.insights-open .lighting-control,
+.map-first .map-zoom, .map-first.insights-open .map-zoom,
+.map-first #compass.north-indicator { right: var(--map-navigation-right); }
+.map-first .map-zoom, .map-first.learning-mode .map-zoom { bottom: var(--map-zoom-bottom); width: var(--map-navigation-width); height: var(--map-zoom-height); padding: 4px; border-radius: 11px; }
+.map-first .map-zoom button { width: 100%; height: 34px; flex: none; }
+.map-first #compass.north-indicator { width: var(--map-navigation-width); bottom: calc(var(--map-zoom-bottom) + var(--map-zoom-height) + 12px); }
+@media (max-width: 1200px) { .map-first { --map-zoom-bottom: 180px; } }
+@media (max-width: 980px) { .map-first { --map-zoom-bottom: 265px; } }
+@media (max-width: 820px) { .map-first.insights-open { --map-navigation-right: var(--map-edge); } }
+@media (max-width: 570px) {
+  .map-first { --map-navigation-width: 48px; --map-zoom-bottom: 264px; --map-zoom-height: 72px; }
+  .map-first.learning-mode { --map-zoom-bottom: 286px; }
+  .map-first .map-zoom button { height: 31px; }
+}
+.map-first.immersive #compass.north-indicator { display: none; }
+@media (max-height: 640px) { .map-first #compass.north-indicator { display: none; } }
+
+/* The header toggle remains available when the navigation rail is hidden. */
+.map-first.sidebar-collapsed { --map-rail: 0px; }
+.map-first.sidebar-collapsed .rail { display: none !important; }
+.map-first .topbar .sidebar-toggle { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 36px; height: 34px; padding: 0; border: 1px solid #89b79c35; border-radius: 7px; background: transparent; color: #bdd5c6; }
+.map-first .topbar .sidebar-toggle svg { width: 17px; height: 17px; }
+.map-first .topbar .sidebar-toggle:hover, .map-first .topbar .sidebar-toggle[aria-expanded="false"] { border-color: #9ce7c667; background: #9ce7c614; color: #d8f5e4; }
+.map-first .topbar .sidebar-toggle:focus-visible { outline: 2px solid #b4edcf; outline-offset: 3px; }
+@media (max-width: 570px) { .map-first .topbar .sidebar-toggle { display: none; } }

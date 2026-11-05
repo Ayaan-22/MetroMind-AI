@@ -9,8 +9,11 @@
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/typography.css">
   <link rel="stylesheet" href="css/map-workspace.css">
+  <link rel="stylesheet" href="css/tools.css">
   <link rel="stylesheet" href="css/select.css">
   <link rel="stylesheet" href="css/builder.css">
+  <link rel="stylesheet" href="css/commands.css">
+  <link rel="stylesheet" href="css/polish.css">
 </head>
 <body class="map-first">
   <svg class="icon-defs" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -48,23 +51,26 @@
     <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+    <symbol id="i-tack" viewBox="0 0 24 24"><path d="m15 3 6 6-4 1-4 4 1 3-2 2-7-7 2-2 3 1 4-4 1-4ZM9 15l-6 6"/></symbol>
+    <symbol id="i-sidebar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></symbol>
   </defs></svg>
   <header class="topbar">
+    <button class="icon-button sidebar-toggle" id="sidebar-toggle" type="button" aria-label="Hide sidebar" title="Hide sidebar" aria-controls="workspace-sidebar" aria-expanded="true"><svg><use href="#i-sidebar"/></svg></button>
     <a class="brand" href="#" aria-label="MetroMind AI home"><span class="brand-mark"><i></i><i></i><i></i></span><span>METROMIND<span class="brand-ai">AI</span><small>URBAN INTELLIGENCE LAB</small></span></a>
     <div class="top-divider"></div><div class="studio-label">City Studio <span class="version-tag">3D</span></div>
+    <div class="map-identity" title="Current generated map"><span>Map</span><h1 id="city-name">Downtown</h1><span id="scene-grid-label" hidden>900 NODES</span></div>
     <div class="top-spacer"></div><span class="local-indicator"><i></i> Local workspace</span>
     <button class="icon-button workspace-menu" id="workspace-menu" aria-label="Open workspace menu" title="Workspace menu"><svg><use href="#i-layers"/></svg></button>
     <button class="button subtle" id="load-btn" title="Load a saved workspace"><svg><use href="#i-upload"/></svg><span>Open</span></button>
     <button class="button subtle" id="save-btn" aria-label="Save city"><svg><use href="#i-save"/></svg><span>Save city</span></button>
     <button class="button export-button" id="export-btn" aria-label="Export"><svg><use href="#i-download"/></svg><span>Export</span><svg class="small"><use href="#i-chevron"/></svg></button>
+    <button class="icon-button header-focus" id="fullscreen-btn" title="Focus on the map (G)" aria-label="Focus on the map" aria-pressed="false"><svg><use href="#i-focus"/></svg></button>
     <button class="avatar" id="about-btn" title="About City Studio">M<span></span></button>
   </header>
   <div class="workspace">
-    <nav class="rail" aria-label="Workspace tools">
-      <button class="rail-button active" id="nav-simulation" aria-controls="control-panel" title="Simulation controls" aria-label="Simulation controls"><svg><use href="#i-city"/></svg><span>Studio</span></button>
+    <nav class="rail" id="workspace-sidebar" aria-label="Workspace tools">
       <button class="rail-button" id="nav-learning" aria-controls="control-panel" title="Reinforcement learning" aria-label="Reinforcement learning"><svg><use href="#i-brain"/></svg><span>Learning</span></button>
-      <button class="rail-button" id="nav-compare" title="Compare algorithms (X)" aria-label="Compare algorithms"><svg><use href="#i-chart"/></svg><span>Compare</span></button>
       <button class="rail-button" id="nav-layers" title="Map layers" aria-label="Map layers"><svg><use href="#i-layers"/></svg><span>Layers</span></button>
       <div class="rail-spacer"></div>
       <button class="rail-button" id="nav-settings" title="Display settings" aria-label="Display settings"><svg><use href="#i-settings"/></svg><span>Display</span></button>
@@ -72,12 +78,12 @@
       <div class="rail-bottom">MM<span>11.3D</span></div>
     </nav>
     <aside class="control-panel" id="control-panel" aria-label="Simulation settings">
-      <div class="panel-heading"><div><span class="eyebrow">YOUR WORKSPACE</span><h2>Simulation</h2></div><button class="icon-button mobile-close" id="close-controls" aria-label="Close controls"><svg><use href="#i-close"/></svg></button><span class="panel-index">01</span></div>
+      <div class="panel-heading"><div><span class="eyebrow">YOUR WORKSPACE</span><h2>Simulation</h2></div><div class="panel-heading-actions"><button class="icon-button panel-pin" id="pin-controls" aria-label="Pin controls" aria-pressed="false" title="Keep controls open"><svg><use href="#i-tack"/></svg></button><button class="icon-button mobile-close" id="close-controls" aria-label="Close controls"><svg><use href="#i-close"/></svg></button></div><span class="panel-index">01</span></div>
       <div class="panel-scroll">
         <div class="tabbar" role="tablist"><button class="tab active" id="tab-search" role="tab" aria-selected="true" aria-controls="search-settings"><svg><use href="#i-route"/></svg>Pathfinding</button><button class="tab" id="tab-learning" role="tab" aria-selected="false" aria-controls="learning-settings"><svg><use href="#i-brain"/></svg>Learning</button></div>
         <div id="search-settings" role="tabpanel">
           <section class="control-section"><div class="section-label">SEARCH ALGORITHM <span>01</span></div>
-            <div class="select-wrap"><svg><use href="#i-route"/></svg><select id="algorithm" aria-label="Search algorithm"><option value="astar">A* Search</option><option value="dijkstra">Dijkstra</option><option value="bidir">Bidirectional Search</option><option value="dstar">D* Lite</option><option value="theta">Theta* · Any-angle</option><option value="jps">Jump Point Search</option><option value="greedy">Greedy Best-first</option><option value="bfs">Breadth-first Search</option><option value="dfs">Depth-first Search</option></select><svg class="chevron"><use href="#i-chevron"/></svg></div>
+            <div id="algorithm-slot"></div>
             <div class="algorithm-card"><div><span class="status-dot"></span><strong id="algorithm-type">HEURISTIC SEARCH</strong><span id="algorithm-badge">Optimal*</span></div><p id="algorithm-description">Balances the journey so far with the distance ahead. A smart starting point for city routing.</p><code id="algorithm-formula">f(n) = g(n) + w · h(n)</code></div>
             <label class="field-label" for="heuristic">Distance heuristic <span class="hint" title="A lower-bound estimate of remaining travel cost">?</span></label><div class="select-wrap compact"><select id="heuristic"><option value="manhattan">Manhattan</option><option value="euclidean">Euclidean</option><option value="octile">Octile</option><option value="chebyshev">Chebyshev</option></select><svg class="chevron"><use href="#i-chevron"/></svg></div>
             <label class="range-label" for="weight">Heuristic weight <output id="weight-value">1.0</output></label><input id="weight" type="range" min="0" max="3" step="0.1" value="1">
@@ -99,41 +105,65 @@
           </section>
         </div>
         <section class="control-section environment-section"><div class="section-label">BUILD YOUR ENVIRONMENT <span>02</span></div>
+          <div id="environment-slot"></div>
           <div class="preset-grid">
             <button class="preset active" data-preset="downtown"><span class="preset-art downtown-art"><i></i><i></i><i></i><i></i><i></i><i></i></span><span>Downtown<small>Urban blocks</small></span><b>↗</b></button>
             <button class="preset" data-preset="manhattan"><span class="preset-art manhattan-art"><i></i><i></i><i></i><i></i><i></i><i></i></span><span>Manhattan<small>Street network</small></span><b>↗</b></button>
             <button class="preset" data-preset="recursive"><span class="preset-art maze-art"></span><span>Labyrinth<small>Complex routes</small></span><b>↗</b></button>
             <button class="preset" data-preset="terrain"><span class="preset-art terrain-art"></span><span>Highlands<small>Weighted terrain</small></span><b>↗</b></button>
           </div>
-          <div class="input-pair environment-fields"><label>Grid size<select id="grid-size"><option value="15">15 × 15</option><option value="20">20 × 20</option><option value="30" selected>30 × 30</option><option value="40">40 × 40</option><option value="50">50 × 50</option><option value="60">60 × 60</option></select></label><label>Seed<input type="number" id="seed" min="1" max="999999" value="2084"></label></div>
+          <label class="environment-seed">Seed<input type="number" id="seed" min="1" max="999999" value="2084"></label>
           <div class="button-pair"><button class="button" id="regenerate"><svg><use href="#i-shuffle"/></svg>Regenerate</button><button class="button subtle" id="more-maps">More maps <svg class="small"><use href="#i-chevron"/></svg></button></div>
         </section>
-        <section class="control-section"><div class="section-label">SIMULATION SPEED <output id="speed-value">12 steps/s</output></div><input id="speed" aria-label="Simulation speed" type="range" min="1" max="120" value="12"><div class="range-ends"><span>Observe</span><span>Accelerate</span></div></section>
+        <section class="control-section" id="speed-slot" aria-label="Simulation speed"></section>
         <div class="panel-tip"><svg><use href="#i-help"/></svg><p>Build a world. Explore a route.<br><span>Use the map tools to make it yours.</span></p></div>
       </div>
     </aside>
     <main class="main-workspace">
-      <div class="scene-heading"><div><div class="scene-eyebrow"><span class="live-dot"></span> SIMULATION ENVIRONMENT <span class="slash">/</span><span id="scene-grid-label">900 NODES</span></div><h1 id="city-name">New Metro District<span class="title-period">.</span></h1><p>A living sandbox for smarter journeys.</p></div><div class="scene-heading-actions"><button class="button free-build-entry" id="free-build-btn" aria-label="Free Build" aria-pressed="false" title="Free Build editor"><svg><use href="#i-road"/></svg><span>Free Build</span></button><button class="button mobile-toggle" id="toggle-controls" aria-label="Controls" aria-controls="control-panel" aria-expanded="false"><svg><use href="#i-settings"/></svg><span>Controls</span></button><button class="button subtle" id="compare-btn" aria-label="Compare algorithms" title="Compare algorithms (X)"><svg><use href="#i-chart"/></svg><span>Compare</span><kbd>X</kbd></button><button class="icon-button" id="fullscreen-btn" title="Focus on the map (G)" aria-label="Focus on the map" aria-pressed="false"><svg><use href="#i-focus"/></svg></button><button class="button mobile-toggle" id="toggle-analytics" title="Analytics" aria-label="Open analytics" aria-controls="analytics-panel" aria-expanded="false"><svg><use href="#i-chart"/></svg><span>Insights</span></button></div></div>
       <div class="viewport" id="viewport">
         <canvas id="city-canvas" tabindex="0" aria-label="Interactive 3D city. Use the tools to edit terrain, start and goal. Drag to orbit, scroll to zoom."></canvas>
         <div class="viewport-vignette"></div>
-        <div class="builder-workspace" id="builder-workspace" hidden aria-label="Free Build editor">
-          <div class="builder-toolbar">
-            <div class="builder-heading"><span class="builder-mode"><i></i>FREE BUILD<small id="build-area">Auto-grow canvas</small></span><div class="builder-history"><button class="icon-button" id="build-undo" aria-label="Undo build stroke" title="Undo (Ctrl+Z)" disabled><svg><use href="#i-back"/></svg></button><button class="icon-button" id="build-redo" aria-label="Redo build stroke" title="Redo (Ctrl+Y)" disabled><svg><use href="#i-step"/></svg></button></div><button class="button subtle" id="build-blank">New canvas</button><button class="button builder-done" id="builder-done"><svg><use href="#i-check"/></svg>Done</button></div>
-            <div class="builder-tools" aria-label="Build tools"><button class="button active" id="build-tool-road" data-build-tool="road"><svg><use href="#i-road"/></svg>Road</button><button class="button" id="build-tool-wall" data-build-tool="wall"><svg><use href="#i-city"/></svg>Building</button><button class="button" id="build-tool-erase" data-build-tool="erase"><svg><use href="#i-erase"/></svg>Erase</button><button class="icon-button" id="build-tool-start" data-build-tool="start" aria-label="Place build origin" title="Place origin"><svg><use href="#i-pin"/></svg></button><button class="icon-button" id="build-tool-goal" data-build-tool="goal" aria-label="Place build destination" title="Place destination"><svg><use href="#i-flag"/></svg></button></div>
-            <div class="builder-options"><label>Surface<select id="build-surface"><option value="road">Street · 1×</option><option value="highway">Highway · 0.5×</option><option value="traffic">Traffic · 3×</option><option value="mud">Mud · 10×</option></select></label><label>Brush<select id="brush-size"><option value="1">Fine · 1 block</option><option value="3">Medium · 3 blocks</option><option value="5">Wide · 5 blocks</option></select></label><label class="builder-guides"><input type="checkbox" id="grid-guides">Guides</label></div>
+        <div class="workspace-actions" id="workspace-actions" role="toolbar" aria-label="Workspace panels">
+          <button class="button free-build-entry" id="free-build-btn" aria-label="Free Build" aria-pressed="false" title="Free Build editor"><svg><use href="#i-road"/></svg><span>Free Build</span></button>
+          <button class="button" id="nav-simulation" aria-controls="control-panel" aria-expanded="false" title="Controls" aria-label="Controls"><svg><use href="#i-settings"/></svg><span>Controls</span></button>
+          <button class="button" id="nav-compare" title="Compare algorithms (X)" aria-label="Compare algorithms"><svg><use href="#i-chart"/></svg><span>Compare</span></button>
+          <button class="button" id="toggle-analytics" aria-label="Insights" aria-controls="analytics-panel" aria-expanded="false" title="Live insights"><svg><use href="#i-chart"/></svg><span>Insights</span></button>
+        </div>
+        <div class="map-commandbar" id="map-commandbar" role="toolbar" aria-label="Simulation tools">
+          <div class="command-search" id="command-search"><label for="algorithm">Algorithm</label><div class="select-wrap compact"><select id="algorithm" aria-label="Search algorithm"><option value="astar">A* Search</option><option value="dijkstra">Dijkstra</option><option value="bidir">Bidirectional Search</option><option value="dstar">D* Lite</option><option value="theta">Theta* · Any-angle</option><option value="jps">Jump Point Search</option><option value="greedy">Greedy Best-first</option><option value="bfs">Breadth-first Search</option><option value="dfs">Depth-first Search</option></select></div></div>
+          <div class="command-learning" id="command-learning" hidden><label>Episodes<input id="quick-episodes" type="number" min="10" max="100000" step="100" value="3000"></label><button class="button" id="quick-policy"><svg><use href="#i-play"/></svg>Test policy</button></div>
+          <div class="command-speed" id="command-speed"><label for="speed">Speed <output id="speed-value">12 steps/s</output></label><input id="speed" aria-label="Simulation speed" type="range" min="1" max="120" value="12"></div>
+        </div>
+        <div class="map-environment" id="map-environment" role="group" aria-label="Map settings">
+          <div class="environment-primary">
+          <label class="command-grid" id="command-grid">Grid <select id="grid-size"><option value="15">15 × 15</option><option value="20">20 × 20</option><option value="30" selected>30 × 30</option><option value="40">40 × 40</option><option value="50">50 × 50</option><option value="60">60 × 60</option><option value="70">70 × 70</option><option value="80">80 × 80</option><option value="90">90 × 90</option><option value="100">100 × 100</option></select></label>
+          <div class="command-map"><button class="button" id="quick-maps"><svg><use href="#i-layers"/></svg>Maps</button><button class="icon-button" id="quick-regenerate" aria-label="Regenerate map" title="Regenerate with a new seed"><svg><use href="#i-shuffle"/></svg></button></div>
           </div>
-          <div class="builder-hint"><svg><use href="#i-help"/></svg><span id="build-help">Draw beyond the edge to expand the canvas. Up to 100 × 100 blocks.</span></div>
+          <div class="command-switches"><label title="Allow eight directions without cutting corners"><input type="checkbox" id="quick-diagonal">Diagonal</label><label title="Adapt the route when the city changes"><input type="checkbox" id="quick-replan" checked>Replan</label></div>
+        </div>
+
+        <div class="builder-workspace" id="builder-workspace" hidden aria-label="Free Build editor">
+          <div class="builder-toolbar" id="builder-toolbar" role="toolbar" aria-label="Free Build tools">
+            <span class="builder-mode"><i></i>BUILD</span>
+            <div class="builder-tools" aria-label="Build tools"><button class="button active" id="build-tool-road" data-build-tool="road" aria-label="Road" title="Draw road (P)"><svg><use href="#i-road"/></svg><span>Road</span></button><button class="button" id="build-tool-wall" data-build-tool="wall" aria-label="Building" title="Place building (1)"><svg><use href="#i-city"/></svg><span>Building</span></button><button class="button" id="build-tool-erase" data-build-tool="erase" aria-label="Erase" title="Erase (4)"><svg><use href="#i-erase"/></svg><span>Erase</span></button><button class="icon-button" id="build-tool-start" data-build-tool="start" aria-label="Place build origin" title="Place origin (2)"><svg><use href="#i-pin"/></svg></button><button class="icon-button" id="build-tool-goal" data-build-tool="goal" aria-label="Place build destination" title="Place destination (3)"><svg><use href="#i-flag"/></svg></button></div>
+            <div class="builder-options"><label>Surface<select id="build-surface"><option value="road">Street · 1×</option><option value="highway">Highway · 0.5×</option><option value="traffic">Traffic · 3×</option><option value="mud">Mud · 10×</option></select></label><label>Brush width<select id="brush-size"><option value="1">1 block</option><option value="3">3 blocks</option><option value="5">5 blocks</option></select></label></div>
+            <label class="builder-guides"><input type="checkbox" id="grid-guides">Guides</label>
+            <div class="builder-history"><button class="icon-button" id="build-undo" aria-label="Undo build stroke" title="Undo (Ctrl+Z)" disabled><svg><use href="#i-back"/></svg></button><button class="icon-button" id="build-redo" aria-label="Redo build stroke" title="Redo (Ctrl+Y)" disabled><svg><use href="#i-step"/></svg></button></div>
+            <button class="button subtle" id="build-blank"><svg><use href="#i-plus"/></svg>New canvas</button>
+            <small id="build-area">30 × 30 · auto-grow</small>
+            <button class="button builder-done" id="builder-done"><svg><use href="#i-check"/></svg><span>Done</span></button>
+          </div>
+          <p class="sr-only" id="build-help">Draw beyond the edge to expand the canvas. Up to 200 × 200 blocks.</p>
         </div>
         <div class="view-label"><span class="live-dot"></span><span id="view-name">PERSPECTIVE</span><span class="view-divider"></span><span id="city-seed">SEED 2084</span></div>
         <div class="lighting-control" aria-label="City lighting"><button data-light="day" title="Daylight" aria-label="Daylight"><svg><use href="#i-sun"/></svg></button><button data-light="dusk" class="active" title="Golden hour" aria-label="Golden hour"><span class="sunset-icon"></span></button><button data-light="night" title="Night" aria-label="Night"><svg><use href="#i-moon"/></svg></button></div>
-        <div class="map-tools" id="map-tools" aria-label="City editing tools"><button class="map-tool tool-expander" id="tools-expand" aria-label="More terrain tools" aria-expanded="false" data-tooltip="Terrain & elevation tools"><svg><use href="#i-terrain"/></svg></button></div>
+        <div class="map-tools" id="map-tools" aria-label="City editing tools"><button class="map-tool tool-expander" id="tools-expand" aria-label="More terrain tools" aria-controls="terrain-palette" aria-expanded="false" data-tooltip="Terrain & elevation tools"><svg><use href="#i-terrain"/></svg></button></div>
+        <section class="terrain-palette" id="terrain-palette" hidden aria-label="Terrain and elevation tools"><div class="terrain-heading"><h2>Terrain & elevation</h2><button class="icon-button" id="terrain-close" aria-label="Close terrain tools"><svg><use href="#i-close"/></svg></button></div><div class="terrain-section"><h3>Road surfaces</h3><div class="terrain-tool-grid" id="terrain-surfaces"></div></div><div class="terrain-section"><h3>Elevation</h3><div class="terrain-tool-grid" id="terrain-elevation"></div></div></section>
         <div class="cell-tooltip" id="cell-tooltip" hidden></div>
-        <div class="north-indicator"><span>N</span><svg viewBox="0 0 40 40"><path d="m20 5 7 23-7-5-7 5 7-23Z"/></svg></div>
+        <button class="north-indicator" id="compass" type="button" aria-label="Reset camera bearing to north" title="Reset camera bearing to north" disabled><span class="compass-north" aria-hidden="true">N</span><svg class="compass-needle" id="compass-needle" viewBox="0 0 40 40" aria-hidden="true"><path d="m20 5 7 23-7-5-7 5 7-23Z"/></svg><span class="compass-bearing" id="compass-bearing" aria-hidden="true">000°</span></button>
         <div class="map-legend"><span><i style="--legend:#66d9bd"></i>Route</span><span><i style="--legend:#6baabb"></i>Explored</span><span><i style="--legend:#e1b979"></i>Frontier</span><span><i style="--legend:#b28baf"></i>Destination</span></div>
         <div class="camera-dock"><button class="active" data-camera="isometric" title="Isometric view"><svg><use href="#i-city"/></svg><span>3D</span></button><button data-camera="top" title="Top-down view"><svg><use href="#i-layers"/></svg><span>Top</span></button><button data-camera="street" title="Street-level view"><svg><use href="#i-eye"/></svg><span>Street</span></button><span></span><button id="orbit-btn" title="Automatic camera orbit" aria-label="Automatic camera orbit" aria-pressed="false"><svg><use href="#i-reset"/></svg></button><button id="reset-camera" title="Fit the whole city" aria-label="Fit city"><svg><use href="#i-focus"/></svg></button></div>
         <div class="map-zoom" aria-label="Map zoom"><button id="zoom-in" aria-label="Zoom in" title="Zoom in"><svg><use href="#i-plus"/></svg></button><button id="zoom-out" aria-label="Zoom out" title="Zoom out"><svg><use href="#i-minus"/></svg></button></div>
-        <div class="map-summary" aria-label="Simulation summary"><button id="quick-algorithm" aria-label="Choose search algorithm" aria-controls="control-panel" aria-expanded="false"><svg><use href="#i-route"/></svg><span id="quick-algorithm-name">A* Search</span><svg class="small"><use href="#i-chevron"/></svg></button><span class="summary-stat"><b id="quick-visited">0</b> explored</span><span class="summary-stat"><b id="quick-cost">—</b> travel cost</span></div>
         <button class="button restore-map-ui" id="restore-map-ui" hidden><svg><use href="#i-focus"/></svg>Show controls <kbd>G</kbd></button>
         <div class="map-scale"><span></span><small id="map-scale-label">5 city blocks</small></div>
         <div class="scene-loading" id="scene-loading"><span class="loading-mark"></span><strong>Building your city</strong><small>Architecture. Atmosphere. Possibility.</small></div>
@@ -141,7 +171,7 @@
       </div>
       <div class="transport"><div class="playback-buttons"><button class="icon-button" id="back-btn" title="Previous step (B)" aria-label="Previous step"><svg><use href="#i-back"/></svg></button><button class="run-button" id="run-btn"><svg><use href="#i-play"/></svg><span>Run simulation</span><kbd>␣</kbd></button><button class="icon-button" id="step-btn" title="Next step (S)" aria-label="Next step"><svg><use href="#i-step"/></svg></button><button class="icon-button" id="finish-btn" title="Finish search" aria-label="Finish search"><svg><use href="#i-fast"/></svg></button><span class="transport-divider"></span><button class="icon-button" id="reset-btn" title="Reset path (R)" aria-label="Reset path"><svg><use href="#i-reset"/></svg></button></div><div class="history-control"><div><span id="playback-label">READY TO EXPLORE</span><span id="history-label">STEP 000 / 000</span></div><input id="history" type="range" value="0" min="0" max="1" aria-label="Search history" disabled></div><div class="transport-state"><span class="live-dot" id="state-dot"></span><span id="state-label">Ready</span></div></div>
     </main>
-    <aside class="analytics-panel" id="analytics-panel" aria-label="Live simulation analytics"><div class="panel-heading"><div><span class="eyebrow">EVERY DECISION, VISIBLE</span><h2>Live insights</h2></div><span class="live-badge">LIVE</span><button class="icon-button mobile-close" id="close-analytics" aria-label="Close analytics"><svg><use href="#i-close"/></svg></button></div>
+    <aside class="analytics-panel" id="analytics-panel" aria-label="Live simulation analytics"><div class="panel-heading"><div><span class="eyebrow">EVERY DECISION, VISIBLE</span><h2>Live insights</h2></div><span class="live-badge">LIVE</span><div class="panel-heading-actions"><button class="icon-button panel-pin" id="pin-insights" aria-label="Pin insights" aria-pressed="false" title="Keep insights open"><svg><use href="#i-tack"/></svg></button><button class="icon-button mobile-close" id="close-analytics" aria-label="Close analytics"><svg><use href="#i-close"/></svg></button></div></div>
       <div class="panel-scroll"><div class="analytics-tabs"><button class="active" id="insights-tab">Overview</button><button id="activity-tab">Activity <span id="log-count">0</span></button></div>
         <div id="insights-content"><div class="metrics-grid"><div class="metric"><span>Nodes explored</span><strong id="stat-visited">0<small>/ 900</small></strong><div class="metric-line"><i id="coverage-bar"></i></div></div><div class="metric"><span>Frontier nodes</span><strong id="stat-frontier">0</strong><small class="metric-caption">Awaiting discovery</small></div><div class="metric"><span>Route length</span><strong id="stat-path">—</strong><small class="metric-caption">route vertices</small></div><div class="metric"><span>Travel cost</span><strong class="mint" id="stat-cost">—</strong><small class="metric-caption">weighted units</small></div><div class="metric"><span>Compute time</span><strong id="stat-time">0<small>ms</small></strong><small class="metric-caption">algorithm execution</small></div><div class="metric"><span>Search coverage</span><strong id="stat-coverage">0<small>%</small></strong><small class="metric-caption">of walkable nodes</small></div></div>
           <section class="insight-section"><div class="section-label">JOURNEY <span id="route-badge" class="tiny-tag">NOT STARTED</span></div><div class="journey"><div><i class="origin-dot"></i><span>Origin<small id="origin-label">BLOCK 15 · AVE 03</small></span><button class="icon-button" id="edit-start" title="Place origin" aria-label="Place origin"><svg><use href="#i-pin"/></svg></button></div><span class="journey-connector"></span><div><i class="goal-dot"></i><span>Destination<small id="goal-label">BLOCK 15 · AVE 26</small></span><button class="icon-button" id="edit-goal" title="Place destination" aria-label="Place destination"><svg><use href="#i-flag"/></svg></button></div></div></section>
