@@ -1,110 +1,90 @@
-# MetroMind AI — Advanced Pathfinding & RL Simulator (v11.0)
+# MetroMind AI
 
-![MetroMind AI](https://img.shields.io/badge/Status-Full%20Feature%20Release-success?style=for-the-badge) ![Version](https://img.shields.io/badge/Version-11.0--Standalone-blue?style=for-the-badge) ![AI Project](https://img.shields.io/badge/AI%20Paradigm-Classical%20%2B%20RL-purple?style=for-the-badge)
+MetroMind AI is a browser simulator for pathfinding and reinforcement learning. Compare nine search algorithms on the same map, change roads or obstacles to watch D* Lite repair a route, and train a Q-learning agent to find its own way. Choose the 2D grid for inspecting individual search steps or 3D City Studio for exploring and editing a procedural city.
 
-**MetroMind AI** is a premium, high-performance simulation platform designed to explore and visualize the intersection of classical pathfinding algorithms and modern Reinforcement Learning. Built with a sleek cyberpunk aesthetic, it provides an interactive playground for urban routing optimization, weighted terrain analysis, and autonomous agent training.
+## Interactive previews
 
-The standalone and modular editions have the same interface and features, including D* Lite dynamic replanning. Open `MetroMind_AI_v11.html` directly for the single-file edition, or serve `modular_version/` to use the ES modules. The standalone file is generated from the modular sources; see the [synchronization instructions](modular_version/README.md#keep-both-editions-synchronized) before making changes.
+Expand or collapse each preview by clicking its title. Click an image to see it at full size. To run the simulator and edit the map yourself, download the standalone HTML below the preview and open it in a browser.
 
-**3D City Studio:** Open `MetroMind AI 3D.html` for the immersive city edition: procedural architecture, animated street traffic, day/dusk/night lighting, editable terrain, nine search algorithms, incremental D* Lite, Q-learning, search playback, comparisons, and downloadable experiments. Its complete runtime is embedded for offline use. Editable sources, build instructions, controls, and verification are in [`3d/README.md`](3d/README.md). The original prototype is preserved in `old_versions/MetroMind_AI_3D_original.html`.
+<details open>
+<summary><strong>3D City Studio · Explore a completed route</strong></summary>
 
----
+[![3D City Studio orbiting a completed route through Downtown at dusk, with the live insights panel open](docs/media/city-studio.webp)](docs/media/city-studio.webp)
 
-## Table of Contents
+Orbit the city, draw roads and buildings in **Free Build**, and inspect routes with **Insights**. Try **Run simulation** on the default Downtown map, then drag the city to change your view.
 
-- [Overview](#overview)
-- [Key Features](#key-features-v110)
-- [Keyboard Shortcuts](#keyboard-shortcuts)
-- [Reinforcement Learning Suite](#reinforcement-learning-suite)
-- [Technical Implementation](#technical-implementation)
-- [Quick Start](#quick-start)
-- [Roadmap](#roadmap)
+[Standalone 3D HTML](MetroMind%20AI%203D.html) · [3D controls and development guide](3d/README.md)
 
----
+</details>
 
-## Overview
+<details open>
+<summary><strong>2D Grid Lab · Watch A* explore a corridor maze</strong></summary>
 
-MetroMind AI transforms traditional grid-search visualization into a comprehensive **AI learning platform**. Version 11 introduces a highly optimized, **all-in-one standalone engine** that packs advanced pathfinding logic, a Q-Learning agent, and real-time performance analytics into a single high-performance file.
+[![A* expanding across a 2D corridor maze and tracing the route from start to goal](docs/media/grid-lab.webp)](docs/media/grid-lab.webp)
 
----
+Draw walls and weighted terrain, step backward through search history, and compare all nine algorithms with **X**. For a live reroute, select **D* Lite**, click **Find Path**, and draw a wall across the route.
 
-## Key Features (v11.0)
+[Standalone 2D HTML](MetroMind_AI_v11.html) · [2D modular development guide](modular_version/README.md)
 
-1. **Q-Learning Reinforcement Learning**: Train an autonomous agent to navigate complex grids. Featuring live Q-value heatmaps, policy arrow overlays, and reward convergence sparklines.
-2. **Algorithm Comparison Mode**: Compare 9 algorithms with performance tracking and "Winner" badges for Speed and Optimality.
-3. **Advanced Pathfinding Suite**: Includes 9 algorithms:
-    - **Dynamic**: D* Lite repairs the active route when walls or terrain change, with pause/resume and single-step controls.
-    - **Optimized**: Jump Point Search (JPS) & Theta* (Any-Angle).
-    - **Classical**: A*, Dijkstra, Bidirectional A*, BFS, DFS, Greedy BFS.
-4. **Weighted Urban Terrain**: Simulate realistic city conditions with **Highways (0.5x)**, **Heavy Traffic (3.0x)**, and **Mud (10.0x)**.
-5. **📊 Export & Analytics**: Download full run statistics as **CSV** or grid layouts as **JSON** for external analysis.
-6. **🌌 Premium Visuals**: Cyberpunk dark mode with glassmorphism, scanlines, and reactive background animations that pulse with search intensity.
-7. **🖥️ Full-Screen HUD**: Immersive full-screen mode with an integrated telemetry HUD for focused experiments.
-8. **📱 Full Mobile Support**: Fully responsive design with intelligent sidebar drawers and touch-optimized controls. Panels auto-collapse on smaller screens to maximize grid real estate.
+</details>
 
----
+## Run locally
 
-## Keyboard Shortcuts
+Download or clone this repository and open either standalone HTML file in a modern browser. Both embed the code needed to run offline. The 3D edition requires WebGL.
 
-| Key | Action |
-| :--- | :--- |
-| `Space` | Play / Pause Search |
-| `X` | Algorithm Comparison Mode |
-| `Tab` | Toggle Sidebar Panels |
-| `G` | Toggle Fullscreen Mode |
-| `1` - `4` | Select Tools (Wall, Start, Goal, Erase) |
-| `5` - `7` | Select Terrain (Highway, Traffic, Mud) |
-| `S` / `F` | Step Search / Fast Forward |
-| `B` | Step Backward through History |
-| `R` | Reset Current Path |
-| `C` | Clear Grid Entirely |
-| `?` | Show Shortcuts Panel |
+| Edition | Standalone file | Editable source |
+| --- | --- | --- |
+| 3D City Studio | [MetroMind AI 3D.html](MetroMind%20AI%203D.html) | [3d/](3d/) |
+| 2D Grid Lab | [MetroMind_AI_v11.html](MetroMind_AI_v11.html) | [modular_version/](modular_version/) |
 
----
+## What you can try
 
-## Reinforcement Learning Suite
+- **Compare search strategies.** Run A*, Dijkstra, bidirectional search, BFS, DFS, greedy best-first search, Jump Point Search, Theta*, and D* Lite. Use the comparison view to see how search effort and route cost change across algorithms.
+- **Experiment with route costs.** Paint highways (0.5×), heavy traffic (3×), or mud (10×). City Studio also lets you edit elevation. Use D* Lite to see how changing obstacles and costs affects an existing route.
+- **Train a Q-learning agent.** Adjust learning parameters, follow reward trends, and inspect the learned policy with arrows and Q-value overlays. City Studio can also show learned values as columns above the map.
+- **Inspect and export runs.** Pause, step through search history, export run statistics as CSV, and save a map as JSON to revisit it later.
 
-The RL dashboard provides a deep dive into autonomous learning:
+| Shortcut | Action |
+| --- | --- |
+| Space | Start or pause search |
+| X | Open algorithm comparison |
+| S / B | Step forward or backward through the search |
+| R | Reset the current route |
+| G | Focus on the map |
+| ? | Open the edition's shortcut guide |
 
-- **Heatmap Overlay**: Real-time coloring of cells based on maximum predicted Q-values.
-- **Policy Arrows**: Visualizes the agent's preferred direction for every cell with confidence-based opacity.
-- **Hyperparameter Control**: Adjust Learning Rate (α), Discount Factor (γ), and Epsilon Decay live.
-- **Convergence Tracking**: Multi-metric sparklines tracking episodes, epsilon decay, and average rewards.
+## Develop and rebuild
 
----
+Edit the source directory for your edition and regenerate its standalone file. To serve both source editions for local development, run this command from the repository root:
 
-## Technical Implementation
+```powershell
+python -m http.server 8000
+```
 
-### All-in-One Engine
+Open [3D City Studio](http://localhost:8000/3d/) or the [2D Grid Lab](http://localhost:8000/modular_version/MetroMind_AI_v11.html) after starting the server.
 
-Version 11 consolidates the project into a high-performance standalone HTML file for easier deployment and portability, while maintaining the modular architecture internally.
+For **3D City Studio**, build and check the standalone file from the repository root:
 
-- **Core Engine**: Vanilla ES6+ JS with `requestAnimationFrame` for smooth 60FPS+ rendering.
-- **Data Structures**: Optimized Min-Heaps (Priority Queues) for O(log n) frontier management.
-- **Styling**: Extensive use of CSS3 variables and backdrop filters for a premium UI feel.
+```powershell
+node 3d/scripts/build.cjs
+node 3d/scripts/build.cjs --check
+```
 
-### Multi-Platform & Mobile Optimization
+For **2D Grid Lab**, build, check parity, and run the tests:
 
-- **Responsive Architecture**: Adaptive layouts using advanced CSS Grid/Flexbox and media queries.
-- **Mobile UX**: Custom drawer-style sidebars with `position: absolute` on small screens, featuring auto-closing logic and touch-backdrop support.
-- **Standalone HUD**: `MetroMind_AI_v11.html` (Full cross-device feature set).
-- **Modular**: Found in the `/modular_version` directory for extension.
+```powershell
+cd modular_version
+npm ci
+npm run build
+npm run check:parity
+npm test
+```
 
----
-
-## Quick Start
-
-1. Open `MetroMind_AI_v11.html` in any modern web browser.
-2. Use the **Tool Selection** (top bar or `1-7`) to draw walls or terrains.
-3. Choose an algorithm in the **Algo** tab or switch to the **RL** tab.
-4. Press `Space` to solve or click **Train Agent** to begin the RL training loop.
-5. **Pro Tip**: Press `X` to watch all 8 algorithms race to the goal!
-
----
+See the [3D development guide](3d/README.md#edit-and-rebuild) and [2D synchronization guide](modular_version/README.md#keep-both-editions-synchronized) for source layouts and validation commands.
 
 ## Roadmap
 
-- [ ] D* Lite for dynamic replanning in changing environments.
-- [ ] Multi-agent coordination and collision avoidance.
-- [x] 3D City Studio using Three.js, with a standalone offline build.
-- [ ] GIS data ingestion for real-world city map simulation.
+- [x] D* Lite dynamic replanning
+- [x] 3D City Studio with a standalone offline build
+- [ ] Multi-agent coordination and collision avoidance
+- [ ] GIS data ingestion for real-world maps
