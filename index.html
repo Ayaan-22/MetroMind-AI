@@ -1,922 +1,254 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MetroMind AI · Browser Simulator for Pathfinding & RL</title>
-  <meta name="description" content="MetroMind AI is a quiet, browser-based simulator for pathfinding algorithms and reinforcement learning. Explore 3D City Studio and 2D Grid Lab offline.">
+  <meta name="theme-color" content="#101617">
+  <meta name="description" content="Explore the same pathfinding run in 2D Grid Lab and 3D City Studio. Build maps, compare nine algorithms, and train a Q-learning agent.">
+  <title>MetroMind AI · Pathfinding &amp; Reinforcement Learning</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23101617'/><path d='M8 22h4v-7H8zm6 0h4v-14h-4zm6 0h4v-10h-4z' fill='%239ce7c6'/></svg>">
-  
-  <style>
-    /* MetroMind Design Tokens · A quiet instrument for complex worlds */
-    :root {
-      color-scheme: dark;
-      --bg: #101617;
-      --surface: #151c1e;
-      --surface-raised: #1c2426;
-      --surface-hover: #222c2e;
-      --canvas: #1b2629;
-      --line: #2a3335;
-      --line-soft: #1f2729;
-      --text: #e7ece8;
-      --text-muted: #9aa9a4;
-      --text-dim: #71827e;
-      --mint: #9ce7c6;
-      --mint-dark: #112d20;
-      --mint-subtle: rgba(156, 231, 198, 0.08);
-      --amber: #d5b982;
-      --blue: #85b5c3;
-      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", Helvetica, Arial, sans-serif;
-      --mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      font-size: 14px;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    /* Container */
-    .container {
-      width: 100%;
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    /* Navigation */
-    header {
-      border-bottom: 1px solid var(--line);
-      background: var(--bg);
-      position: sticky;
-      top: 0;
-      z-index: 50;
-    }
-
-    .nav-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 64px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .brand-mark {
-      width: 24px;
-      height: 26px;
-      position: relative;
-      display: block;
-      transform: skewY(-16deg);
-    }
-
-    .brand-mark i {
-      position: absolute;
-      bottom: 0;
-      width: 5px;
-      background: var(--mint);
-      border-radius: 1px;
-    }
-
-    .brand-mark i:nth-child(1) { height: 14px; left: 0; }
-    .brand-mark i:nth-child(2) { height: 24px; left: 8px; }
-    .brand-mark i:nth-child(3) { height: 18px; left: 16px; }
-
-    .brand-info {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .brand-name {
-      font-size: 15px;
-      font-weight: 650;
-      letter-spacing: 0.5px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .version-tag {
-      font-family: var(--mono);
-      font-size: 9px;
-      color: var(--mint);
-      border: 1px solid rgba(156, 231, 198, 0.25);
-      padding: 1px 5px;
-      border-radius: 3px;
-    }
-
-    .brand-sub {
-      font-family: var(--mono);
-      font-size: 8px;
-      letter-spacing: 1.5px;
-      color: var(--text-dim);
-    }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .nav-links a {
-      color: var(--text-muted);
-      font-size: 13px;
-      transition: color 0.15s;
-    }
-
-    .nav-links a:hover {
-      color: var(--text);
-    }
-
-    .github-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      background: var(--surface-raised);
-      border: 1px solid var(--line);
-      border-radius: 5px;
-      font-size: 12px;
-      color: var(--text-muted);
-      transition: all 0.15s;
-    }
-
-    .github-link:hover {
-      color: var(--text);
-      border-color: #3b494d;
-      background: var(--surface-hover);
-    }
-
-    .github-link svg {
-      width: 14px;
-      height: 14px;
-      fill: currentColor;
-    }
-
-    /* Hero */
-    .hero {
-      padding: 64px 0 48px;
-      border-bottom: 1px solid var(--line-soft);
-    }
-
-    .hero-eyebrow {
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 1.2px;
-      color: var(--mint);
-      text-transform: uppercase;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .hero-eyebrow .dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--mint);
-    }
-
-    .hero h1 {
-      font-size: 32px;
-      font-weight: 600;
-      letter-spacing: -0.6px;
-      line-height: 1.25;
-      color: #f3f6f4;
-      max-width: 820px;
-      margin-bottom: 14px;
-    }
-
-    .hero p {
-      font-size: 15px;
-      color: var(--text-muted);
-      max-width: 780px;
-      line-height: 1.65;
-      margin-bottom: 28px;
-    }
-
-    /* Quick Launch Row */
-    .quick-launch-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 32px;
-    }
-
-    .btn-primary {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 18px;
-      background: var(--mint);
-      color: var(--mint-dark);
-      font-weight: 600;
-      font-size: 13px;
-      border-radius: 6px;
-      border: 1px solid #b3f1ce;
-      transition: background 0.15s, transform 0.15s;
-    }
-
-    .btn-primary:hover {
-      background: #b6f3d4;
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 18px;
-      background: var(--surface-raised);
-      color: var(--text);
-      font-weight: 500;
-      font-size: 13px;
-      border-radius: 6px;
-      border: 1px solid var(--line);
-      transition: all 0.15s;
-    }
-
-    .btn-secondary:hover {
-      background: var(--surface-hover);
-      border-color: #3b4b4e;
-      transform: translateY(-1px);
-    }
-
-    /* CLI Quick Run Box */
-    .cli-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 10px 14px;
-      max-width: 680px;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .cli-box code {
-      color: var(--mint);
-    }
-
-    .btn-copy {
-      background: transparent;
-      border: 1px solid var(--line);
-      color: var(--text-dim);
-      font-family: var(--mono);
-      font-size: 10px;
-      padding: 3px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .btn-copy:hover {
-      color: var(--text);
-      border-color: var(--text-dim);
-    }
-
-    /* Editions Section */
-    .section-title {
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: -0.3px;
-      margin: 44px 0 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .section-title small {
-      font-family: var(--mono);
-      font-size: 10px;
-      font-weight: 400;
-      color: var(--text-dim);
-      letter-spacing: 0.5px;
-    }
-
-    .editions-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 24px;
-      margin-bottom: 56px;
-    }
-
-    .edition-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      transition: border-color 0.2s;
-    }
-
-    .edition-card:hover {
-      border-color: #3d4f52;
-    }
-
-    .card-media {
-      position: relative;
-      width: 100%;
-      height: 240px;
-      background: #141c1e;
-      border-bottom: 1px solid var(--line-soft);
-      overflow: hidden;
-    }
-
-    .card-media img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.25s ease;
-    }
-
-    .edition-card:hover .card-media img {
-      transform: scale(1.02);
-    }
-
-    .card-meta-bar {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      display: flex;
-      gap: 6px;
-    }
-
-    .badge-subtle {
-      font-family: var(--mono);
-      font-size: 9.5px;
-      padding: 3px 7px;
-      background: rgba(16, 22, 23, 0.85);
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      color: var(--text-muted);
-      backdrop-filter: blur(4px);
-    }
-
-    .badge-subtle.mint {
-      color: var(--mint);
-      border-color: rgba(156, 231, 198, 0.3);
-    }
-
-    .card-content {
-      padding: 22px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-    }
-
-    .card-head {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      margin-bottom: 8px;
-    }
-
-    .card-head h2 {
-      font-size: 19px;
-      font-weight: 600;
-    }
-
-    .card-head span {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--text-dim);
-    }
-
-    .card-desc {
-      font-size: 13.5px;
-      color: var(--text-muted);
-      line-height: 1.6;
-      margin-bottom: 18px;
-    }
-
-    .feature-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-      margin-bottom: 22px;
-      font-size: 12.5px;
-      color: var(--text-muted);
-    }
-
-    .feature-list li {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .feature-list li::before {
-      content: "";
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: var(--mint);
-      flex-shrink: 0;
-    }
-
-    .card-actions {
-      margin-top: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .btn-launch-edition {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px;
-      background: var(--mint);
-      color: var(--mint-dark);
-      font-weight: 600;
-      font-size: 13px;
-      border-radius: 5px;
-      border: 1px solid #b3f1ce;
-      transition: background 0.15s;
-    }
-
-    .btn-launch-edition:hover {
-      background: #bbf6dc;
-    }
-
-    .btn-source-edition {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 8px;
-      background: transparent;
-      border: 1px solid var(--line);
-      color: var(--text-dim);
-      font-size: 11.5px;
-      font-family: var(--mono);
-      border-radius: 5px;
-      transition: all 0.15s;
-    }
-
-    .btn-source-edition:hover {
-      color: var(--text);
-      border-color: #3b4b4e;
-      background: var(--surface-raised);
-    }
-
-    /* Algorithms Table */
-    .table-section {
-      margin-bottom: 56px;
-    }
-
-    .table-wrap {
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      overflow-x: auto;
-      background: var(--surface);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 12.5px;
-    }
-
-    th, td {
-      padding: 11px 16px;
-      border-bottom: 1px solid var(--line-soft);
-    }
-
-    th {
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--text-dim);
-      background: #12191b;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      font-weight: 500;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
-
-    tr:hover td {
-      background: rgba(255, 255, 255, 0.015);
-    }
-
-    td.code-cell {
-      font-family: var(--mono);
-      color: var(--text);
-      font-size: 12px;
-    }
-
-    td.tag-cell span {
-      font-family: var(--mono);
-      font-size: 9px;
-      padding: 2px 6px;
-      border-radius: 3px;
-      background: var(--surface-raised);
-      border: 1px solid var(--line);
-      color: var(--text-muted);
-    }
-
-    td.tag-cell span.highlight {
-      color: var(--mint);
-      border-color: rgba(156, 231, 198, 0.25);
-      background: rgba(156, 231, 198, 0.05);
-    }
-
-    /* Shortcuts and Reference */
-    .shortcuts-section {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      padding: 16px 20px;
-      margin-bottom: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 14px;
-    }
-
-    .shortcuts-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .shortcuts-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-    }
-
-    .shortcut-node {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    kbd {
-      font-family: var(--mono);
-      font-size: 10px;
-      padding: 2px 5px;
-      background: var(--surface-raised);
-      border: 1px solid var(--line);
-      border-radius: 3px;
-      color: var(--text);
-    }
-
-    /* Footer */
-    footer {
-      border-top: 1px solid var(--line);
-      padding: 32px 0 44px;
-      font-size: 12px;
-      color: var(--text-dim);
-    }
-
-    .footer-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    .footer-links {
-      display: flex;
-      gap: 18px;
-    }
-
-    .footer-links a {
-      color: var(--text-muted);
-      transition: color 0.15s;
-    }
-
-    .footer-links a:hover {
-      color: var(--text);
-    }
-
-    @media (max-width: 768px) {
-      .editions-grid {
-        grid-template-columns: 1fr;
-      }
-      .nav-links {
-        display: none;
-      }
-      .hero h1 {
-        font-size: 26px;
-      }
-      .cli-box {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="3d/css/select.css">
+  <link rel="stylesheet" href="dashboard/dashboard.css">
+  <script defer src="3d/vendor/three.min.js"></script>
+  <script defer src="3d/vendor/OrbitControls.js"></script>
+  <script defer src="3d/js/engine.js"></script>
+  <script defer src="3d/js/city.js"></script>
+  <script defer src="3d/js/select.js"></script>
+  <script defer src="dashboard/dashboard.js"></script>
 </head>
 <body>
-  <!-- Header Navigation -->
-  <header>
-    <div class="container nav-inner">
-      <div class="brand">
-        <span class="brand-mark">
-          <i></i><i></i><i></i>
-        </span>
-        <div class="brand-info">
-          <div class="brand-name">
-            MetroMind AI
-            <span class="version-tag">v11.0</span>
-          </div>
-          <span class="brand-sub">SIMULATION WORKBENCH</span>
-        </div>
-      </div>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 12h17M12 3.5v17"/></symbol>
+    <symbol id="i-cube" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Zm0 9 8-4.5M12 12 4 7.5M12 12v9"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7Z" fill="currentColor"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14m6-14v14" stroke-width="3"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m7 9 5 5 5-5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 15A8.8 8.8 0 0 1 9 3.5 8.8 8.8 0 1 0 20.5 15Z"/></symbol>
+    <symbol id="i-dusk" viewBox="0 0 24 24"><path d="M3 17h18M6 21h12M7 17a5 5 0 1 1 10 0M12 3v3M4 8l2 2m14-2-2 2"/></symbol>
+    <symbol id="i-north" viewBox="0 0 24 24"><path d="m12 3 6 16-6-3-6 3 6-16Z"/></symbol>
+    <symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="18" cy="19" r="2"/><path d="M8 5h7a3.5 3.5 0 0 1 0 7H9a3.5 3.5 0 0 0 0 7h7"/></symbol>
+  </svg>
 
-      <nav class="nav-links">
+  <header class="site-header">
+    <div class="container nav-inner">
+      <a class="brand" href="index.html" aria-label="MetroMind AI home">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="brand-info">
+          <span class="brand-name">MetroMind AI <span class="version-tag">v11.0</span></span>
+          <span class="brand-sub">Simulation workbench</span>
+        </span>
+      </a>
+
+      <nav class="nav-links" aria-label="Main navigation">
         <a href="#editions">Editions</a>
         <a href="#algorithms">Algorithms</a>
         <a href="#shortcuts">Shortcuts</a>
         <a href="https://github.com/Ayaan-22/MetroMind-AI" target="_blank" rel="noopener noreferrer" class="github-link">
-          <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          <span>Ayaan-22 / MetroMind-AI</span>
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
         </a>
       </nav>
     </div>
   </header>
 
   <main class="container">
-    <!-- Hero -->
-    <section class="hero">
-      <div class="hero-eyebrow">
-        <span class="dot"></span>
-        <span>A quiet instrument for complex worlds</span>
-      </div>
-      <h1>A browser simulator for pathfinding and reinforcement learning.</h1>
-      <p>
-        Compare nine search algorithms on identical topography, modify roads or obstacles to watch D* Lite repair routes in real time, and train a Q-learning agent to navigate custom cities. Runs entirely in your browser with zero server setup.
-      </p>
+    <section class="atlas" id="editions" aria-labelledby="hero-title">
+      <header class="intro">
+        <h1 id="hero-title">Pathfinding <em>in motion.</em></h1>
+        <p>Watch the same search play out on a 2D grid and in a 3D city. Then open either simulator to build your own map.</p>
+      </header>
 
-      <div class="quick-launch-row">
-        <a href="metromind-3d.html" class="btn-primary">
-          <span>Open 3D City Studio</span>
-          <span style="font-family: var(--mono); font-size: 11px; opacity: 0.85;">&rarr;</span>
-        </a>
-        <a href="metromind-2d.html" class="btn-secondary">
-          <span>Open 2D Grid Lab</span>
-          <span style="font-family: var(--mono); font-size: 11px; color: var(--text-dim);">&rarr;</span>
-        </a>
-      </div>
+      <article class="city-edition" aria-labelledby="city-title">
+        <div class="preview city-preview" id="city-preview">
+          <img class="preview-photo" id="city-snapshot" src="dashboard/city-studio-poster.webp" alt="City Studio showing a route through Downtown at dusk">
+          <canvas id="city-canvas" aria-label="Interactive 3D view of the shared Downtown route" hidden></canvas>
 
-      <!-- Local Command Box -->
-      <div class="cli-box">
-        <span>Serve locally: <code>python -m http.server 8000</code></span>
-        <button class="btn-copy" onclick="navigator.clipboard.writeText('python -m http.server 8000'); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000);">Copy</button>
-      </div>
+          <header class="city-heading">
+            <div class="edition-heading">
+              <svg aria-hidden="true"><use href="#i-cube"/></svg>
+              <h2 id="city-title">3D City Studio</h2>
+            </div>
+            <span class="map-label">Downtown <span>30 × 30</span></span>
+          </header>
+
+          <div class="city-tools" id="city-tools" hidden>
+            <div class="city-gestures">
+              <span id="city-hint">Drag to orbit</span>
+              <button type="button" class="button scene-button" id="city-drag" hidden>Orbit city</button>
+            </div>
+            <div class="scene-actions" role="group" aria-label="City view controls">
+              <button type="button" class="button scene-button icon-button" id="city-north" title="Face north" aria-label="Face north"><svg aria-hidden="true"><use href="#i-north"/></svg></button>
+              <button type="button" class="button scene-button icon-button" id="city-light" title="Dusk lighting · Change to night" aria-label="Dusk lighting. Change to night."><svg aria-hidden="true"><use href="#i-dusk"/></svg></button>
+              <button type="button" class="button scene-button icon-button" id="city-motion" title="Pause scene motion" aria-label="Pause scene motion" aria-pressed="false"><svg aria-hidden="true"><use href="#i-pause"/></svg></button>
+            </div>
+          </div>
+          <p class="snapshot-label" id="city-snapshot-label" hidden>City Studio screenshot</p>
+        </div>
+        <div class="city-footer">
+          <p>Build streets, change elevation, and follow routes through traffic.</p>
+          <a class="button edition-launch" href="metromind-3d.html">Open City Studio</a>
+        </div>
+      </article>
+
+      <article class="grid-edition" aria-labelledby="grid-title">
+        <header class="grid-heading">
+          <div class="edition-heading">
+            <svg aria-hidden="true"><use href="#i-grid"/></svg>
+            <h2 id="grid-title">2D Grid Lab</h2>
+          </div>
+          <a class="grid-launch" href="metromind-2d.html">Open Grid Lab</a>
+        </header>
+        <div class="preview grid-preview" id="grid-preview">
+          <img class="preview-photo" id="grid-snapshot" src="dashboard/grid-lab-poster.webp" alt="Grid Lab showing A* exploring a corridor maze">
+          <canvas id="grid-canvas" role="img" aria-label="Overhead view of the shared Downtown route" hidden></canvas>
+        </div>
+      </article>
+
+      <section class="route-controls" id="demo-bar" aria-label="Shared route playback" hidden>
+        <div class="route-description">
+          <svg aria-hidden="true"><use href="#i-route"/></svg>
+          <div><strong id="demo-status" role="status">Route preview</strong><span id="demo-count"></span></div>
+        </div>
+        <ul class="legend" aria-label="Search legend">
+          <li class="legend-route">Route</li>
+          <li class="legend-visited">Visited</li>
+          <li class="legend-frontier">Frontier</li>
+        </ul>
+        <div class="demo-actions">
+          <div class="algorithm-select">
+            <select id="demo-algorithm" aria-label="Preview algorithm"><option value="astar">A* Search</option></select>
+            <svg aria-hidden="true"><use href="#i-chevron"/></svg>
+          </div>
+          <button type="button" id="demo-play" class="button button-play"><svg aria-hidden="true"><use href="#i-play"/></svg><span>Replay search</span></button>
+        </div>
+        <p id="demo-note" class="demo-note" hidden></p>
+      </section>
     </section>
 
-    <!-- Editions Grid -->
-    <section id="editions">
-      <div class="section-title">
-        <span>Available Editions</span>
-        <small>BOTH EDITIONS BUNDLE STANDALONE CODE FOR OFFLINE USE</small>
-      </div>
+    <div class="reference">
+      <section class="algorithm-reference" id="algorithms" aria-labelledby="algorithms-title">
+        <header class="reference-heading algorithm-heading">
+          <h2 id="algorithms-title">Algorithm capabilities</h2>
+          <p>Nine search strategies and Q-learning</p>
+        </header>
+        <p class="table-scroll-hint">Scroll horizontally to compare all columns.</p>
+        <div class="algorithm-table-scroll" role="region" aria-labelledby="algorithms-title" tabindex="0">
+          <table class="algorithm-table">
+            <thead>
+              <tr>
+                <th scope="col">Algorithm</th>
+                <th scope="col">Category</th>
+                <th scope="col">Runtime profile</th>
+                <th scope="col">Path guarantee</th>
+                <th scope="col">Dynamic replanning</th>
+                <th scope="col">Best for</th>
+              </tr>
+            </thead>
+            <tbody id="algorithm-rows">
+              <tr data-algorithm="astar">
+                <th scope="row">A* Search</th><td>Informed search</td><td>Cost and heuristic priority</td>
+                <td><span class="algorithm-tag">Conditional optimality</span></td><td>Full rerun</td>
+                <td>Point-to-point routing with a lower-bound distance estimate and heuristic weight 1.</td>
+              </tr>
+              <tr data-algorithm="dstar">
+                <th scope="row">D* Lite</th><td>Incremental search</td><td>Reuses previous search state</td>
+                <td><span class="algorithm-tag">Lowest cost</span></td><td><span class="algorithm-tag">Incremental repair</span></td>
+                <td>Repairing a route after a road closes or travel costs change.</td>
+              </tr>
+              <tr data-algorithm="theta">
+                <th scope="row">Theta*</th><td>Any-angle search</td><td>Line-of-sight checks</td>
+                <td>Any-angle approximation</td><td>Full rerun</td>
+                <td>Smoother routes that can cross open areas at any angle.</td>
+              </tr>
+              <tr data-algorithm="jps">
+                <th scope="row">Jump Point Search (JPS)</th><td>Grid pruning</td><td>Directional scans</td>
+                <td><span class="algorithm-tag">Conditional optimality</span></td><td>Full rerun</td>
+                <td>Skipping ahead on uniform grids. The preview uses A* on weighted or elevated terrain.</td>
+              </tr>
+              <tr data-algorithm="dijkstra">
+                <th scope="row">Dijkstra</th><td>Uniform-cost search</td><td>Expands lowest cost first</td>
+                <td><span class="algorithm-tag">Lowest cost</span></td><td>Full rerun</td>
+                <td>Finding the cheapest path on a weighted map.</td>
+              </tr>
+              <tr data-algorithm="bidir">
+                <th scope="row">Bidirectional search</th><td>Two-frontier search</td><td>Explores from both ends</td>
+                <td><span class="algorithm-tag">Lowest cost</span> in the preview</td><td>Full rerun</td>
+                <td>Connecting a known origin and destination by searching from both ends.</td>
+              </tr>
+              <tr data-algorithm="greedy">
+                <th scope="row">Greedy best-first</th><td>Heuristic search</td><td>Prioritizes estimated distance</td>
+                <td>No cost guarantee</td><td>Full rerun</td>
+                <td>Exploring toward the destination when route cost is secondary.</td>
+              </tr>
+              <tr data-algorithm="bfs">
+                <th scope="row">Breadth-first (BFS)</th><td>Graph traversal</td><td>O(V + E)</td>
+                <td><span class="algorithm-tag">Fewest moves</span></td><td>Full rerun</td>
+                <td>Finding the fewest steps when all moves have equal cost.</td>
+              </tr>
+              <tr data-algorithm="dfs">
+                <th scope="row">Depth-first (DFS)</th><td>Graph traversal</td><td>O(V + E)</td>
+                <td>No cost guarantee</td><td>Full rerun</td>
+                <td>Exploring branches of a maze before backtracking.</td>
+              </tr>
+              <tr>
+                <th scope="row">Q-learning</th><td>Reinforcement learning</td><td>Episode-based training</td>
+                <td>No path guarantee</td><td>Retraining</td>
+                <td>Training an agent and inspecting its learned policy in either full simulator.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="algorithm-footnote">V is the number of cells and E the connections between them. A* and JPS optimality depends on a suitable heuristic and settings.</p>
+      </section>
 
-      <div class="editions-grid">
-        <!-- 3D City Studio -->
-        <article class="edition-card">
-          <div class="card-media">
-            <div class="card-meta-bar">
-              <span class="badge-subtle mint">WebGL 3D</span>
-              <span class="badge-subtle">Three.js</span>
-            </div>
-            <img src="docs/media/city-studio.webp" alt="3D City Studio viewport showing downtown route">
-          </div>
-          <div class="card-content">
-            <div class="card-head">
-              <h2>3D City Studio</h2>
-              <span>metromind-3d.html</span>
-            </div>
-            <p class="card-desc">
-              Explore and edit procedural city grids in 3D. Draw roads, buildings, and elevation in Free Build mode, orbit camera angles, and inspect route insights across lighting conditions.
-            </p>
-            <ul class="feature-list">
-              <li>Procedural downtown, Manhattan, maze, and terrain presets</li>
-              <li>Free Build mode with elevation and slope resistance</li>
-              <li>Dynamic D* Lite replanning on obstacle changes</li>
-              <li>3D Q-Learning height column overlays</li>
-              <li>Day, dusk, and night city lighting modes</li>
-            </ul>
-            <div class="card-actions">
-              <a href="metromind-3d.html" class="btn-launch-edition">
-                <span>Launch 3D City Studio</span>
-                <span>&rarr;</span>
-              </a>
-              <a href="3d/index.html" class="btn-source-edition">
-                <span>Inspect editable modular source (3d/)</span>
-              </a>
-            </div>
-          </div>
-        </article>
+      <div class="reference-sidebar">
+        <section class="reference-panel" id="shortcuts" aria-labelledby="shortcuts-title">
+          <header class="reference-heading">
+            <h2 id="shortcuts-title">Keyboard shortcuts</h2>
+            <p>Use these in Grid Lab and City Studio.</p>
+          </header>
+          <dl class="shortcut-list">
+            <div><dt><kbd>Space</kbd></dt><dd>Start or pause search</dd></div>
+            <div><dt><kbd>X</kbd></dt><dd>Compare algorithms</dd></div>
+            <div><dt><kbd>S</kbd> / <kbd>B</kbd></dt><dd>Step forward or backward</dd></div>
+            <div><dt><kbd>R</kbd></dt><dd>Reset the route</dd></div>
+            <div><dt><kbd>G</kbd></dt><dd>Focus on the map</dd></div>
+            <div><dt><kbd>?</kbd></dt><dd>Open the edition’s shortcut guide</dd></div>
+          </dl>
+        </section>
 
-        <!-- 2D Grid Lab -->
-        <article class="edition-card">
-          <div class="card-media">
-            <div class="card-meta-bar">
-              <span class="badge-subtle mint">2D Canvas</span>
-              <span class="badge-subtle">Modular ES6</span>
-            </div>
-            <img src="docs/media/grid-lab.webp" alt="2D Grid Lab showing A* search through a corridor maze">
-          </div>
-          <div class="card-content">
-            <div class="card-head">
-              <h2>2D Grid Lab</h2>
-              <span>metromind-2d.html</span>
-            </div>
-            <p class="card-desc">
-              Step-by-step algorithmic workbench. Paint walls and weighted friction, inspect individual search steps backward and forward, and benchmark all nine algorithms side by side.
-            </p>
-            <ul class="feature-list">
-              <li>Compare all 9 algorithms simultaneously (X hotkey)</li>
-              <li>Step backward and forward through search history (S / B)</li>
-              <li>Friction terrains: highways (0.5×), traffic (3×), mud (10×)</li>
-              <li>Reinforcement learning Q-table heatmap & policy vectors</li>
-              <li>Export run telemetry as CSV and custom maps as JSON</li>
-            </ul>
-            <div class="card-actions">
-              <a href="metromind-2d.html" class="btn-launch-edition">
-                <span>Launch 2D Grid Lab</span>
-                <span>&rarr;</span>
-              </a>
-              <a href="2d/index.html" class="btn-source-edition">
-                <span>Inspect modular source (2d/)</span>
-              </a>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
+        <section class="reference-panel" aria-labelledby="terrain-title">
+          <header class="reference-heading">
+            <h2 id="terrain-title">Terrain costs</h2>
+            <p>Weighted searches use these multipliers to compare routes.</p>
+          </header>
+          <dl class="terrain-list" id="terrain-list"></dl>
+        </section>
 
-    <!-- Algorithms Technical Reference -->
-    <section id="algorithms" class="table-section">
-      <div class="section-title">
-        <span>Algorithm Capabilities</span>
-        <small>9 SEARCH STRATEGIES AND REINFORCEMENT LEARNING</small>
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Algorithm</th>
-              <th>Category</th>
-              <th>Time Complexity</th>
-              <th>Path Guarantee</th>
-              <th>Dynamic Replanning</th>
-              <th>Primary Use Case</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td class="code-cell">A* Search</td>
-              <td>Informed Search</td>
-              <td class="code-cell">O(E)</td>
-              <td class="tag-cell"><span class="highlight">Optimal</span></td>
-              <td>Static</td>
-              <td>Standard heuristic point-to-point routing</td>
-            </tr>
-            <tr>
-              <td class="code-cell">D* Lite</td>
-              <td>Incremental Search</td>
-              <td class="code-cell">Incremental</td>
-              <td class="tag-cell"><span class="highlight">Optimal</span></td>
-              <td class="tag-cell"><span class="highlight">Real-time Reactive</span></td>
-              <td>Adapts existing routes when road obstacles change</td>
-            </tr>
-            <tr>
-              <td class="code-cell">Theta*</td>
-              <td>Any-Angle Search</td>
-              <td class="code-cell">O(E log V)</td>
-              <td class="tag-cell"><span class="highlight">Near-Optimal</span></td>
-              <td>Static</td>
-              <td>Eliminates artificial 45°/90° grid-aligned zig-zags</td>
-            </tr>
-            <tr>
-              <td class="code-cell">Jump Point Search (JPS)</td>
-              <td>Grid Pruning</td>
-              <td class="code-cell">Sub-A*</td>
-              <td class="tag-cell"><span class="highlight">Optimal</span></td>
-              <td>Static</td>
-              <td>Prunes symmetric corridors on uniform grids</td>
-            </tr>
-            <tr>
-              <td class="code-cell">Dijkstra</td>
-              <td>Uniform Cost</td>
-              <td class="code-cell">O(E + V log V)</td>
-              <td class="tag-cell"><span class="highlight">Optimal</span></td>
-              <td>Static</td>
-              <td>Guaranteed shortest path on complex weighted terrain</td>
-            </tr>
-            <tr>
-              <td class="code-cell">Bidirectional Search</td>
-              <td>Dual-Frontier</td>
-              <td class="code-cell">O(b^(d/2))</td>
-              <td class="tag-cell"><span class="highlight">Optimal</span></td>
-              <td>Static</td>
-              <td>Simultaneous start and goal frontier intersection</td>
-            </tr>
-            <tr>
-              <td class="code-cell">Greedy Best-First</td>
-              <td>Heuristic-Only</td>
-              <td class="code-cell">O(b^m)</td>
-              <td class="tag-cell"><span>Sub-optimal</span></td>
-              <td>Static</td>
-              <td>Fastest path discovery where optimality is secondary</td>
-            </tr>
-            <tr>
-              <td class="code-cell">Breadth-First (BFS)</td>
-              <td>Exhaustive</td>
-              <td class="code-cell">O(V + E)</td>
-              <td class="tag-cell"><span class="highlight">Optimal (unweighted)</span></td>
-              <td>Static</td>
-              <td>Radial unweighted wave expansion</td>
-            </tr>
-            <tr>
-              <td class="code-cell">Q-Learning</td>
-              <td>Reinforcement Learning</td>
-              <td class="code-cell">Iterative (Bellman)</td>
-              <td class="tag-cell"><span>Convergent</span></td>
-              <td>Policy Adaptation</td>
-              <td>Autonomous agent policy training with state heatmaps</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Keyboard Shortcuts Bar -->
-    <div id="shortcuts" class="shortcuts-section">
-      <div class="shortcuts-label">
-        <span>Simulator Keyboard Shortcuts:</span>
-      </div>
-      <div class="shortcuts-grid">
-        <div class="shortcut-node"><kbd>Space</kbd> Start / Pause</div>
-        <div class="shortcut-node"><kbd>X</kbd> Comparison View</div>
-        <div class="shortcut-node"><kbd>S</kbd> / <kbd>B</kbd> Step Forward / Back</div>
-        <div class="shortcut-node"><kbd>R</kbd> Reset Route</div>
-        <div class="shortcut-node"><kbd>G</kbd> Focus Map</div>
-        <div class="shortcut-node"><kbd>?</kbd> Shortcut Guide</div>
+        <section class="reference-panel" aria-labelledby="editions-title">
+          <header class="reference-heading">
+            <h2 id="editions-title">In the full simulators</h2>
+          </header>
+          <dl class="edition-details">
+            <div><dt>2D Grid Lab</dt><dd>Paint walls and terrain, then step backward or forward through the search.</dd></div>
+            <div><dt>3D City Studio</dt><dd>Build streets, change elevation, and inspect routes in a city with moving traffic.</dd></div>
+            <div><dt>Q-learning</dt><dd>Train an agent in either edition and inspect the policy it learns.</dd></div>
+          </dl>
+        </section>
       </div>
     </div>
   </main>
 
-  <!-- Footer -->
-  <footer>
+  <footer class="site-footer">
     <div class="container footer-inner">
-      <div>
-        <strong>MetroMind AI</strong> · Open-source browser simulator for autonomous routing and reinforcement learning.
-      </div>
-      <div class="footer-links">
-        <a href="https://github.com/Ayaan-22/MetroMind-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <p>MetroMind AI <span>·</span> Both editions run offline.</p>
+      <nav aria-label="Project documentation">
         <a href="README.md">README</a>
-        <a href="3d/README.md">3D Guide</a>
-        <a href="2d/README.md">2D Guide</a>
+        <a href="3d/README.md">3D guide</a>
+        <a href="2d/README.md">2D guide</a>
         <a href="ROADMAP.md">Roadmap</a>
-      </div>
+      </nav>
     </div>
   </footer>
 </body>
