@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const sourceRoot = path.resolve(__dirname, '..');
-const outputPath = path.resolve(sourceRoot, '..', 'MetroMind AI 3D.html');
+const outputPath = path.resolve(sourceRoot, '..', 'metromind-3d.html');
 const normalize = value => value.replace(/\r\n?/g, '\n');
 const isRemote = value => /^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(value);
 
@@ -68,15 +68,15 @@ if (require.main === module) {
     if (unknown.length) throw new Error(`Unknown argument: ${unknown.join(' ')}`);
     if (process.argv.includes('--check')) {
       if (checkStandalone()) {
-        console.log('MetroMind AI 3D.html matches the 3d sources.');
+        console.log('metromind-3d.html matches the 3d sources.');
       } else {
-        console.error('MetroMind AI 3D.html is out of sync. Run node 3d/scripts/build.cjs.');
+        console.error('metromind-3d.html is out of sync. Run node 3d/scripts/build.cjs.');
         process.exitCode = 1;
       }
     } else {
       const html = buildStandalone();
       fs.writeFileSync(outputPath, html, 'utf8');
-      console.log(`Built MetroMind AI 3D.html (${Buffer.byteLength(html).toLocaleString('en-US')} bytes).`);
+      console.log(`Built metromind-3d.html (${Buffer.byteLength(html).toLocaleString('en-US')} bytes).`);
     }
   } catch (error) {
     console.error(`3D build failed: ${error.message}`);

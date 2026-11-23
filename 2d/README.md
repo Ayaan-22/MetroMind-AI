@@ -1,57 +1,54 @@
-# MetroMind AI — Modular Research Edition (v11.0)
+# MetroMind AI — 2D Grid Lab Edition
 
-![Modular Version](https://img.shields.io/badge/Edition-Modular%20Research-orange?style=for-the-badge) ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge) ![JavaScript](https://img.shields.io/badge/Code-ES6%2B%20Modules-yellow?style=for-the-badge)
+![2D Edition](https://img.shields.io/badge/Edition-2D%20Grid%20Lab-orange?style=for-the-badge) ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge) ![JavaScript](https://img.shields.io/badge/Code-ES6%2B%20Modules-yellow?style=for-the-badge)
 
-Welcome to the **Modular Edition** of MetroMind AI. This version is designed for developers, researchers, and AI enthusiasts who wish to study, extend, or replace individual components of the simulation engine.
+Welcome to the **2D Grid Lab** edition of MetroMind AI. This edition is designed for developers, researchers, and AI students who wish to study, extend, or benchmark pathfinding algorithms and reinforcement learning agents.
 
-Both editions share the same interface and behavior. The root `MetroMind_AI_v11.html` is generated from this directory's HTML, CSS, and JavaScript; it embeds everything needed to run the simulator as a single file. Edit the modular sources and rebuild the standalone file instead of editing two implementations.
+Both editions share the same algorithmic foundations. The root `metromind-2d.html` is generated from this directory's HTML, CSS, and JavaScript; it embeds everything needed to run the simulator as a single file. Edit the sources here and rebuild the standalone file instead of editing two implementations.
 
 ---
 
 ## 🚀 Quick Start Instructions
 
-Because this version utilizes **ES6 JavaScript Modules**, it cannot be run by simply double-clicking the HTML file. It requires a local web server to handle module resolution and security policies.
+Because this version utilizes **ES6 JavaScript Modules**, it requires a local web server to handle module resolution.
 
 ### 1. Open your Terminal
-Navigate to this directory (`/modular_version`) in your preferred terminal (PowerShell, CMD, or Bash).
+Navigate to this directory (`/2d`) in your terminal.
 
 ### 2. Start a Local Server
-The easiest way is using Python, which is built into most systems:
-
 ```powershell
-# In this directory:
 python -m http.server 8000
 ```
 
 ### 3. Launch the Simulator
 Open your browser and navigate to:
-[http://localhost:8000/MetroMind_AI_v11.html](http://localhost:8000/MetroMind_AI_v11.html)
+[http://localhost:8000](http://localhost:8000) (or `http://localhost:8000/2d/index.html` from repository root)
 
 ---
 
 ## 🏗️ Project Architecture
 
-Unlike the standalone version, the code here is decoupled into logical modules:
+The 2D codebase is decoupled into modular ES6 components:
 
 ```text
-modular_version/
-├── MetroMind_AI_v11.html  # Entry point
+2d/
+├── index.html              # Modular entry point
 ├── css/
-│   └── styles.css          # Premium UI Styling
+│   └── styles.css          # Grid UI styling
 └── js/
-    ├── main.js             # Application Bootstrap
-    ├── config.js           # Constants & Hyperparameters
-    ├── background.js       # Reactive background animation
+    ├── main.js             # Application bootstrap
+    ├── config.js           # Constants & hyperparameters
+    ├── background.js       # Background animation
     ├── comparison.js       # Nine-algorithm comparison and charts
-    ├── ui.js               # DOM Manipulation & Event Listeners
-    ├── grid.js             # Canvas Rendering & Grid Logic
-    ├── maze.js             # Procedural Generation Algorithms
-    ├── history.js          # Undo/Redo & State Tracking
+    ├── ui.js               # DOM manipulation & event listeners
+    ├── grid.js             # Canvas rendering & grid logic
+    ├── maze.js             # Procedural generation algorithms
+    ├── history.js          # Undo/redo & state tracking
     └── pathfinding/
         ├── algorithms.js   # A*, Dijkstra, JPS, Theta*
         ├── dstar-lite.js   # Incremental D* Lite replanning
         ├── heuristics.js   # Distance functions
-        └── qlearning.js    # Reinforcement Learning Agent
+        └── qlearning.js    # Reinforcement learning agent
 ```
 
 ---
@@ -85,7 +82,7 @@ npm run check:parity
 npm test
 ```
 
-`build` bundles the modular JavaScript into a classic inline script and embeds the shared stylesheet in `../MetroMind_AI_v11.html`. The generated standalone file can be opened directly without a server, Node.js, or adjacent source files. Both editions use the same optional Google Fonts stylesheet and fall back to system fonts when offline.
+`build` bundles the modular JavaScript into a classic inline script and embeds the shared stylesheet in `../metromind-2d.html`. The generated standalone file can be opened directly without a server, Node.js, or adjacent source files. Both editions use the same optional Google Fonts stylesheet and fall back to system fonts when offline.
 
 `check:parity` fails if the checked-in standalone file differs from a fresh build. `npm test` includes this drift check and runs the same interaction scenarios against the ES module entry point and the generated standalone script. Rebuild after editing any application HTML, CSS, or JavaScript. Commit the updated standalone file along with the modular source changes.
 
@@ -101,9 +98,9 @@ After `npm ci`, run `npm test` from this directory. Tests compare initial and re
 **Root Cause:** You are likely opening the HTML file directly from your file system (using the `file://` protocol). Modern browsers block ES6 module imports over `file://` due to CORS restrictions.
 
 **The Fix:**
-1. Open your terminal in the `modular_version` folder.
-2. Run a local server: `python -m http.server 8080`.
-3. Open `http://localhost:8080/MetroMind_AI_v11.html` in your browser.
+1. Open your terminal in the `2d` folder.
+2. Run a local server: `python -m http.server 8000`.
+3. Open `http://localhost:8000` in your browser.
 
 Everything will work instantly — no code changes needed.
 

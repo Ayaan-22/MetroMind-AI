@@ -4,7 +4,7 @@ The 3D edition combines an editable city with the pathfinding and reinforcement 
 
 ## Open the simulator
 
-Open `../MetroMind AI 3D.html` in a modern browser. The generated file includes the stylesheet, application code, Three.js and OrbitControls; it does not require npm or a development server. External web fonts are optional and have system-font fallbacks.
+Open `../metromind-3d.html` in a modern browser. The generated file includes the stylesheet, application code, Three.js and OrbitControls; it does not require npm or a development server. External web fonts are optional and have system-font fallbacks.
 
 For development, serve this directory and open its `index.html`:
 

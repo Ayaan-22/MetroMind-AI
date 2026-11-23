@@ -1,7 +1,7 @@
 {
-  "name": "metromind-ai-modular",
+  "name": "metromind-ai-2d",
   "version": "11.0.0",
-  "description": "MetroMind AI — Advanced Pathfinding & RL Simulator (Modular Edition)",
+  "description": "MetroMind AI — Advanced Pathfinding & RL Simulator (2D Edition)",
   "main": "js/main.js",
   "type": "module",
   "scripts": {

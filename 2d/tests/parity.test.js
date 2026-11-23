@@ -8,7 +8,7 @@ import { runComparison } from '../js/comparison.js';
 
 test('the checked-in standalone is exactly generated from the modular sources', async () => {
   assert.equal(await checkStandalone(), true, 'Run npm run build to sync the standalone edition');
-  const html = readFileSync(new URL('../../MetroMind_AI_v11.html', import.meta.url), 'utf8');
+  const html = readFileSync(new URL('../../metromind-2d.html', import.meta.url), 'utf8');
   assert.equal(/<script[^>]+src=/.test(html), false, 'the standalone script must be embedded');
   assert.equal(/href="css\/styles.css"/.test(html), false, 'the standalone CSS must be embedded');
   assert.equal(/type="module"/.test(html), false, 'file:// use must not require module loading');

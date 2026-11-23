@@ -13,7 +13,7 @@ Expand or collapse each preview by clicking its title. Click an image to see it 
 
 Orbit the city, draw roads and buildings in **Free Build**, and inspect routes with **Insights**. Try **Run simulation** on the default Downtown map, then drag the city to change your view.
 
-[Standalone 3D HTML](MetroMind%20AI%203D.html) · [3D controls and development guide](3d/README.md)
+[Standalone 3D HTML](metromind-3d.html) · [3D controls and development guide](3d/README.md)
 
 </details>
 
@@ -24,7 +24,7 @@ Orbit the city, draw roads and buildings in **Free Build**, and inspect routes w
 
 Draw walls and weighted terrain, step backward through search history, and compare all nine algorithms with **X**. For a live reroute, select **D* Lite**, click **Find Path**, and draw a wall across the route.
 
-[Standalone 2D HTML](MetroMind_AI_v11.html) · [2D modular development guide](modular_version/README.md)
+[Standalone 2D HTML](metromind-2d.html) · [2D development guide](2d/README.md)
 
 </details>
 
@@ -34,8 +34,8 @@ Download or clone this repository and open either standalone HTML file in a mode
 
 | Edition | Standalone file | Editable source |
 | --- | --- | --- |
-| 3D City Studio | [MetroMind AI 3D.html](MetroMind%20AI%203D.html) | [3d/](3d/) |
-| 2D Grid Lab | [MetroMind_AI_v11.html](MetroMind_AI_v11.html) | [modular_version/](modular_version/) |
+| 3D City Studio | [metromind-3d.html](metromind-3d.html) | [3d/](3d/) |
+| 2D Grid Lab | [metromind-2d.html](metromind-2d.html) | [2d/](2d/) |
 
 ## What you can try
 
@@ -61,7 +61,7 @@ Edit the source directory for your edition and regenerate its standalone file. T
 python -m http.server 8000
 ```
 
-Open [3D City Studio](http://localhost:8000/3d/) or the [2D Grid Lab](http://localhost:8000/modular_version/MetroMind_AI_v11.html) after starting the server.
+Open [3D City Studio](http://localhost:8000/3d/) or the [2D Grid Lab](http://localhost:8000/2d/) after starting the server.
 
 For **3D City Studio**, build and check the standalone file from the repository root:
 
@@ -73,16 +73,18 @@ node 3d/scripts/build.cjs --check
 For **2D Grid Lab**, build, check parity, and run the tests:
 
 ```powershell
-cd modular_version
+cd 2d
 npm ci
 npm run build
 npm run check:parity
 npm test
 ```
 
-See the [3D development guide](3d/README.md#edit-and-rebuild) and [2D synchronization guide](modular_version/README.md#keep-both-editions-synchronized) for source layouts and validation commands.
+See the [3D development guide](3d/README.md#edit-and-rebuild) and [2D synchronization guide](2d/README.md#keep-both-editions-synchronized) for source layouts and validation commands.
 
 ## Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for detailed planning and architectural tiers.
 
 - [x] D* Lite dynamic replanning
 - [x] 3D City Studio with a standalone offline build

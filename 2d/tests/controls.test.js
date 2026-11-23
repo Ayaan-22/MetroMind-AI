@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import { createHarness } from './helpers/dom.js';
 
-const html = readFileSync(new URL('../MetroMind_AI_v11.html', import.meta.url), 'utf8');
+const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const { byId, windowEvents, timers } = createHarness(html);
 
 await import('../js/main.js');

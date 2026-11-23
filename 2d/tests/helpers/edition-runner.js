@@ -4,13 +4,13 @@ import { runInThisContext } from 'node:vm';
 import { createHarness } from './dom.js';
 
 const standalone = process.argv[2] === 'standalone';
-const html = readFileSync(new URL(standalone ? '../../../MetroMind_AI_v11.html' : '../../MetroMind_AI_v11.html', import.meta.url), 'utf8');
+const html = readFileSync(new URL(standalone ? '../../../metromind-2d.html' : '../../index.html', import.meta.url), 'utf8');
 const h = createHarness(html);
 let seed = 12345;
 Math.random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 2 ** 32; };
 if (standalone) {
   const script = html.match(/<script>([\s\S]*?)<\/script>/)[1];
-  runInThisContext(script, { filename: 'MetroMind_AI_v11.html' });
+  runInThisContext(script, { filename: 'metromind-2d.html' });
 } else {
   await import('../../js/main.js');
 }
