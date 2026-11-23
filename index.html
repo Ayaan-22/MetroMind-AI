@@ -3,51 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MetroMind AI · Autonomous Pathfinding & Reinforcement Learning</title>
-  <meta name="description" content="MetroMind AI is a modern browser-based simulator for autonomous pathfinding algorithms and reinforcement learning. Explore 3D procedural cities and 2D grid lab offline.">
-  <meta name="keywords" content="Pathfinding, A*, Dijkstra, D* Lite, Reinforcement Learning, Q-Learning, Three.js, WebGL, AI Simulation">
-  <meta name="theme-color" content="#101617">
-  
-  <!-- OpenGraph / Social Media -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="MetroMind AI · Autonomous Pathfinding & RL Simulator">
-  <meta property="og:description" content="Compare 9 search algorithms, dynamic D* Lite rerouting, and Q-learning policy visualizers in procedural 3D cities or interactive 2D grid environments.">
-  <meta property="og:image" content="docs/media/city-studio.webp">
-
+  <title>MetroMind AI · Browser Simulator for Pathfinding & RL</title>
+  <meta name="description" content="MetroMind AI is a quiet, browser-based simulator for pathfinding algorithms and reinforcement learning. Explore 3D City Studio and 2D Grid Lab offline.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23101617'/><path d='M8 22h4v-7H8zm6 0h4v-14h-4zm6 0h4v-10h-4z' fill='%239ce7c6'/></svg>">
   
   <style>
+    /* MetroMind Design Tokens · A quiet instrument for complex worlds */
     :root {
       color-scheme: dark;
-      --bg: #0d1213;
-      --bg-alt: #12191b;
-      --surface: #151d1f;
-      --surface-raised: #1b2628;
-      --surface-hover: #223033;
-      --line: #243235;
-      --line-soft: #1c2729;
-      --line-highlight: #3b4e52;
-      --text: #edf2ef;
-      --text-dim: #cad5d0;
-      --muted: #8a9c98;
-      --faint: #566865;
-      
+      --bg: #101617;
+      --surface: #151c1e;
+      --surface-raised: #1c2426;
+      --surface-hover: #222c2e;
+      --canvas: #1b2629;
+      --line: #2a3335;
+      --line-soft: #1f2729;
+      --text: #e7ece8;
+      --text-muted: #9aa9a4;
+      --text-dim: #71827e;
       --mint: #9ce7c6;
-      --mint-glow: rgba(156, 231, 198, 0.25);
-      --mint-dark: #0e291d;
-      --mint-border: rgba(156, 231, 198, 0.35);
-      
-      --cyan: #78dce8;
-      --amber: #e5c07b;
+      --mint-dark: #112d20;
+      --mint-subtle: rgba(156, 231, 198, 0.08);
+      --amber: #d5b982;
       --blue: #85b5c3;
-      --purple: #c678dd;
-      --red: #e06c75;
-      
       --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", Helvetica, Arial, sans-serif;
-      --mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-      --radius: 12px;
-      --radius-sm: 6px;
-      --radius-lg: 18px;
+      --mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
     }
 
     * {
@@ -61,81 +41,52 @@
     }
 
     body {
-      background-color: var(--bg);
+      background: var(--bg);
       color: var(--text);
       font-family: var(--sans);
       font-size: 14px;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-      position: relative;
     }
 
-    /* Interactive Matrix Canvas Background */
-    #hero-bg-canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 680px;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.45;
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
-    .ambient-glow {
-      position: absolute;
-      top: -150px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 900px;
-      height: 500px;
-      background: radial-gradient(ellipse at center, rgba(156, 231, 198, 0.12) 0%, rgba(120, 220, 232, 0.05) 45%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-
+    /* Container */
     .container {
       width: 100%;
-      max-width: 1200px;
+      max-width: 1080px;
       margin: 0 auto;
       padding: 0 24px;
-      position: relative;
-      z-index: 1;
     }
 
-    /* Top Navigation */
+    /* Navigation */
     header {
-      border-bottom: 1px solid var(--line-soft);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      background: rgba(13, 18, 19, 0.82);
+      border-bottom: 1px solid var(--line);
+      background: var(--bg);
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 50;
     }
 
-    .nav-wrapper {
+    .nav-inner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 72px;
+      height: 64px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 13px;
-      text-decoration: none;
-      color: var(--text);
-      font-size: 16px;
-      font-weight: 650;
-      letter-spacing: 1.2px;
+      gap: 12px;
     }
 
     .brand-mark {
-      width: 26px;
-      height: 28px;
+      width: 24px;
+      height: 26px;
       position: relative;
       display: block;
       transform: skewY(-16deg);
@@ -147,1078 +98,692 @@
       width: 5px;
       background: var(--mint);
       border-radius: 1px;
-      box-shadow: 0 0 10px rgba(156, 231, 198, 0.4);
     }
 
-    .brand-mark i:nth-child(1) { height: 16px; left: 0; }
-    .brand-mark i:nth-child(2) { height: 27px; left: 9px; }
-    .brand-mark i:nth-child(3) { height: 21px; left: 18px; }
+    .brand-mark i:nth-child(1) { height: 14px; left: 0; }
+    .brand-mark i:nth-child(2) { height: 24px; left: 8px; }
+    .brand-mark i:nth-child(3) { height: 18px; left: 16px; }
 
-    .brand-text {
+    .brand-info {
       display: flex;
       flex-direction: column;
     }
 
-    .brand-title {
+    .brand-name {
+      font-size: 15px;
+      font-weight: 650;
+      letter-spacing: 0.5px;
       display: flex;
       align-items: center;
-      font-weight: 700;
-      letter-spacing: 0.5px;
+      gap: 6px;
     }
 
-    .brand-ai {
+    .version-tag {
+      font-family: var(--mono);
+      font-size: 9px;
       color: var(--mint);
-      font-size: 11px;
-      margin-left: 5px;
+      border: 1px solid rgba(156, 231, 198, 0.25);
       padding: 1px 5px;
-      background: rgba(156, 231, 198, 0.12);
-      border-radius: 4px;
-      border: 1px solid var(--mint-border);
-      letter-spacing: 0.5px;
+      border-radius: 3px;
     }
 
     .brand-sub {
       font-family: var(--mono);
       font-size: 8px;
-      color: var(--muted);
-      letter-spacing: 1.6px;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
     }
 
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 20px;
     }
 
-    .nav-link {
-      color: var(--muted);
-      text-decoration: none;
+    .nav-links a {
+      color: var(--text-muted);
       font-size: 13px;
-      font-weight: 500;
-      transition: color 0.18s ease;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+      transition: color 0.15s;
     }
 
-    .nav-link:hover {
-      color: var(--mint);
+    .nav-links a:hover {
+      color: var(--text);
     }
 
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .btn-github {
+    .github-link {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 15px;
+      gap: 6px;
+      padding: 6px 12px;
       background: var(--surface-raised);
       border: 1px solid var(--line);
-      border-radius: var(--radius-sm);
+      border-radius: 5px;
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+
+    .github-link:hover {
       color: var(--text);
-      text-decoration: none;
-      font-size: 12.5px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-
-    .btn-github:hover {
+      border-color: #3b494d;
       background: var(--surface-hover);
-      border-color: var(--mint);
-      color: var(--mint);
-      box-shadow: 0 0 12px var(--mint-glow);
     }
 
-    .btn-github svg {
-      width: 15px;
-      height: 15px;
+    .github-link svg {
+      width: 14px;
+      height: 14px;
       fill: currentColor;
     }
 
-    /* Hero Section */
+    /* Hero */
     .hero {
-      padding: 72px 0 44px;
-      text-align: center;
-      position: relative;
+      padding: 64px 0 48px;
+      border-bottom: 1px solid var(--line-soft);
     }
 
-    .hero-badge-wrap {
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      color: var(--mint);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hero-eyebrow .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--mint);
+    }
+
+    .hero h1 {
+      font-size: 32px;
+      font-weight: 600;
+      letter-spacing: -0.6px;
+      line-height: 1.25;
+      color: #f3f6f4;
+      max-width: 820px;
+      margin-bottom: 14px;
+    }
+
+    .hero p {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 780px;
+      line-height: 1.65;
+      margin-bottom: 28px;
+    }
+
+    /* Quick Launch Row */
+    .quick-launch-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+
+    .btn-primary {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 5px 14px;
-      background: rgba(156, 231, 198, 0.07);
-      border: 1px solid rgba(156, 231, 198, 0.28);
-      border-radius: 30px;
-      margin-bottom: 24px;
-      backdrop-filter: blur(8px);
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
+      padding: 10px 18px;
       background: var(--mint);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--mint);
-      animation: pulse-dot 2s infinite ease-in-out;
-    }
-
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.85); }
-    }
-
-    .hero-badge-text {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--mint);
-      letter-spacing: 0.9px;
-      font-weight: 500;
-    }
-
-    .hero-title {
-      font-size: clamp(34px, 5.2vw, 58px);
-      font-weight: 800;
-      line-height: 1.12;
-      letter-spacing: -1.4px;
-      margin-bottom: 20px;
-      background: linear-gradient(180deg, #ffffff 40%, #b8ccc7 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-title span.accent {
-      background: linear-gradient(90deg, #9ce7c6, #78dce8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .hero-desc {
-      max-width: 740px;
-      margin: 0 auto 36px;
-      color: var(--text-dim);
-      font-size: 16.5px;
-      line-height: 1.7;
-    }
-
-    /* Live Stat Bar (KPIs) */
-    .metrics-bar {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin: 10px auto 56px;
-      max-width: 980px;
-    }
-
-    .metric-pill {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 16px 18px;
-      text-align: left;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-
-    .metric-pill:hover {
-      border-color: var(--line-highlight);
-      transform: translateY(-2px);
-    }
-
-    .metric-pill::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 3px;
-      height: 100%;
-      background: var(--mint);
-      opacity: 0.7;
-    }
-
-    .metric-val {
-      font-family: var(--mono);
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--text);
-      line-height: 1.2;
-      display: flex;
-      align-items: baseline;
-      gap: 4px;
-    }
-
-    .metric-val small {
-      font-size: 12px;
-      color: var(--mint);
+      color: var(--mint-dark);
       font-weight: 600;
+      font-size: 13px;
+      border-radius: 6px;
+      border: 1px solid #b3f1ce;
+      transition: background 0.15s, transform 0.15s;
     }
 
-    .metric-lbl {
-      font-size: 11.5px;
-      color: var(--muted);
-      margin-top: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
+    .btn-primary:hover {
+      background: #b6f3d4;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: var(--surface-raised);
+      color: var(--text);
       font-weight: 500;
+      font-size: 13px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      transition: all 0.15s;
     }
 
-    /* Section Headers */
-    .section-header {
-      margin-bottom: 24px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--line-soft);
-      padding-bottom: 14px;
+    .btn-secondary:hover {
+      background: var(--surface-hover);
+      border-color: #3b4b4e;
+      transform: translateY(-1px);
     }
 
-    .section-header h2 {
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+    /* CLI Quick Run Box */
+    .cli-box {
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 14px;
+      max-width: 680px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-muted);
     }
 
-    .section-header h2 .badge {
-      font-size: 10px;
-      font-family: var(--mono);
-      padding: 3px 7px;
-      background: rgba(156, 231, 198, 0.1);
-      border: 1px solid var(--mint-border);
+    .cli-box code {
       color: var(--mint);
-      border-radius: 4px;
-      font-weight: 500;
     }
 
-    .section-header span.sub {
+    .btn-copy {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--text-dim);
       font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.8px;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
     }
 
-    /* Launcher Editions Grid */
-    .editions-section {
-      padding: 20px 0 60px;
+    .btn-copy:hover {
+      color: var(--text);
+      border-color: var(--text-dim);
+    }
+
+    /* Editions Section */
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      margin: 44px 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-title small {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 400;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
     }
 
     .editions-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 30px;
+      gap: 24px;
+      margin-bottom: 56px;
     }
 
     .edition-card {
       background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
+      border-radius: 8px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      position: relative;
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s, box-shadow 0.25s;
+      transition: border-color 0.2s;
     }
 
     .edition-card:hover {
-      transform: translateY(-5px);
-      border-color: var(--mint-border);
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 30px rgba(156, 231, 198, 0.08);
+      border-color: #3d4f52;
     }
 
-    .card-preview-wrap {
+    .card-media {
       position: relative;
       width: 100%;
-      height: 250px;
+      height: 240px;
+      background: #141c1e;
+      border-bottom: 1px solid var(--line-soft);
       overflow: hidden;
-      background: #141f21;
     }
 
-    .card-preview-img {
+    .card-media img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform 0.4s ease;
+      transition: transform 0.25s ease;
     }
 
-    .edition-card:hover .card-preview-img {
-      transform: scale(1.035);
+    .edition-card:hover .card-media img {
+      transform: scale(1.02);
     }
 
-    .card-badges {
+    .card-meta-bar {
       position: absolute;
-      top: 14px;
-      left: 14px;
+      top: 10px;
+      left: 10px;
       display: flex;
-      gap: 8px;
-      z-index: 2;
+      gap: 6px;
     }
 
-    .pill-badge {
-      padding: 4px 10px;
-      background: rgba(13, 20, 21, 0.88);
-      border: 1px solid rgba(156, 231, 198, 0.35);
-      border-radius: 6px;
-      backdrop-filter: blur(8px);
+    .badge-subtle {
       font-family: var(--mono);
-      font-size: 10px;
+      font-size: 9.5px;
+      padding: 3px 7px;
+      background: rgba(16, 22, 23, 0.85);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      color: var(--text-muted);
+      backdrop-filter: blur(4px);
+    }
+
+    .badge-subtle.mint {
       color: var(--mint);
-      letter-spacing: 0.6px;
-      font-weight: 500;
+      border-color: rgba(156, 231, 198, 0.3);
     }
 
-    .pill-badge.amber {
-      border-color: rgba(229, 192, 123, 0.35);
-      color: var(--amber);
-    }
-
-    .card-body {
-      padding: 28px;
+    .card-content {
+      padding: 22px;
       display: flex;
       flex-direction: column;
       flex: 1;
     }
 
-    .card-heading-row {
+    .card-head {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       justify-content: space-between;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
-    .card-title {
-      font-size: 23px;
-      font-weight: 700;
-      letter-spacing: -0.4px;
+    .card-head h2 {
+      font-size: 19px;
+      font-weight: 600;
     }
 
-    .tag-standalone {
+    .card-head span {
       font-family: var(--mono);
       font-size: 10px;
-      color: var(--mint);
-      background: rgba(156, 231, 198, 0.09);
-      border: 1px solid rgba(156, 231, 198, 0.25);
-      padding: 3px 8px;
-      border-radius: 4px;
+      color: var(--text-dim);
     }
 
     .card-desc {
-      color: var(--text-dim);
-      font-size: 14px;
-      line-height: 1.65;
-      margin-bottom: 22px;
-    }
-
-    /* Specs micro-grid inside card */
-    .specs-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-bottom: 22px;
-      padding: 12px 14px;
-      background: var(--bg-alt);
-      border: 1px solid var(--line-soft);
-      border-radius: 8px;
-    }
-
-    .spec-item {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .spec-item span.k {
-      font-size: 9.5px;
-      font-family: var(--mono);
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .spec-item span.v {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
-      margin-top: 2px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 18px;
     }
 
     .feature-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-bottom: 26px;
       list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 22px;
+      font-size: 12.5px;
+      color: var(--text-muted);
     }
 
-    .feature-tag {
-      font-family: var(--mono);
-      font-size: 10px;
-      padding: 3px 9px;
-      background: var(--surface-raised);
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      color: var(--text-dim);
+    .feature-list li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .feature-list li::before {
+      content: "";
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--mint);
+      flex-shrink: 0;
     }
 
     .card-actions {
       margin-top: auto;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .btn-launch {
+    .btn-launch-edition {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
-      padding: 13px 22px;
+      gap: 8px;
+      padding: 10px;
       background: var(--mint);
       color: var(--mint-dark);
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 14px;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 18px rgba(156, 231, 198, 0.2);
-    }
-
-    .btn-launch:hover {
-      background: #bbf6dc;
-      box-shadow: 0 6px 25px rgba(156, 231, 198, 0.35);
-      transform: translateY(-1px);
-    }
-
-    .btn-launch svg {
-      transition: transform 0.2s;
-    }
-
-    .btn-launch:hover svg {
-      transform: translateX(3px);
-    }
-
-    .btn-secondary {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 9px 16px;
-      background: transparent;
-      border: 1px solid var(--line);
-      color: var(--muted);
-      text-decoration: none;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      transition: all 0.18s;
-    }
-
-    .btn-secondary:hover {
-      background: var(--surface-raised);
-      border-color: var(--line-highlight);
-      color: var(--text);
-    }
-
-    /* Live Interactive Mini Pathfinding Lab */
-    .playground-section {
-      padding: 40px 0 60px;
-      border-top: 1px solid var(--line-soft);
-    }
-
-    .playground-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      display: grid;
-      grid-template-columns: 1fr 300px;
-      gap: 24px;
-    }
-
-    .playground-canvas-area {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .canvas-hud {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    .canvas-hud span.active-algo {
-      color: var(--mint);
       font-weight: 600;
-    }
-
-    #playground-canvas {
-      width: 100%;
-      height: 320px;
-      background: #0d1416;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      cursor: crosshair;
-      display: block;
-      touch-action: none;
-    }
-
-    .playground-sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      padding-left: 8px;
-      border-left: 1px solid var(--line-soft);
-    }
-
-    .playground-control-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .playground-control-group label {
-      font-size: 11px;
-      font-family: var(--mono);
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .pg-select {
-      background: var(--surface-raised);
-      border: 1px solid var(--line);
-      color: var(--text);
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      font-size: 12.5px;
-      font-family: var(--sans);
-      outline: none;
-      cursor: pointer;
-    }
-
-    .pg-select:focus {
-      border-color: var(--mint);
-    }
-
-    .btn-pg-run {
-      background: var(--mint);
-      color: var(--mint-dark);
-      border: none;
-      padding: 10px 16px;
-      border-radius: var(--radius-sm);
-      font-weight: 700;
-      cursor: pointer;
       font-size: 13px;
+      border-radius: 5px;
+      border: 1px solid #b3f1ce;
+      transition: background 0.15s;
+    }
+
+    .btn-launch-edition:hover {
+      background: #bbf6dc;
+    }
+
+    .btn-source-edition {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
-      transition: all 0.15s;
-    }
-
-    .btn-pg-run:hover {
-      background: #bbf6dc;
-      box-shadow: 0 0 14px var(--mint-glow);
-    }
-
-    .btn-pg-clear {
+      gap: 6px;
+      padding: 8px;
       background: transparent;
       border: 1px solid var(--line);
-      color: var(--muted);
-      padding: 8px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      cursor: pointer;
+      color: var(--text-dim);
+      font-size: 11.5px;
+      font-family: var(--mono);
+      border-radius: 5px;
       transition: all 0.15s;
     }
 
-    .btn-pg-clear:hover {
+    .btn-source-edition:hover {
+      color: var(--text);
+      border-color: #3b4b4e;
       background: var(--surface-raised);
-      color: var(--text);
     }
 
-    .pg-instructions {
-      font-size: 11.5px;
-      color: var(--muted);
-      line-height: 1.6;
-      background: var(--bg-alt);
-      padding: 12px;
+    /* Algorithms Table */
+    .table-section {
+      margin-bottom: 56px;
+    }
+
+    .table-wrap {
+      border: 1px solid var(--line);
       border-radius: 6px;
-      border: 1px solid var(--line-soft);
-    }
-
-    .pg-telemetry {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-dim);
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      margin-top: auto;
-      padding-top: 12px;
-      border-top: 1px solid var(--line-soft);
-    }
-
-    .pg-telemetry-row {
-      display: flex;
-      justify-content: space-between;
-    }
-
-    /* Algorithm Matrix Cards */
-    .algos-section {
-      padding: 50px 0 60px;
-      border-top: 1px solid var(--line-soft);
-    }
-
-    .algos-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-top: 24px;
-    }
-
-    .algo-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-
-    .algo-card:hover {
-      border-color: var(--line-highlight);
-      transform: translateY(-2px);
-    }
-
-    .algo-card-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .algo-name {
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .algo-badge {
-      font-family: var(--mono);
-      font-size: 9.5px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid rgba(156, 231, 198, 0.25);
-      color: var(--mint);
-      background: rgba(156, 231, 198, 0.08);
-    }
-
-    .algo-badge.amber {
-      border-color: rgba(229, 192, 123, 0.3);
-      color: var(--amber);
-      background: rgba(229, 192, 123, 0.08);
-    }
-
-    .algo-badge.blue {
-      border-color: rgba(133, 181, 195, 0.3);
-      color: var(--blue);
-      background: rgba(133, 181, 195, 0.08);
-    }
-
-    .algo-desc {
-      font-size: 12.5px;
-      color: var(--muted);
-      line-height: 1.55;
-      margin-bottom: 14px;
-      flex: 1;
-    }
-
-    .algo-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-family: var(--mono);
-      font-size: 10px;
-      color: var(--faint);
-      padding-top: 10px;
-      border-top: 1px solid var(--line-soft);
-    }
-
-    /* Comparison Table Section */
-    .comparison-section {
-      padding: 50px 0 60px;
-      border-top: 1px solid var(--line-soft);
-    }
-
-    .table-container {
       overflow-x: auto;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
       background: var(--surface);
-      margin-top: 20px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       text-align: left;
-      font-size: 13px;
+      font-size: 12.5px;
     }
 
     th, td {
-      padding: 14px 20px;
+      padding: 11px 16px;
       border-bottom: 1px solid var(--line-soft);
     }
 
     th {
-      background: var(--surface-raised);
       font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.8px;
+      font-size: 10px;
+      color: var(--text-dim);
+      background: #12191b;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
+      font-weight: 500;
     }
 
     tr:last-child td {
       border-bottom: none;
     }
 
-    td.check {
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    td.code-cell {
+      font-family: var(--mono);
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    td.tag-cell span {
+      font-family: var(--mono);
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      color: var(--text-muted);
+    }
+
+    td.tag-cell span.highlight {
       color: var(--mint);
-      font-weight: 600;
+      border-color: rgba(156, 231, 198, 0.25);
+      background: rgba(156, 231, 198, 0.05);
     }
 
-    td.dim {
-      color: var(--faint);
-    }
-
-    /* Shortcuts Bar */
-    .shortcuts-bar {
-      margin: 40px 0 20px;
-      padding: 18px 24px;
+    /* Shortcuts and Reference */
+    .shortcuts-section {
       background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: var(--radius);
+      border-radius: 6px;
+      padding: 16px 20px;
+      margin-bottom: 56px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 16px;
+      gap: 14px;
     }
 
-    .shortcuts-title {
-      font-size: 13px;
+    .shortcuts-label {
+      font-size: 12px;
       font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .shortcut-items {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    .shortcut-item {
+      color: var(--text-muted);
       display: flex;
       align-items: center;
       gap: 6px;
-      font-size: 12px;
-      color: var(--muted);
+    }
+
+    .shortcuts-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .shortcut-node {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
     kbd {
       font-family: var(--mono);
-      font-size: 11px;
-      padding: 3px 7px;
+      font-size: 10px;
+      padding: 2px 5px;
       background: var(--surface-raised);
       border: 1px solid var(--line);
-      border-radius: 4px;
+      border-radius: 3px;
       color: var(--text);
     }
 
     /* Footer */
     footer {
-      border-top: 1px solid var(--line-soft);
-      padding: 44px 0 54px;
-      color: var(--faint);
-      font-size: 12.5px;
-      background: var(--bg);
+      border-top: 1px solid var(--line);
+      padding: 32px 0 44px;
+      font-size: 12px;
+      color: var(--text-dim);
     }
 
-    .footer-content {
+    .footer-inner {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       flex-wrap: wrap;
-      gap: 20px;
+      gap: 16px;
     }
 
     .footer-links {
       display: flex;
-      gap: 24px;
+      gap: 18px;
     }
 
     .footer-links a {
-      color: var(--muted);
-      text-decoration: none;
+      color: var(--text-muted);
       transition: color 0.15s;
     }
 
     .footer-links a:hover {
-      color: var(--mint);
+      color: var(--text);
     }
 
-    /* Responsive */
-    @media (max-width: 992px) {
+    @media (max-width: 768px) {
       .editions-grid {
         grid-template-columns: 1fr;
       }
-      .metrics-bar {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .playground-card {
-        grid-template-columns: 1fr;
-      }
-      .playground-sidebar {
-        border-left: none;
-        padding-left: 0;
-        border-top: 1px solid var(--line-soft);
-        padding-top: 16px;
-      }
-      .algos-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 640px) {
       .nav-links {
         display: none;
       }
-      .hero-title {
-        font-size: 32px;
+      .hero h1 {
+        font-size: 26px;
       }
-      .metrics-bar {
-        grid-template-columns: 1fr;
-      }
-      .algos-grid {
-        grid-template-columns: 1fr;
-      }
-      .shortcuts-bar {
+      .cli-box {
         flex-direction: column;
         align-items: flex-start;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
+        gap: 8px;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Ambient background lighting & Canvas -->
-  <canvas id="hero-bg-canvas"></canvas>
-  <div class="ambient-glow"></div>
-
-  <!-- Header -->
+  <!-- Header Navigation -->
   <header>
-    <div class="container nav-wrapper">
-      <a href="#" class="brand">
+    <div class="container nav-inner">
+      <div class="brand">
         <span class="brand-mark">
           <i></i><i></i><i></i>
         </span>
-        <div class="brand-text">
-          <div class="brand-title">MetroMind<span class="brand-ai">AI</span></div>
-          <span class="brand-sub">SIMULATION PLATFORM</span>
+        <div class="brand-info">
+          <div class="brand-name">
+            MetroMind AI
+            <span class="version-tag">v11.0</span>
+          </div>
+          <span class="brand-sub">SIMULATION WORKBENCH</span>
         </div>
-      </a>
+      </div>
 
       <nav class="nav-links">
-        <a href="#editions" class="nav-link">Editions</a>
-        <a href="#playground" class="nav-link">Interactive Lab</a>
-        <a href="#algorithms" class="nav-link">Algorithms</a>
-        <a href="#comparison" class="nav-link">Comparison</a>
-      </nav>
-
-      <div class="nav-actions">
-        <a href="https://github.com/Ayaan-22/MetroMind-AI" target="_blank" rel="noopener noreferrer" class="btn-github">
+        <a href="#editions">Editions</a>
+        <a href="#algorithms">Algorithms</a>
+        <a href="#shortcuts">Shortcuts</a>
+        <a href="https://github.com/Ayaan-22/MetroMind-AI" target="_blank" rel="noopener noreferrer" class="github-link">
           <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          <span>Star on GitHub</span>
+          <span>Ayaan-22 / MetroMind-AI</span>
         </a>
-      </div>
+      </nav>
     </div>
   </header>
 
   <main class="container">
-    <!-- Hero Section -->
+    <!-- Hero -->
     <section class="hero">
-      <div class="hero-badge-wrap">
-        <span class="status-dot"></span>
-        <span class="hero-badge-text">METROMIND AI v11.0 · HIGH-PERFORMANCE SIMULATION</span>
+      <div class="hero-eyebrow">
+        <span class="dot"></span>
+        <span>A quiet instrument for complex worlds</span>
       </div>
-      <h1 class="hero-title">
-        Autonomous Pathfinding &amp;<br>
-        <span class="accent">Reinforcement Learning</span>
-      </h1>
-      <p class="hero-desc">
-        Compare nine search algorithms on identical urban topography, watch reactive D* Lite replan routes around live roadblocks, and inspect policy convergence in procedural 3D cities or interactive 2D grids.
+      <h1>A browser simulator for pathfinding and reinforcement learning.</h1>
+      <p>
+        Compare nine search algorithms on identical topography, modify roads or obstacles to watch D* Lite repair routes in real time, and train a Q-learning agent to navigate custom cities. Runs entirely in your browser with zero server setup.
       </p>
 
-      <!-- KPI Metrics Bar -->
-      <div class="metrics-bar">
-        <div class="metric-pill">
-          <div class="metric-val">9 <small>ALGORITHMS</small></div>
-          <div class="metric-lbl">A*, D* Lite, Theta*, JPS &amp; More</div>
-        </div>
-        <div class="metric-pill">
-          <div class="metric-val">60+ <small>FPS</small></div>
-          <div class="metric-lbl">Three.js WebGL Engine</div>
-        </div>
-        <div class="metric-pill">
-          <div class="metric-val">0 <small>MS LATENCY</small></div>
-          <div class="metric-lbl">100% Client-Side / Offline</div>
-        </div>
-        <div class="metric-pill">
-          <div class="metric-val">Q-RL <small>POLICY</small></div>
-          <div class="metric-lbl">Reinforcement Learning Overlays</div>
-        </div>
+      <div class="quick-launch-row">
+        <a href="MetroMind%20AI%203D.html" class="btn-primary">
+          <span>Open 3D City Studio</span>
+          <span style="font-family: var(--mono); font-size: 11px; opacity: 0.85;">&rarr;</span>
+        </a>
+        <a href="MetroMind_AI_v11.html" class="btn-secondary">
+          <span>Open 2D Grid Lab</span>
+          <span style="font-family: var(--mono); font-size: 11px; color: var(--text-dim);">&rarr;</span>
+        </a>
+      </div>
+
+      <!-- Local Command Box -->
+      <div class="cli-box">
+        <span>Serve locally: <code>python -m http.server 8000</code></span>
+        <button class="btn-copy" onclick="navigator.clipboard.writeText('python -m http.server 8000'); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy', 2000);">Copy</button>
       </div>
     </section>
 
-    <!-- Editions Selection Cards -->
-    <section id="editions" class="editions-section">
-      <div class="section-header">
-        <h2>
-          Choose Your Edition
-          <span class="badge">READY TO LAUNCH</span>
-        </h2>
-        <span class="sub">STANDALONE BROWSER APPS</span>
+    <!-- Editions Grid -->
+    <section id="editions">
+      <div class="section-title">
+        <span>Available Editions</span>
+        <small>BOTH EDITIONS BUNDLE STANDALONE CODE FOR OFFLINE USE</small>
       </div>
 
       <div class="editions-grid">
-        <!-- 3D City Studio Card -->
+        <!-- 3D City Studio -->
         <article class="edition-card">
-          <div class="card-preview-wrap">
-            <div class="card-badges">
-              <span class="pill-badge">3D PROCEDURAL ENGINE</span>
-              <span class="pill-badge amber">THREE.JS</span>
+          <div class="card-media">
+            <div class="card-meta-bar">
+              <span class="badge-subtle mint">WebGL 3D</span>
+              <span class="badge-subtle">Three.js</span>
             </div>
-            <img src="docs/media/city-studio.webp" alt="3D City Studio route overview" class="card-preview-img">
+            <img src="docs/media/city-studio.webp" alt="3D City Studio viewport showing downtown route">
           </div>
-          <div class="card-body">
-            <div class="card-heading-row">
-              <h3 class="card-title">3D City Studio</h3>
-              <span class="tag-standalone">Single-File HTML</span>
+          <div class="card-content">
+            <div class="card-head">
+              <h2>3D City Studio</h2>
+              <span>MetroMind AI 3D.html</span>
             </div>
             <p class="card-desc">
-              Fly through procedural skyscrapers, paint elevated highway overpasses, and inspect dynamic D* Lite rerouting with dusk/night city illumination and live telemetry HUD.
+              Explore and edit procedural city grids in 3D. Draw roads, buildings, and elevation in Free Build mode, orbit camera angles, and inspect route insights across lighting conditions.
             </p>
-
-            <div class="specs-grid">
-              <div class="spec-item">
-                <span class="k">Graphics Pipeline</span>
-                <span class="v">WebGL 2.0 / Three.js</span>
-              </div>
-              <div class="spec-item">
-                <span class="k">Elevation Model</span>
-                <span class="v">3D Volumetric Terrain</span>
-              </div>
-              <div class="spec-item">
-                <span class="k">Special Modes</span>
-                <span class="v">Free Build &amp; Day/Night</span>
-              </div>
-              <div class="spec-item">
-                <span class="k">RL Visualization</span>
-                <span class="v">3D Elevation Columns</span>
-              </div>
-            </div>
-
             <ul class="feature-list">
-              <li class="feature-tag">Orbit Camera Controls</li>
-              <li class="feature-tag">Free Build Topography</li>
-              <li class="feature-tag">D* Lite Replanning</li>
-              <li class="feature-tag">Lighting &amp; Vignettes</li>
+              <li>Procedural downtown, Manhattan, maze, and terrain presets</li>
+              <li>Free Build mode with elevation and slope resistance</li>
+              <li>Dynamic D* Lite replanning on obstacle changes</li>
+              <li>3D Q-Learning height column overlays</li>
+              <li>Day, dusk, and night city lighting modes</li>
             </ul>
-
             <div class="card-actions">
-              <a href="MetroMind%20AI%203D.html" class="btn-launch">
+              <a href="MetroMind%20AI%203D.html" class="btn-launch-edition">
                 <span>Launch 3D City Studio</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <span>&rarr;</span>
               </a>
-              <a href="3d/index.html" class="btn-secondary">
-                <span>Browse Modular Source (3d/index.html)</span>
+              <a href="3d/index.html" class="btn-source-edition">
+                <span>Inspect editable modular source (3d/)</span>
               </a>
             </div>
           </div>
         </article>
 
-        <!-- 2D Grid Lab Card -->
+        <!-- 2D Grid Lab -->
         <article class="edition-card">
-          <div class="card-preview-wrap">
-            <div class="card-badges">
-              <span class="pill-badge">2D ALGORITHMIC WORKBENCH</span>
-              <span class="pill-badge">ULTRA-FAST</span>
+          <div class="card-media">
+            <div class="card-meta-bar">
+              <span class="badge-subtle mint">2D Canvas</span>
+              <span class="badge-subtle">Modular ES6</span>
             </div>
-            <img src="docs/media/grid-lab.webp" alt="2D Grid Lab path search" class="card-preview-img">
+            <img src="docs/media/grid-lab.webp" alt="2D Grid Lab showing A* search through a corridor maze">
           </div>
-          <div class="card-body">
-            <div class="card-heading-row">
-              <h3 class="card-title">2D Grid Lab</h3>
-              <span class="tag-standalone">Single-File HTML</span>
+          <div class="card-content">
+            <div class="card-head">
+              <h2>2D Grid Lab</h2>
+              <span>MetroMind_AI_v11.html</span>
             </div>
             <p class="card-desc">
-              High-throughput 2D grid playground optimized for sub-millisecond step-by-step algorithmic analysis, maze generators, multi-terrain painting, and side-by-side benchmarking.
+              Step-by-step algorithmic workbench. Paint walls and weighted friction, inspect individual search steps backward and forward, and benchmark all nine algorithms side by side.
             </p>
-
-            <div class="specs-grid">
-              <div class="spec-item">
-                <span class="k">Graphics Pipeline</span>
-                <span class="v">High-Speed 2D Canvas</span>
-              </div>
-              <div class="spec-item">
-                <span class="k">Terrain Friction</span>
-                <span class="v">Highway, Mud, Traffic</span>
-              </div>
-              <div class="spec-item">
-                <span class="k">History Control</span>
-                <span class="v">Step Back &amp; Forward (S/B)</span>
-              </div>
-              <div class="spec-item">
-                <span class="k">RL Visualization</span>
-                <span class="v">2D Heatmap &amp; Policy Overlay</span>
-              </div>
-            </div>
-
             <ul class="feature-list">
-              <li class="feature-tag">9 Search Algorithms</li>
-              <li class="feature-tag">Benchmark Mode (X)</li>
-              <li class="feature-tag">Dynamic Terrains</li>
-              <li class="feature-tag">CSV &amp; JSON Export</li>
+              <li>Compare all 9 algorithms simultaneously (X hotkey)</li>
+              <li>Step backward and forward through search history (S / B)</li>
+              <li>Friction terrains: highways (0.5×), traffic (3×), mud (10×)</li>
+              <li>Reinforcement learning Q-table heatmap & policy vectors</li>
+              <li>Export run telemetry as CSV and custom maps as JSON</li>
             </ul>
-
             <div class="card-actions">
-              <a href="MetroMind_AI_v11.html" class="btn-launch">
+              <a href="MetroMind_AI_v11.html" class="btn-launch-edition">
                 <span>Launch 2D Grid Lab</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <span>&rarr;</span>
               </a>
-              <a href="modular_version/MetroMind_AI_v11.html" class="btn-secondary">
-                <span>Browse Modular Source (modular_version/)</span>
+              <a href="modular_version/MetroMind_AI_v11.html" class="btn-source-edition">
+                <span>Inspect modular source (modular_version/)</span>
               </a>
             </div>
           </div>
@@ -1226,647 +791,133 @@
       </div>
     </section>
 
-    <!-- Live Interactive Mini-Playground Section -->
-    <section id="playground" class="playground-section">
-      <div class="section-header">
-        <h2>
-          Interactive Pathfinding Lab
-          <span class="badge">TRY IT LIVE</span>
-        </h2>
-        <span class="sub">CLICK &amp; DRAG TO DRAW WALLS</span>
+    <!-- Algorithms Technical Reference -->
+    <section id="algorithms" class="table-section">
+      <div class="section-title">
+        <span>Algorithm Capabilities</span>
+        <small>9 SEARCH STRATEGIES AND REINFORCEMENT LEARNING</small>
       </div>
 
-      <div class="playground-card">
-        <div class="playground-canvas-area">
-          <div class="canvas-hud">
-            <span>GRID: 24×14 &bull; START: <b style="color: #9ce7c6;">GREEN</b> &bull; GOAL: <b style="color: #e06c75;">RED</b></span>
-            <span>ACTIVE: <span id="pg-hud-algo" class="active-algo">A* Search</span></span>
-          </div>
-          <canvas id="playground-canvas" width="672" height="364"></canvas>
-        </div>
-
-        <div class="playground-sidebar">
-          <div class="playground-control-group">
-            <label for="pg-algo-select">Select Algorithm</label>
-            <select id="pg-algo-select" class="pg-select">
-              <option value="astar">A* Search (Manhattan)</option>
-              <option value="dijkstra">Dijkstra's Algorithm</option>
-              <option value="bfs">Breadth-First Search (BFS)</option>
-              <option value="greedy">Greedy Best-First</option>
-            </select>
-          </div>
-
-          <button id="pg-btn-run" class="btn-pg-run">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            <span>Run Pathfinding</span>
-          </button>
-
-          <button id="pg-btn-clear" class="btn-pg-clear">
-            <span>Clear Obstacles &amp; Reset</span>
-          </button>
-
-          <div class="pg-instructions">
-            💡 <strong>Quick Test:</strong> Click &amp; drag on the canvas to paint walls. Click <strong>Run Pathfinding</strong> to see the search frontier expand and trace the shortest route.
-          </div>
-
-          <div class="pg-telemetry">
-            <div class="pg-telemetry-row">
-              <span>Explored Nodes:</span>
-              <strong id="pg-stat-explored" style="color: var(--mint);">0</strong>
-            </div>
-            <div class="pg-telemetry-row">
-              <span>Path Steps:</span>
-              <strong id="pg-stat-steps" style="color: var(--cyan);">0</strong>
-            </div>
-            <div class="pg-telemetry-row">
-              <span>Execution Time:</span>
-              <strong id="pg-stat-time">0 ms</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Algorithms Architecture Matrix -->
-    <section id="algorithms" class="algos-section">
-      <div class="section-header">
-        <h2>
-          Supported Algorithms
-          <span class="badge">9 HEURISTIC &amp; GRAPH METHODS</span>
-        </h2>
-        <span class="sub">TIME &amp; SPACE COMPLEXITY</span>
-      </div>
-
-      <div class="algos-grid">
-        <div class="algo-card">
-          <div class="algo-card-top">
-            <span class="algo-name">A* Search</span>
-            <span class="algo-badge">Optimal</span>
-          </div>
-          <p class="algo-desc">Combines path cost $g(n)$ with heuristic estimate $h(n)$ for directed, fast, and guaranteed optimal pathfinding.</p>
-          <div class="algo-meta">
-            <span>Time: O(E)</span>
-            <span>Heuristic: Admissible</span>
-          </div>
-        </div>
-
-        <div class="algo-card">
-          <div class="algo-card-top">
-            <span class="algo-name">D* Lite</span>
-            <span class="algo-badge amber">Dynamic Reactive</span>
-          </div>
-          <p class="algo-desc">Incrementally repairs routes when obstacles change dynamically during navigation without restarting from scratch.</p>
-          <div class="algo-meta">
-            <span>Time: Incremental</span>
-            <span>Replanning: Real-time</span>
-          </div>
-        </div>
-
-        <div class="algo-card">
-          <div class="algo-card-top">
-            <span class="algo-name">Theta*</span>
-            <span class="algo-badge blue">Any-Angle</span>
-          </div>
-          <p class="algo-desc">Evaluates line-of-sight between parent nodes to bypass strict grid turns, yielding realistic straight-line trajectories.</p>
-          <div class="algo-meta">
-            <span>Geometry: Euclidean</span>
-            <span>Any-Angle: Yes</span>
-          </div>
-        </div>
-
-        <div class="algo-card">
-          <div class="algo-card-top">
-            <span class="algo-name">Jump Point Search (JPS)</span>
-            <span class="algo-badge">Grid Pruning</span>
-          </div>
-          <p class="algo-desc">Accelerates A* on uniform grids by pruning symmetric corridors and leaping directly between jump point nodes.</p>
-          <div class="algo-meta">
-            <span>Speed: 5-10× Faster</span>
-            <span>Symmetry Pruning: Yes</span>
-          </div>
-        </div>
-
-        <div class="algo-card">
-          <div class="algo-card-top">
-            <span class="algo-name">Dijkstra's Algorithm</span>
-            <span class="algo-badge">Uniform Cost</span>
-          </div>
-          <p class="algo-desc">Guarantees shortest paths on any weighted non-negative graph by thoroughly exploring uniform-cost wavefronts.</p>
-          <div class="algo-meta">
-            <span>Time: O(E + V log V)</span>
-            <span>Heuristic: None</span>
-          </div>
-        </div>
-
-        <div class="algo-card">
-          <div class="algo-card-top">
-            <span class="algo-name">Bidirectional Search</span>
-            <span class="algo-badge">Dual-Frontier</span>
-          </div>
-          <p class="algo-desc">Expands simultaneous search frontiers from both origin and target until they intersect, cutting search volume in half.</p>
-          <div class="algo-meta">
-            <span>Frontiers: 2</span>
-            <span>Volume: ~O(b^(d/2))</span>
-          </div>
-        </div>
-
-        <div class="algo-card">
-          <div class="algo-card-top">
-            <span class="algo-name">Greedy Best-First</span>
-            <span class="algo-badge amber">Fast Heuristic</span>
-          </div>
-          <p class="algo-desc">Expands nodes strictly minimizing distance to target. Blazing fast, but sacrifices path optimality around dead-ends.</p>
-          <div class="algo-meta">
-            <span>Time: O(b^m)</span>
-            <span>Optimal: No</span>
-          </div>
-        </div>
-
-        <div class="algo-card">
-          <div class="algo-card-top">
-            <span class="algo-name">Breadth-First (BFS)</span>
-            <span class="algo-badge">Unweighted</span>
-          </div>
-          <p class="algo-desc">Level-by-level exhaustive expansion. Optimal for unweighted graphs, exploring every neighbor layer radially.</p>
-          <div class="algo-meta">
-            <span>Time: O(V + E)</span>
-            <span>Optimal: Unweighted</span>
-          </div>
-        </div>
-
-        <div class="algo-card">
-          <div class="algo-card-top">
-            <span class="algo-name">Q-Learning (RL)</span>
-            <span class="algo-badge blue">Reinforcement</span>
-          </div>
-          <p class="algo-desc">Model-free temporal difference learning. Learns state-action values $Q(s, a)$ with epsilon-greedy exploration.</p>
-          <div class="algo-meta">
-            <span>Convergence: Bellman</span>
-            <span>Policy: Heatmap Overlays</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Comparison Table -->
-    <section id="comparison" class="comparison-section">
-      <div class="section-header">
-        <h2>
-          Edition Feature Matrix
-          <span class="badge">SPECIFICATION</span>
-        </h2>
-        <span class="sub">3D CITY STUDIO VS 2D GRID LAB</span>
-      </div>
-
-      <div class="table-container">
+      <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Platform Capability</th>
-              <th>3D City Studio</th>
-              <th>2D Grid Lab</th>
+              <th>Algorithm</th>
+              <th>Category</th>
+              <th>Time Complexity</th>
+              <th>Path Guarantee</th>
+              <th>Dynamic Replanning</th>
+              <th>Primary Use Case</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Core Algorithms (A*, Dijkstra, BFS, DFS, Greedy BFS)</td>
-              <td class="check">✓ Included</td>
-              <td class="check">✓ Included</td>
+              <td class="code-cell">A* Search</td>
+              <td>Informed Search</td>
+              <td class="code-cell">O(E)</td>
+              <td class="tag-cell"><span class="highlight">Optimal</span></td>
+              <td>Static</td>
+              <td>Standard heuristic point-to-point routing</td>
             </tr>
             <tr>
-              <td>Advanced Search (JPS &amp; Theta* Any-Angle)</td>
-              <td class="check">✓ Included</td>
-              <td class="check">✓ Included</td>
+              <td class="code-cell">D* Lite</td>
+              <td>Incremental Search</td>
+              <td class="code-cell">Incremental</td>
+              <td class="tag-cell"><span class="highlight">Optimal</span></td>
+              <td class="tag-cell"><span class="highlight">Real-time Reactive</span></td>
+              <td>Adapts existing routes when road obstacles change</td>
             </tr>
             <tr>
-              <td>D* Lite Real-time Reactive Replanning</td>
-              <td class="check">✓ Included</td>
-              <td class="check">✓ Included</td>
+              <td class="code-cell">Theta*</td>
+              <td>Any-Angle Search</td>
+              <td class="code-cell">O(E log V)</td>
+              <td class="tag-cell"><span class="highlight">Near-Optimal</span></td>
+              <td>Static</td>
+              <td>Eliminates artificial 45°/90° grid-aligned zig-zags</td>
             </tr>
             <tr>
-              <td>Procedural 3D City Mesh with Orbit Controls</td>
-              <td class="check">✓ Three.js / WebGL</td>
-              <td class="dim">— (2D Grid Canvas)</td>
+              <td class="code-cell">Jump Point Search (JPS)</td>
+              <td>Grid Pruning</td>
+              <td class="code-cell">Sub-A*</td>
+              <td class="tag-cell"><span class="highlight">Optimal</span></td>
+              <td>Static</td>
+              <td>Prunes symmetric corridors on uniform grids</td>
             </tr>
             <tr>
-              <td>Elevation &amp; Slope Resistance Modeling</td>
-              <td class="check">✓ Included</td>
-              <td class="dim">—</td>
+              <td class="code-cell">Dijkstra</td>
+              <td>Uniform Cost</td>
+              <td class="code-cell">O(E + V log V)</td>
+              <td class="tag-cell"><span class="highlight">Optimal</span></td>
+              <td>Static</td>
+              <td>Guaranteed shortest path on complex weighted terrain</td>
             </tr>
             <tr>
-              <td>Step-by-step History Scrubber (S / B keys)</td>
-              <td class="check">✓ Included</td>
-              <td class="check">✓ Included</td>
+              <td class="code-cell">Bidirectional Search</td>
+              <td>Dual-Frontier</td>
+              <td class="code-cell">O(b^(d/2))</td>
+              <td class="tag-cell"><span class="highlight">Optimal</span></td>
+              <td>Static</td>
+              <td>Simultaneous start and goal frontier intersection</td>
             </tr>
             <tr>
-              <td>Side-by-Side 9-Algorithm Benchmark HUD (X key)</td>
-              <td class="check">✓ Included</td>
-              <td class="check">✓ Included</td>
+              <td class="code-cell">Greedy Best-First</td>
+              <td>Heuristic-Only</td>
+              <td class="code-cell">O(b^m)</td>
+              <td class="tag-cell"><span>Sub-optimal</span></td>
+              <td>Static</td>
+              <td>Fastest path discovery where optimality is secondary</td>
             </tr>
             <tr>
-              <td>Reinforcement Learning (Q-Learning) Visualizer</td>
-              <td class="check">✓ 3D Height Columns</td>
-              <td class="check">✓ 2D Heatmap &amp; Vectors</td>
+              <td class="code-cell">Breadth-First (BFS)</td>
+              <td>Exhaustive</td>
+              <td class="code-cell">O(V + E)</td>
+              <td class="tag-cell"><span class="highlight">Optimal (unweighted)</span></td>
+              <td>Static</td>
+              <td>Radial unweighted wave expansion</td>
             </tr>
             <tr>
-              <td>CSV Metric Telemetry &amp; JSON Map Export</td>
-              <td class="check">✓ Included</td>
-              <td class="check">✓ Included</td>
-            </tr>
-            <tr>
-              <td>Offline Single-File Bundle Support</td>
-              <td class="check">✓ MetroMind AI 3D.html</td>
-              <td class="check">✓ MetroMind_AI_v11.html</td>
+              <td class="code-cell">Q-Learning</td>
+              <td>Reinforcement Learning</td>
+              <td class="code-cell">Iterative (Bellman)</td>
+              <td class="tag-cell"><span>Convergent</span></td>
+              <td>Policy Adaptation</td>
+              <td>Autonomous agent policy training with state heatmaps</td>
             </tr>
           </tbody>
         </table>
       </div>
     </section>
 
-    <!-- Shortcuts HUD -->
-    <div class="shortcuts-bar">
-      <div class="shortcuts-title">
-        <span>⚡ Global Simulator Hotkeys:</span>
+    <!-- Keyboard Shortcuts Bar -->
+    <div id="shortcuts" class="shortcuts-section">
+      <div class="shortcuts-label">
+        <span>Simulator Keyboard Shortcuts:</span>
       </div>
-      <div class="shortcut-items">
-        <div class="shortcut-item"><kbd>Space</kbd> Start / Pause</div>
-        <div class="shortcut-item"><kbd>X</kbd> Comparison View</div>
-        <div class="shortcut-item"><kbd>S</kbd> / <kbd>B</kbd> Step Forward / Back</div>
-        <div class="shortcut-item"><kbd>R</kbd> Reset Route</div>
-        <div class="shortcut-item"><kbd>G</kbd> Focus Map</div>
-        <div class="shortcut-item"><kbd>?</kbd> Shortcut Guide</div>
+      <div class="shortcuts-grid">
+        <div class="shortcut-node"><kbd>Space</kbd> Start / Pause</div>
+        <div class="shortcut-node"><kbd>X</kbd> Comparison View</div>
+        <div class="shortcut-node"><kbd>S</kbd> / <kbd>B</kbd> Step Forward / Back</div>
+        <div class="shortcut-node"><kbd>R</kbd> Reset Route</div>
+        <div class="shortcut-node"><kbd>G</kbd> Focus Map</div>
+        <div class="shortcut-node"><kbd>?</kbd> Shortcut Guide</div>
       </div>
     </div>
   </main>
 
   <!-- Footer -->
   <footer>
-    <div class="container footer-content">
+    <div class="container footer-inner">
       <div>
-        <strong>MetroMind AI</strong> &bull; Open-source autonomous pathfinding &amp; reinforcement learning simulator.
+        <strong>MetroMind AI</strong> · Open-source browser simulator for autonomous routing and reinforcement learning.
       </div>
       <div class="footer-links">
         <a href="https://github.com/Ayaan-22/MetroMind-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
         <a href="README.md">README</a>
+        <a href="3d/README.md">3D Guide</a>
+        <a href="modular_version/README.md">2D Guide</a>
         <a href="future.md">Roadmap</a>
-        <a href="#editions">Back to Top &uarr;</a>
       </div>
     </div>
   </footer>
-
-  <!-- Interactive Background Canvas & Mini-Playground Script -->
-  <script>
-    // 1. Subtle Animated Ambient Network in Hero
-    (function initHeroCanvas() {
-      const canvas = document.getElementById('hero-bg-canvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      let width, height;
-      const nodes = [];
-      const nodeCount = 38;
-
-      function resize() {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = Math.min(window.innerHeight, 720);
-      }
-      window.addEventListener('resize', resize);
-      resize();
-
-      for (let i = 0; i < nodeCount; i++) {
-        nodes.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.45,
-          vy: (Math.random() - 0.5) * 0.45,
-          radius: Math.random() * 1.8 + 1
-        });
-      }
-
-      function draw() {
-        ctx.clearRect(0, 0, width, height);
-        ctx.strokeStyle = 'rgba(156, 231, 198, 0.08)';
-        ctx.lineWidth = 1;
-
-        for (let i = 0; i < nodes.length; i++) {
-          const a = nodes[i];
-          a.x += a.vx;
-          a.y += a.vy;
-          if (a.x < 0 || a.x > width) a.vx *= -1;
-          if (a.y < 0 || a.y > height) a.vy *= -1;
-
-          ctx.beginPath();
-          ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(156, 231, 198, 0.28)';
-          ctx.fill();
-
-          for (let j = i + 1; j < nodes.length; j++) {
-            const b = nodes[j];
-            const dx = a.x - b.x;
-            const dy = a.y - b.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-            if (dist < 140) {
-              ctx.beginPath();
-              ctx.strokeStyle = `rgba(156, 231, 198, ${0.12 * (1 - dist / 140)})`;
-              ctx.moveTo(a.x, a.y);
-              ctx.lineTo(b.x, b.y);
-              ctx.stroke();
-            }
-          }
-        }
-        requestAnimationFrame(draw);
-      }
-      requestAnimationFrame(draw);
-    })();
-
-    // 2. In-Page Interactive Pathfinding Lab
-    (function initPlayground() {
-      const canvas = document.getElementById('playground-canvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const algoSelect = document.getElementById('pg-algo-select');
-      const hudAlgo = document.getElementById('pg-hud-algo');
-      const runBtn = document.getElementById('pg-btn-run');
-      const clearBtn = document.getElementById('pg-btn-clear');
-      const statExplored = document.getElementById('pg-stat-explored');
-      const statSteps = document.getElementById('pg-stat-steps');
-      const statTime = document.getElementById('pg-stat-time');
-
-      const COLS = 24;
-      const ROWS = 13;
-      let cellW = canvas.width / COLS;
-      let cellH = canvas.height / ROWS;
-
-      let grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-      let start = { r: 6, c: 2 };
-      let goal = { r: 6, c: 21 };
-      let isDrawing = false;
-      let drawMode = 1; // 1 = wall, 0 = erase
-      let exploredNodes = [];
-      let finalPath = [];
-      let isSearching = false;
-
-      // Seed initial labyrinth obstacles
-      for (let r = 2; r <= 10; r++) {
-        grid[r][7] = 1;
-        grid[r][16] = 1;
-      }
-      grid[5][7] = 0;
-      grid[7][16] = 0;
-
-      function drawGrid() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        cellW = canvas.width / COLS;
-        cellH = canvas.height / ROWS;
-
-        // Draw cells
-        for (let r = 0; r < ROWS; r++) {
-          for (let c = 0; c < COLS; c++) {
-            const x = c * cellW;
-            const y = r * cellH;
-
-            // Background
-            ctx.fillStyle = '#101719';
-            if (grid[r][c] === 1) {
-              ctx.fillStyle = '#2d3e42'; // Wall
-            }
-            ctx.fillRect(x, y, cellW, cellH);
-
-            // Grid border lines
-            ctx.strokeStyle = '#182326';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(x, y, cellW, cellH);
-          }
-        }
-
-        // Draw Explored Nodes
-        for (const node of exploredNodes) {
-          if ((node.r === start.r && node.c === start.c) || (node.r === goal.r && node.c === goal.c)) continue;
-          const x = node.c * cellW;
-          const y = node.r * cellH;
-          ctx.fillStyle = 'rgba(120, 220, 232, 0.28)';
-          ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
-        }
-
-        // Draw Final Path
-        if (finalPath.length > 0) {
-          ctx.strokeStyle = '#9ce7c6';
-          ctx.lineWidth = 3.5;
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          ctx.beginPath();
-          for (let i = 0; i < finalPath.length; i++) {
-            const px = finalPath[i].c * cellW + cellW / 2;
-            const py = finalPath[i].r * cellH + cellH / 2;
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-          }
-          ctx.stroke();
-
-          // Highlight path nodes
-          for (const node of finalPath) {
-            if ((node.r === start.r && node.c === start.c) || (node.r === goal.r && node.c === goal.c)) continue;
-            ctx.fillStyle = '#9ce7c6';
-            ctx.beginPath();
-            ctx.arc(node.c * cellW + cellW / 2, node.r * cellH + cellH / 2, 4, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-
-        // Draw Start Node
-        ctx.fillStyle = '#9ce7c6';
-        ctx.beginPath();
-        ctx.arc(start.c * cellW + cellW / 2, start.r * cellH + cellH / 2, cellW * 0.32, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#101617';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        // Draw Goal Node
-        ctx.fillStyle = '#e06c75';
-        ctx.beginPath();
-        ctx.arc(goal.c * cellW + cellW / 2, goal.r * cellH + cellH / 2, cellW * 0.32, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = '#101617';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-
-      function getCellFromCoords(e) {
-        const rect = canvas.getBoundingClientRect();
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        const x = (clientX - rect.left) * scaleX;
-        const y = (clientY - rect.top) * scaleY;
-        const c = Math.floor(x / cellW);
-        const r = Math.floor(y / cellH);
-        return { r, c };
-      }
-
-      function handlePointerDown(e) {
-        if (isSearching) return;
-        const { r, c } = getCellFromCoords(e);
-        if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
-        if ((r === start.r && c === start.c) || (r === goal.r && c === goal.c)) return;
-
-        isDrawing = true;
-        drawMode = grid[r][c] === 1 ? 0 : 1;
-        grid[r][c] = drawMode;
-        exploredNodes = [];
-        finalPath = [];
-        drawGrid();
-      }
-
-      function handlePointerMove(e) {
-        if (!isDrawing || isSearching) return;
-        const { r, c } = getCellFromCoords(e);
-        if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
-        if ((r === start.r && c === start.c) || (r === goal.r && c === goal.c)) return;
-        grid[r][c] = drawMode;
-        drawGrid();
-      }
-
-      function handlePointerUp() {
-        isDrawing = false;
-      }
-
-      canvas.addEventListener('mousedown', handlePointerDown);
-      window.addEventListener('mousemove', handlePointerMove);
-      window.addEventListener('mouseup', handlePointerUp);
-
-      canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handlePointerDown(e); }, { passive: false });
-      window.addEventListener('touchmove', (e) => { if (isDrawing) handlePointerMove(e); }, { passive: false });
-      window.addEventListener('touchend', handlePointerUp);
-
-      algoSelect.addEventListener('change', () => {
-        hudAlgo.textContent = algoSelect.options[algoSelect.selectedIndex].text;
-      });
-
-      clearBtn.addEventListener('click', () => {
-        grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
-        exploredNodes = [];
-        finalPath = [];
-        statExplored.textContent = '0';
-        statSteps.textContent = '0';
-        statTime.textContent = '0 ms';
-        drawGrid();
-      });
-
-      // Simple Search Engine (A*, Dijkstra, BFS, Greedy)
-      function runSearch() {
-        if (isSearching) return;
-        isSearching = true;
-        exploredNodes = [];
-        finalPath = [];
-        drawGrid();
-
-        const t0 = performance.now();
-        const algo = algoSelect.value;
-        const queue = [];
-        const cameFrom = new Map();
-        const costSoFar = new Map();
-
-        const key = (r, c) => `${r},${c}`;
-        const parseKey = (k) => { const [r, c] = k.split(',').map(Number); return { r, c }; };
-
-        const startKey = key(start.r, start.c);
-        queue.push({ r: start.r, c: start.c, priority: 0 });
-        costSoFar.set(startKey, 0);
-
-        function heuristic(r, c) {
-          return Math.abs(r - goal.r) + Math.abs(c - goal.c);
-        }
-
-        const visitedOrder = [];
-        let reached = false;
-
-        while (queue.length > 0) {
-          queue.sort((a, b) => a.priority - b.priority);
-          const current = queue.shift();
-          const currKey = key(current.r, current.c);
-
-          if (current.r === goal.r && current.c === goal.c) {
-            reached = true;
-            break;
-          }
-
-          visitedOrder.push({ r: current.r, c: current.c });
-
-          const neighbors = [
-            { r: current.r - 1, c: current.c },
-            { r: current.r + 1, c: current.c },
-            { r: current.r, c: current.c - 1 },
-            { r: current.r, c: current.c + 1 }
-          ];
-
-          for (const nb of neighbors) {
-            if (nb.r >= 0 && nb.r < ROWS && nb.c >= 0 && nb.c < COLS) {
-              if (grid[nb.r][nb.c] === 1) continue; // Obstacle
-              const nbKey = key(nb.r, nb.c);
-              const newCost = costSoFar.get(currKey) + 1;
-
-              if (!costSoFar.has(nbKey) || newCost < costSoFar.get(nbKey)) {
-                costSoFar.set(nbKey, newCost);
-                cameFrom.set(nbKey, currKey);
-
-                let priority = newCost;
-                if (algo === 'astar') priority = newCost + heuristic(nb.r, nb.c);
-                else if (algo === 'greedy') priority = heuristic(nb.r, nb.c);
-                else if (algo === 'bfs') priority = visitedOrder.length;
-                else if (algo === 'dijkstra') priority = newCost;
-
-                queue.push({ r: nb.r, c: nb.c, priority });
-              }
-            }
-          }
-        }
-
-        const t1 = performance.now();
-        statTime.textContent = (t1 - t0).toFixed(1) + ' ms';
-
-        // Reconstruct path
-        if (reached) {
-          let curr = key(goal.r, goal.c);
-          while (curr) {
-            finalPath.unshift(parseKey(curr));
-            curr = cameFrom.get(curr);
-          }
-        }
-
-        // Animate the search expansion step-by-step
-        let step = 0;
-        const animSpeed = 12; // ms per batch
-        function stepAnim() {
-          const batch = 3;
-          for (let b = 0; b < batch && step < visitedOrder.length; b++) {
-            exploredNodes.push(visitedOrder[step]);
-            step++;
-          }
-          statExplored.textContent = exploredNodes.length;
-          drawGrid();
-
-          if (step < visitedOrder.length) {
-            setTimeout(stepAnim, animSpeed);
-          } else {
-            isSearching = false;
-            statSteps.textContent = finalPath.length ? finalPath.length - 1 : 0;
-            drawGrid();
-          }
-        }
-
-        if (visitedOrder.length > 0) stepAnim();
-        else {
-          isSearching = false;
-          drawGrid();
-        }
-      }
-
-      runBtn.addEventListener('click', runSearch);
-
-      // Initial Draw
-      drawGrid();
-    })();
-  </script>
 </body>
 </html>
