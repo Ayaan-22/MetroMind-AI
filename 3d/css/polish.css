@@ -1,7 +1,7 @@
 /* Readable type and consistent details for the floating workspace. */
 :root {
-  --sans: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif;
-  --text: #e7f0e9;
+  --sans: var(--mm-sans);
+  --text: var(--mm-text);
   --muted: #b6c8bd;
   --faint: #a0b6a8;
   --scroll-track: #102019;
@@ -143,7 +143,7 @@ button, input, select, textarea { font-family: var(--sans); }
 .map-first .map-commandbar .command-learning { gap: 8px; }
 .map-first .map-commandbar .command-learning .button, .map-first .map-commandbar .command-learning input { height: 32px; min-height: 32px; }
 .map-first .map-commandbar .command-learning .button { padding: 4px 8px; }
-.map-first .transport .run-button { min-width: 128px; height: 30px; padding: 0 10px; gap: 7px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.map-first .transport .run-button { min-width: 128px; height: 30px; padding: 0 10px; gap: 7px; border-radius: 7px; font-size: 12px; font-weight: 600; }
 .map-first .transport .run-button svg { width: 12px; height: 12px; }
 .map-first .transport .icon-button { width: 26px; height: 28px; }
 .map-first .transport .icon-button svg { width: 14px; height: 14px; }

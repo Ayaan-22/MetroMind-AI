@@ -111,7 +111,7 @@ export function rippleLoop() {
     }
     rctx.beginPath();
     rctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
-    rctx.strokeStyle = `rgba(0,229,160,${rp.alpha})`;
+    rctx.strokeStyle = `rgba(156,231,198,${rp.alpha})`;
     rctx.lineWidth = 1.5 * (1 - rp.t);
     rctx.stroke();
   }
@@ -123,7 +123,7 @@ export function showGhost(emoji, color) {
   dragGhost.textContent = emoji;
   dragGhost.style.display = "flex";
   dragGhost.style.borderColor = color || "var(--accent)";
-  dragGhost.style.boxShadow = `0 0 18px ${color || "rgba(0,229,160,0.5)"}`;
+  dragGhost.style.boxShadow = `0 0 18px ${color || "rgba(156,231,198,0.5)"}`;
   ghostVisible = true;
 }
 
@@ -177,7 +177,7 @@ export function drawAgentOverlay(cols, rows) {
     rctx.beginPath();
     rctx.moveTo((p.c + 0.5) * sx, (p.r + 0.5) * sy);
     rctx.lineTo((q.c + 0.5) * sx, (q.r + 0.5) * sy);
-    rctx.strokeStyle = `rgba(247,183,49,${wave * 0.8})`;
+    rctx.strokeStyle = `rgba(213,185,130,${wave * 0.8})`;
     rctx.lineWidth = 3;
     rctx.stroke();
   }
@@ -190,8 +190,8 @@ export function drawAgentOverlay(cols, rows) {
   const ay = (A.r + 0.5 + (B.r - A.r) * frac) * sy;
   
   const grd = rctx.createRadialGradient(ax, ay, 0, ax, ay, sx * 1.5);
-  grd.addColorStop(0, "rgba(247,183,49,0.5)");
-  grd.addColorStop(1, "rgba(247,183,49,0)");
+  grd.addColorStop(0, "rgba(213,185,130,0.5)");
+  grd.addColorStop(1, "rgba(213,185,130,0)");
   rctx.beginPath();
   rctx.arc(ax, ay, sx * 1.5, 0, Math.PI * 2);
   rctx.fillStyle = grd;
@@ -199,7 +199,7 @@ export function drawAgentOverlay(cols, rows) {
   
   rctx.beginPath();
   rctx.arc(ax, ay, Math.max(3, sx * 0.35), 0, Math.PI * 2);
-  rctx.fillStyle = "#f7b731";
+  rctx.fillStyle = "#d5b982";
   rctx.fill();
   rctx.strokeStyle = "#fff";
   rctx.lineWidth = 1;
@@ -296,7 +296,7 @@ export function _drawGrid(searchState, lastSolutionPath, displayGrid = grid) {
         ctx.fillRect(x, y, CELL, CELL);
         drawTerrain(r, c, x, y);
         if (fogActive) {
-          ctx.fillStyle = isDarkMode ? "rgba(5,11,20,0.45)" : "rgba(224,236,248,0.5)";
+          ctx.fillStyle = isDarkMode ? "rgba(16,22,23,0.45)" : "rgba(224,236,248,0.5)";
           ctx.fillRect(x, y, CELL, CELL);
         }
         if (!terrainGrid[r][c]) {
@@ -334,14 +334,14 @@ export function _drawGrid(searchState, lastSolutionPath, displayGrid = grid) {
         drawTerrain(r, c, x, y);
         ctx.fillStyle = C[OPEN];
         ctx.fillRect(x, y, CELL, CELL);
-        ctx.strokeStyle = "rgba(247,183,49,0.4)";
+        ctx.strokeStyle = C.frontierStroke;
         ctx.lineWidth = 0.5;
         ctx.strokeRect(x + 0.5, y + 0.5, CELL - 1, CELL - 1);
         if (showCost && searchState) {
           const nd = searchState.nodeMap && searchState.nodeMap[`${r},${c}`];
           if (nd) {
             ctx.fillStyle = isDarkMode ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.5)";
-            ctx.font = `${CELL * 0.3}px IBM Plex Mono`;
+            ctx.font = `${CELL * 0.3}px Consolas, monospace`;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(Math.round(nd.f), x + CELL / 2, y + CELL / 2);
@@ -363,7 +363,7 @@ export function _drawGrid(searchState, lastSolutionPath, displayGrid = grid) {
         ctx.lineWidth = 1.5 + pulse;
         ctx.strokeRect(x + 1, y + 1, CELL - 2, CELL - 2);
         ctx.fillStyle = C[START];
-        ctx.font = `bold ${CELL * 0.5}px Orbitron`;
+        ctx.font = `bold ${CELL * 0.5}px "Segoe UI", sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("S", x + CELL / 2, y + CELL / 2 + 1);
@@ -374,7 +374,7 @@ export function _drawGrid(searchState, lastSolutionPath, displayGrid = grid) {
         ctx.lineWidth = 1.5;
         ctx.strokeRect(x + 1, y + 1, CELL - 2, CELL - 2);
         ctx.fillStyle = C[GOAL];
-        ctx.font = `bold ${CELL * 0.5}px Orbitron`;
+        ctx.font = `bold ${CELL * 0.5}px "Segoe UI", sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("G", x + CELL / 2, y + CELL / 2 + 1);
@@ -384,7 +384,7 @@ export function _drawGrid(searchState, lastSolutionPath, displayGrid = grid) {
 
   if (searchState && !searchState.done && searchState.livePath && searchState.livePath.length > 1) {
     const lp = searchState.livePath;
-    ctx.strokeStyle = isDarkMode ? "rgba(247,183,49,0.5)" : "rgba(180,110,0,0.5)";
+    ctx.strokeStyle = isDarkMode ? "rgba(213,185,130,0.5)" : "rgba(180,110,0,0.5)";
     ctx.lineWidth = 2;
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
@@ -412,13 +412,13 @@ export function _drawGrid(searchState, lastSolutionPath, displayGrid = grid) {
     ctx.moveTo(p[0].c * CELL + CELL / 2, p[0].r * CELL + CELL / 2);
     for (let i = 1; i < p.length; i++)
       ctx.lineTo(p[i].c * CELL + CELL / 2, p[i].r * CELL + CELL / 2);
-    ctx.strokeStyle = isDarkMode ? "rgba(0,229,160,0.95)" : "rgba(0,149,106,0.95)";
+    ctx.strokeStyle = C.pathLine;
     ctx.lineWidth = Math.max(3, CELL / 6);
-    ctx.shadowColor = isDarkMode ? "#00e5a0" : "#00956a";
+    ctx.shadowColor = C[PATH];
     ctx.shadowBlur = 4;
     ctx.stroke();
     ctx.shadowBlur = 0;
-    ctx.strokeStyle = isDarkMode ? "rgba(247,183,49,0.95)" : "rgba(200,130,20,0.92)";
+    ctx.strokeStyle = isDarkMode ? "rgba(199,246,225,0.82)" : "rgba(200,130,20,0.92)";
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.strokeStyle = "rgba(255,255,255,0.5)";

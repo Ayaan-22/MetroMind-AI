@@ -1,6 +1,6 @@
 /* Readability scale: keep small-screen layouts compact without shrinking text. */
 :root {
-  --text: #edf2ee;
+  --text: var(--mm-text);
   --muted: #b0bfb8;
   --faint: #94a79d;
   --type-body: 14px;
@@ -28,7 +28,6 @@ kbd { font-size: var(--type-meta); color: #b0bfb8; }
 .topbar { height: var(--header-height); min-height: var(--header-height); }
 .brand { font-size: 17px; font-weight: 650; letter-spacing: 1.1px; }
 .brand small { font-size: 10px; letter-spacing: 1.2px; color: var(--muted); }
-.brand-ai { font-size: 11px; }
 .studio-label { font-size: var(--type-control); color: #c3cec7; }
 .version-tag, .avatar { font-size: var(--type-caption); }
 .local-indicator { font-size: var(--type-label); color: var(--muted); }
@@ -227,7 +226,6 @@ output { font-size: var(--type-label); font-weight: 500; }
   .topbar { gap: 7px; }
   .brand { font-size: 14px; letter-spacing: .8px; }
   .brand small { display: none; }
-  .brand-ai { font-size: 10px; }
   .rail-button { width: 48px; height: 53px; }
   .rail-button span { font-size: var(--type-meta); }
   .rail-bottom { font-size: 11px; }

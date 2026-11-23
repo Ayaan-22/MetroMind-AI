@@ -5,38 +5,94 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="MetroMind AI — Advanced Pathfinding & RL Simulator v11" />
-    <title>MetroMind AI</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%23101718%22%2F%3E%3Cpath%20fill%3D%22%239ce7c6%22%20d%3D%22M6%2016l5-1.5v11L6%2027zm7-9l5-1.5v18L13%2025zm7%203l5-1.5v13L20%2023z%22%2F%3E%3C%2Fsvg%3E" />
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <title>MetroMind AI · 2D Grid Lab</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23101617'/><path d='M8 22h4v-7H8zm6 0h4v-14h-4zm6 0h4v-10h-4z' fill='%239ce7c6'/></svg>">
+    <style>
+/* Edit the repository-root theme.css. Each edition build copies it to its local CSS folder. */
+:root {
+  --mm-bg: #101617;
+  --mm-surface: #151c1e;
+  --mm-panel: #141e1c;
+  --mm-toolbar: #182320;
+  --mm-popover: #172722;
+  --mm-raised: #1c2426;
+  --mm-surface-hover: #222c2e;
+  --mm-control: #202e29;
+  --mm-control-hover: #273e34;
+  --mm-line: #2a3335;
+  --mm-panel-line: #35443f;
+  --mm-control-line: #485a52;
+  --mm-text: #e7ece8;
+  --mm-muted: #9aa9a4;
+  --mm-mint: #9ce7c6;
+  --mm-mint-hover: #baf2d6;
+  --mm-ink: #102b20;
+  --mm-blue: #85b5c3;
+  --mm-amber: #d5b982;
+  --mm-visited: #4d9483;
+  --mm-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+  --mm-mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.mm-mark {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 24px;
+  height: 26px;
+  color: var(--mm-mint);
+  transform: skewY(-16deg);
+}
+
+.mm-mark i {
+  position: absolute;
+  bottom: 0;
+  width: 5px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.mm-mark i:nth-child(1) { height: 14px; left: 0; }
+.mm-mark i:nth-child(2) { height: 24px; left: 8px; }
+.mm-mark i:nth-child(3) { height: 18px; left: 16px; }
+    </style>
     <style>
 /* ═══════════════════════════════════════════════════
    DESIGN TOKENS — single source of truth
 ═══════════════════════════════════════════════════ */
 :root {
-  --bg: #050b14;
-  --bg2: #080f1c;
-  --bg3: #0c1626;
-  --bg4: #101e30;
-  --panel: rgba(10, 20, 38, 0.88);
-  --br1: rgba(0, 200, 150, 0.1);
-  --br2: rgba(0, 200, 150, 0.22);
-  --br3: rgba(0, 200, 150, 0.48);
-  --accent: #00e5a0;
-  --accent2: #00b8ff;
-  --accent3: #ff4d6d;
-  --accent4: #f7b731;
-  --accent5: #a78bfa;
-  --tx1: #c8e0f0;
-  --tx2: #a8bfd1;
-  --tx3: #8ba5ba;
-  --glow: 0 0 14px rgba(0, 229, 160, 0.28);
-  --glow-red: 0 0 14px rgba(255, 77, 109, 0.35);
-  --r-sm: 4px;
-  --r-md: 6px;
+  color-scheme: dark;
+  --accent-rgb: 156, 231, 198;
+  --blue-rgb: 133, 181, 195;
+  --rose-rgb: 232, 145, 160;
+  --amber-rgb: 213, 185, 130;
+  --violet-rgb: 181, 162, 221;
+  --accent-ink: var(--mm-ink);
+  --accent-hover: var(--mm-mint-hover);
+  --bg: var(--mm-bg);
+  --bg2: var(--mm-surface);
+  --bg3: var(--mm-raised);
+  --bg4: var(--mm-control);
+  --panel: var(--mm-panel);
+  --br1: var(--mm-line);
+  --br2: var(--mm-panel-line);
+  --br3: var(--mm-control-line);
+  --accent: var(--mm-mint);
+  --accent2: var(--mm-blue);
+  --accent3: #e891a0;
+  --accent4: var(--mm-amber);
+  --accent5: #b5a2dd;
+  --tx1: var(--mm-text);
+  --tx2: #b9c9c0;
+  --tx3: var(--mm-muted);
+  --glow: 0 0 14px #9ce7c616;
+  --glow-red: 0 0 14px #e891a026;
+  --r-sm: 5px;
+  --r-md: 7px;
   --r-lg: 10px;
-  --font-display: "Orbitron", monospace;
-  --font-ui: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: "IBM Plex Mono", Consolas, monospace;
+  --font-display: var(--mm-sans);
+  --font-ui: var(--mm-sans);
+  --font-mono: var(--mm-mono);
   --text-xs: 0.75rem;
   --text-sm: 0.8125rem;
   --text-base: 0.875rem;
@@ -45,14 +101,22 @@
   --t-fast: 0.15s ease;
   --t-med: 0.25s ease;
   /* Keep v9 variables for JS compat */
-  --border: rgba(0, 200, 150, 0.1);
-  --border2: rgba(0, 200, 150, 0.22);
-  --text: #c8e0f0;
+  --border: var(--br1);
+  --border2: var(--br2);
+  --text: var(--tx1);
   --text2: var(--tx2);
   --text3: var(--tx3);
-  --radius: 6px;
+  --radius: var(--r-md);
 }
 [data-theme="light"] {
+  color-scheme: light;
+  --accent-rgb: 0, 107, 76;
+  --blue-rgb: 0, 112, 204;
+  --rose-rgb: 200, 32, 64;
+  --amber-rgb: 128, 80, 0;
+  --violet-rgb: 99, 66, 173;
+  --accent-ink: #f3faf6;
+  --accent-hover: #00533c;
   --bg: #eef2f7;
   --bg2: #e4ecf4;
   --bg3: #d8e4f0;
@@ -127,12 +191,12 @@ button {
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 200, 150, 0.22);
+  background: rgba(var(--accent-rgb), 0.22);
   border-radius: 3px;
   transition: background 0.2s;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 229, 160, 0.55);
+  background: rgba(var(--accent-rgb), 0.55);
 }
 ::-webkit-scrollbar-corner {
   background: transparent;
@@ -154,26 +218,7 @@ button:focus-visible {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.32;
-}
-
-/* Scanline — scoped to canvas wrap only */
-.canvas-wrap::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.022) 2px,
-    rgba(0, 0, 0, 0.022) 4px
-  );
-  pointer-events: none;
-  z-index: 5;
-}
-[data-theme="light"] .canvas-wrap::before {
-  display: none;
+  opacity: 0.2;
 }
 
 /* ═══════════════════════════════════════════════════ HEADER */
@@ -183,27 +228,12 @@ button:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 55px;
   padding: 8px 14px;
-  background: var(--panel);
+  background: var(--bg);
   border-bottom: 1px solid var(--br2);
-  backdrop-filter: blur(14px);
   flex-shrink: 0;
   gap: 8px;
-}
-.header::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--accent),
-    transparent
-  );
-  opacity: 0.5;
 }
 .logo-wrap {
   display: flex;
@@ -211,36 +241,29 @@ button:focus-visible {
   gap: 10px;
   min-width: 0;
 }
-.logo {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid var(--br2);
-  background: linear-gradient(
-    135deg,
-    rgba(0, 229, 160, 0.14),
-    rgba(0, 184, 255, 0.09)
-  );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  flex-shrink: 0;
-  box-shadow: var(--glow);
+.mm-mark { color: var(--accent); }
+.header-icon {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  vertical-align: middle;
 }
+.theme-sun, [data-theme="light"] .theme-moon { display: none; }
+[data-theme="light"] .theme-sun { display: inline; }
 .app-title {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  color: var(--accent);
-  text-shadow: var(--glow);
-  text-transform: uppercase;
+  color: var(--tx1);
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: .5px;
   white-space: nowrap;
   position: relative;
 }
 .app-sub {
-  font-family: var(--font-ui);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--tx3);
   margin-top: 1px;
@@ -258,13 +281,13 @@ button:focus-visible {
   padding: 3px 8px;
   border-radius: 20px;
   border: 1px solid var(--br2);
-  background: rgba(0, 229, 160, 0.07);
+  background: rgba(var(--accent-rgb), 0.07);
   color: var(--accent);
   white-space: nowrap;
 }
 .hbadge.blue {
-  border-color: rgba(0, 184, 255, 0.28);
-  background: rgba(0, 184, 255, 0.07);
+  border-color: rgba(var(--blue-rgb), 0.28);
+  background: rgba(var(--blue-rgb), 0.07);
   color: var(--accent2);
 }
 @media (max-width: 600px) {
@@ -280,12 +303,7 @@ button:focus-visible {
   }
   .app-title {
     font-size: 13px;
-    letter-spacing: 1px;
-  }
-}
-@media (max-width: 420px) {
-  .header .logo {
-    display: none;
+    letter-spacing: .35px;
   }
 }
 
@@ -349,12 +367,12 @@ button:focus-visible {
 }
 .sb-tab:hover {
   color: var(--tx1);
-  background: rgba(0, 229, 160, 0.04);
+  background: rgba(var(--accent-rgb), 0.04);
 }
 .sb-tab.active {
   color: var(--accent);
   border-bottom-color: var(--accent);
-  background: rgba(0, 229, 160, 0.06);
+  background: rgba(var(--accent-rgb), 0.06);
 }
 [data-theme="light"] .sb-tabs {
   background: rgba(0, 0, 0, 0.04);
@@ -417,7 +435,23 @@ button:focus-visible {
   .sidebar-backdrop.visible {
     display: block !important;
   }
-  .right-panel {
+  [data-theme="dark"] .grid-container {
+  background:
+    linear-gradient(#72928513 1px, transparent 1px),
+    linear-gradient(90deg, #72928513 1px, transparent 1px),
+    #111f1c;
+  background-size: 24px 24px;
+}
+.terrain-swatch.wall { background: #1a2b27; border-color: #4a655c; }
+[data-theme="light"] .terrain-swatch.wall { background: #1e3a50; border-color: rgba(100, 160, 200, 0.3); }
+.terrain-swatch.highway { background: #3d5246; border-color: #6c9481; }
+[data-theme="light"] .terrain-swatch.highway { background: rgba(0, 180, 220, 0.2); border-color: rgba(0, 180, 220, 0.5); }
+.terrain-swatch.traffic { background: #67563c; border-color: #9b8057; }
+[data-theme="light"] .terrain-swatch.traffic { background: rgba(220, 110, 0, 0.25); border-color: rgba(220, 110, 0, 0.5); }
+.terrain-swatch.mud { background: #47424c; border-color: #7f758b; }
+[data-theme="light"] .terrain-swatch.mud { background: rgba(100, 60, 20, 0.3); border-color: rgba(100, 60, 20, 0.6); }
+
+.right-panel {
     position: absolute;
     top: 0;
     right: 0;
@@ -481,7 +515,7 @@ button:focus-visible {
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
 }
 .sidebar-toggle:hover {
-  background: rgba(0, 229, 160, 0.1);
+  background: rgba(var(--accent-rgb), 0.1);
 }
 
 /* ═══════════════════════════════════════════════════ BUTTONS */
@@ -491,7 +525,7 @@ button:focus-visible {
   min-height: 38px;
   border-radius: var(--r-md);
   border: 1px solid var(--br2);
-  background: rgba(0, 229, 160, 0.04);
+  background: var(--bg3);
   color: var(--tx1);
   font-family: var(--font-ui);
   font-size: var(--text-base);
@@ -519,7 +553,7 @@ button:focus-visible {
 }
 .btn:hover {
   border-color: var(--br3);
-  background: rgba(0, 229, 160, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
   color: var(--accent);
   box-shadow: var(--glow);
 }
@@ -530,44 +564,36 @@ button:focus-visible {
   transform: scale(0.98);
 }
 .btn.primary {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 229, 160, 0.14),
-    rgba(0, 184, 255, 0.09)
-  );
-  border-color: var(--accent);
-  color: var(--accent);
-  font-weight: 600;
-  box-shadow: var(--glow);
   justify-content: center;
-  letter-spacing: 1px;
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 650;
 }
 .btn.primary:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 229, 160, 0.24),
-    rgba(0, 184, 255, 0.18)
-  );
-  box-shadow: 0 0 24px rgba(0, 229, 160, 0.48);
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+  color: var(--accent-ink);
+  box-shadow: none;
 }
 .btn.primary.running {
   background: linear-gradient(
     135deg,
-    rgba(247, 183, 49, 0.14),
-    rgba(255, 77, 109, 0.09)
+    rgba(var(--amber-rgb), 0.14),
+    rgba(var(--rose-rgb), 0.09)
   );
   border-color: var(--accent4);
   color: var(--accent4);
-  box-shadow: 0 0 14px rgba(247, 183, 49, 0.28);
+  box-shadow: 0 0 14px rgba(var(--amber-rgb), 0.28);
 }
 .btn.danger {
-  border-color: rgba(255, 77, 109, 0.28);
-  background: rgba(255, 77, 109, 0.05);
+  border-color: rgba(var(--rose-rgb), 0.28);
+  background: rgba(var(--rose-rgb), 0.05);
   color: var(--accent3);
 }
 .btn.danger:hover {
   border-color: var(--accent3);
-  background: rgba(255, 77, 109, 0.12);
+  background: rgba(var(--rose-rgb), 0.12);
   box-shadow: var(--glow-red);
 }
 .btn:disabled {
@@ -587,44 +613,44 @@ button:focus-visible {
   padding: 8px 4px;
 }
 .btn.rl-btn {
-  border-color: rgba(167, 139, 250, 0.28);
-  background: rgba(167, 139, 250, 0.04);
+  border-color: rgba(var(--violet-rgb), 0.28);
+  background: rgba(var(--violet-rgb), 0.04);
   color: var(--accent5);
 }
 .btn.rl-btn:hover {
   border-color: var(--accent5);
-  background: rgba(167, 139, 250, 0.1);
-  box-shadow: 0 0 12px rgba(167, 139, 250, 0.2);
+  background: rgba(var(--violet-rgb), 0.1);
+  box-shadow: 0 0 12px rgba(var(--violet-rgb), 0.2);
 }
 .btn.rl-btn.primary {
   background: linear-gradient(
     135deg,
-    rgba(167, 139, 250, 0.14),
-    rgba(0, 184, 255, 0.09)
+    rgba(var(--violet-rgb), 0.14),
+    rgba(var(--blue-rgb), 0.09)
   );
   border-color: var(--accent5);
   color: var(--accent5);
   font-weight: 600;
-  box-shadow: 0 0 14px rgba(167, 139, 250, 0.28);
+  box-shadow: 0 0 14px rgba(var(--violet-rgb), 0.28);
   justify-content: center;
   letter-spacing: 1px;
 }
 .btn.rl-btn.primary:hover {
   background: linear-gradient(
     135deg,
-    rgba(167, 139, 250, 0.24),
-    rgba(0, 184, 255, 0.18)
+    rgba(var(--violet-rgb), 0.24),
+    rgba(var(--blue-rgb), 0.18)
   );
 }
 .btn.rl-btn.primary.training {
   background: linear-gradient(
     135deg,
-    rgba(247, 183, 49, 0.14),
-    rgba(167, 139, 250, 0.09)
+    rgba(var(--amber-rgb), 0.14),
+    rgba(var(--violet-rgb), 0.09)
   );
   border-color: var(--accent4);
   color: var(--accent4);
-  box-shadow: 0 0 14px rgba(247, 183, 49, 0.28);
+  box-shadow: 0 0 14px rgba(var(--amber-rgb), 0.28);
   animation: rlPulse 1.5s ease-in-out infinite;
 }
 @keyframes rlPulse {
@@ -640,7 +666,7 @@ button:focus-visible {
   padding: 6px 8px;
   border-radius: var(--r-md);
   border: 1px solid var(--br1);
-  background: rgba(0, 229, 160, 0.03);
+  background: rgba(var(--accent-rgb), 0.03);
   color: var(--tx2);
   font-size: 14px;
   cursor: pointer;
@@ -650,7 +676,7 @@ button:focus-visible {
 .icon-btn:hover {
   border-color: var(--br2);
   color: var(--accent);
-  background: rgba(0, 229, 160, 0.06);
+  background: rgba(var(--accent-rgb), 0.06);
 }
 .history-bar {
   display: flex;
@@ -698,7 +724,7 @@ input[type="range"]::-webkit-slider-thumb {
   height: 13px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 8px rgba(0, 229, 160, 0.55);
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.55);
   cursor: pointer;
   transition: transform var(--t-fast);
 }
@@ -735,7 +761,7 @@ input[type="range"]:focus-visible {
   width: 11px;
   height: 11px;
   background: var(--accent5);
-  box-shadow: 0 0 6px rgba(167, 139, 250, 0.55);
+  box-shadow: 0 0 6px rgba(var(--violet-rgb), 0.55);
 }
 .rl-slider-val {
   min-width: 34px;
@@ -770,7 +796,7 @@ input[type="range"]:focus-visible {
   min-height: 40px;
   border-radius: 5px;
   border: 1px solid var(--br1);
-  background: rgba(0, 229, 160, 0.03);
+  background: rgba(var(--accent-rgb), 0.03);
   color: var(--tx2);
   font-family: var(--font-ui);
   font-size: var(--text-sm);
@@ -783,12 +809,12 @@ input[type="range"]:focus-visible {
 .algo-btn:hover {
   border-color: var(--br2);
   color: var(--accent);
-  background: rgba(0, 229, 160, 0.07);
+  background: rgba(var(--accent-rgb), 0.07);
 }
 .algo-btn.active {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(0, 229, 160, 0.14);
+  background: rgba(var(--accent-rgb), 0.14);
   font-weight: 600;
   box-shadow:
     inset 0 -2px 0 var(--accent),
@@ -803,7 +829,7 @@ input[type="range"]:focus-visible {
   padding: 8px 6px;
   border-radius: 5px;
   border: 1px solid var(--br1);
-  background: rgba(0, 184, 255, 0.03);
+  background: rgba(var(--blue-rgb), 0.03);
   color: var(--tx2);
   font-family: var(--font-ui);
   font-size: var(--text-sm);
@@ -812,13 +838,13 @@ input[type="range"]:focus-visible {
   transition: all var(--t-fast);
 }
 .heur-btn:hover {
-  border-color: rgba(0, 184, 255, 0.3);
+  border-color: rgba(var(--blue-rgb), 0.3);
   color: var(--accent2);
 }
 .heur-btn.active {
   border-color: var(--accent2);
   color: var(--accent2);
-  background: rgba(0, 184, 255, 0.12);
+  background: rgba(var(--blue-rgb), 0.12);
   font-weight: 600;
 }
 .heur-btn:disabled,
@@ -835,7 +861,7 @@ input[type="range"]:focus-visible {
   padding: 8px 6px;
   border-radius: 5px;
   border: 1px solid var(--br1);
-  background: rgba(0, 229, 160, 0.03);
+  background: rgba(var(--accent-rgb), 0.03);
   color: var(--tx2);
   font-family: var(--font-ui);
   font-size: var(--text-sm);
@@ -846,7 +872,7 @@ input[type="range"]:focus-visible {
 .maze-btn:hover {
   border-color: var(--br2);
   color: var(--accent);
-  background: rgba(0, 229, 160, 0.07);
+  background: rgba(var(--accent-rgb), 0.07);
 }
 .check-label {
   display: flex;
@@ -886,7 +912,7 @@ input[type="range"]:focus-visible {
   gap: 6px;
 }
 .stat-card {
-  background: rgba(0, 229, 160, 0.04);
+  background: rgba(var(--accent-rgb), 0.04);
   border: 1px solid var(--br1);
   border-radius: var(--r-md);
   padding: 10px 10px 8px;
@@ -979,7 +1005,7 @@ input[type="range"]:focus-visible {
   stroke-dasharray: 113;
   stroke-dashoffset: 113;
   transition: stroke-dashoffset 0.3s ease;
-  filter: drop-shadow(0 0 4px rgba(0, 229, 160, 0.55));
+  filter: drop-shadow(0 0 4px rgba(var(--accent-rgb), 0.55));
 }
 .progress-ring-label {
   position: absolute;
@@ -1021,7 +1047,7 @@ input[type="range"]:focus-visible {
   font-family: var(--font-ui);
   font-size: var(--text-sm);
   color: var(--tx2);
-  background: rgba(0, 229, 160, 0.03);
+  background: rgba(var(--accent-rgb), 0.03);
   border: 1px solid var(--br1);
   border-radius: 5px;
   padding: 6px 7px;
@@ -1042,7 +1068,7 @@ input[type="range"]:focus-visible {
   font-weight: 600;
   color: var(--accent);
   padding: 1px 5px;
-  background: rgba(0, 229, 160, 0.1);
+  background: rgba(var(--accent-rgb), 0.1);
   border-radius: 3px;
   border: 1px solid var(--br2);
 }
@@ -1106,9 +1132,9 @@ input[type="range"]:focus-visible {
   font-size: var(--text-xs);
   padding: 2px 6px;
   border-radius: 3px;
-  background: rgba(167, 139, 250, 0.12);
+  background: rgba(var(--violet-rgb), 0.12);
   color: var(--accent5);
-  border: 1px solid rgba(167, 139, 250, 0.3);
+  border: 1px solid rgba(var(--violet-rgb), 0.3);
   letter-spacing: 0.5px;
 }
 .rl-stat-row {
@@ -1170,7 +1196,7 @@ input[type="range"]:focus-visible {
   flex: 1;
   height: 5px;
   border-radius: 3px;
-  background: linear-gradient(90deg, #0055ff, #00e5a0, #f7b731);
+  background: linear-gradient(90deg, var(--accent2), var(--accent), var(--accent4));
   border: 1px solid var(--br1);
 }
 .rl-convergence {
@@ -1209,7 +1235,7 @@ input[type="range"]:focus-visible {
 }
 .grid-size-inputs input[type="number"] {
   width: 44%;
-  background: rgba(0, 229, 160, 0.04);
+  background: rgba(var(--accent-rgb), 0.04);
   border: 1px solid var(--br2);
   color: var(--tx1);
   padding: 5px 6px;
@@ -1299,7 +1325,7 @@ input[type="range"]:focus-visible {
   padding: 7px 10px;
   border-radius: 5px;
   border: 1px solid var(--br1);
-  background: rgba(0, 229, 160, 0.03);
+  background: rgba(var(--accent-rgb), 0.03);
   color: var(--tx2);
   font-family: var(--font-ui);
   font-size: var(--text-sm);
@@ -1313,10 +1339,10 @@ input[type="range"]:focus-visible {
 .tool-btn:hover {
   border-color: var(--br2);
   color: var(--accent);
-  background: rgba(0, 229, 160, 0.06);
+  background: rgba(var(--accent-rgb), 0.06);
 }
 .tool-btn.active {
-  background: rgba(0, 229, 160, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
   border-color: var(--accent);
   color: var(--accent);
   box-shadow:
@@ -1325,16 +1351,16 @@ input[type="range"]:focus-visible {
   font-weight: 600;
 }
 .tool-btn.terrain-highway.active {
-  background: rgba(0, 220, 255, 0.12);
-  border-color: rgba(0, 220, 255, 0.6);
+  background: rgba(var(--blue-rgb), 0.12);
+  border-color: rgba(var(--blue-rgb), 0.6);
   color: var(--accent2);
-  box-shadow: inset 0 -2px 0 rgba(0, 220, 255, 0.8);
+  box-shadow: inset 0 -2px 0 rgba(var(--blue-rgb), 0.8);
 }
 .tool-btn.terrain-traffic.active {
-  background: rgba(255, 140, 0, 0.12);
-  border-color: rgba(255, 140, 0, 0.6);
+  background: rgba(var(--amber-rgb), 0.12);
+  border-color: rgba(var(--amber-rgb), 0.6);
   color: var(--accent4);
-  box-shadow: inset 0 -2px 0 rgba(255, 140, 0, 0.8);
+  box-shadow: inset 0 -2px 0 rgba(var(--amber-rgb), 0.8);
 }
 .tool-btn.terrain-mud.active {
   background: rgba(120, 72, 30, 0.18);
@@ -1350,7 +1376,7 @@ input[type="range"]:focus-visible {
   white-space: nowrap;
 }
 .toolbar-hint kbd {
-  background: rgba(0, 229, 160, 0.07);
+  background: rgba(var(--accent-rgb), 0.07);
   border: 1px solid var(--br2);
   border-radius: 3px;
   padding: 1px 5px;
@@ -1378,24 +1404,16 @@ input[type="range"]:focus-visible {
   image-rendering: crisp-edges;
   box-shadow:
     0 0 0 1px var(--br1),
-    0 0 36px rgba(0, 229, 160, 0.07),
+    0 0 36px rgba(var(--accent-rgb), 0.07),
     inset 0 0 50px rgba(0, 0, 0, 0.28);
-  transition: box-shadow 0.3s;
+  transition: border-color 0.3s, box-shadow 0.3s;
   max-width: 100%;
   max-height: 100%;
   display: block;
 }
-#grid.running {
-  box-shadow:
-    0 0 0 1px var(--accent),
-    0 0 44px rgba(0, 229, 160, 0.18),
-    inset 0 0 50px rgba(0, 0, 0, 0.28);
-}
-#grid.done {
-  box-shadow:
-    0 0 0 1px var(--accent2),
-    0 0 44px rgba(0, 184, 255, 0.18),
-    inset 0 0 50px rgba(0, 0, 0, 0.28);
+#grid.running, #grid.done {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--br2), 0 0 26px rgba(var(--accent-rgb), 0.09);
 }
 #rippleCanvas {
   position: absolute;
@@ -1420,7 +1438,7 @@ input[type="range"]:focus-visible {
 .ces-inner {
   text-align: center;
   padding: 20px 28px;
-  background: rgba(5, 11, 20, 0.72);
+  background: rgba(16, 22, 23, 0.72);
   border: 1px solid var(--br2);
   border-radius: var(--r-lg);
   backdrop-filter: blur(8px);
@@ -1446,7 +1464,7 @@ input[type="range"]:focus-visible {
 }
 .ces-key {
   display: inline-block;
-  background: rgba(0, 229, 160, 0.1);
+  background: rgba(var(--accent-rgb), 0.1);
   border: 1px solid var(--br2);
   border-radius: 3px;
   padding: 1px 6px;
@@ -1482,7 +1500,7 @@ input[type="range"]:focus-visible {
 }
 .status-dot.running {
   background: var(--accent);
-  box-shadow: 0 0 8px rgba(0, 229, 160, 0.6);
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), 0.6);
 }
 .status-dot.running::after {
   content: "";
@@ -1504,7 +1522,7 @@ input[type="range"]:focus-visible {
 }
 .status-dot.done {
   background: var(--accent2);
-  box-shadow: 0 0 8px rgba(0, 184, 255, 0.6);
+  box-shadow: 0 0 8px rgba(var(--blue-rgb), 0.6);
 }
 .status-dot.error {
   background: var(--accent3);
@@ -1567,7 +1585,7 @@ input[type="range"]:focus-visible {
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.28);
 }
 .rp-toggle:hover {
-  background: rgba(0, 229, 160, 0.1);
+  background: rgba(var(--accent-rgb), 0.1);
 }
 .rp-header {
   padding: 10px 12px 8px;
@@ -1604,7 +1622,7 @@ input[type="range"]:focus-visible {
   padding: 4px 8px;
   border-radius: 4px;
   border: 1px solid var(--br1);
-  background: rgba(0, 229, 160, 0.03);
+  background: rgba(var(--accent-rgb), 0.03);
   color: var(--tx2);
   font-family: var(--font-ui);
   font-size: var(--text-sm);
@@ -1617,7 +1635,7 @@ input[type="range"]:focus-visible {
   color: var(--accent);
 }
 .log-ctrl-btn.active {
-  background: rgba(0, 229, 160, 0.1);
+  background: rgba(var(--accent-rgb), 0.1);
   color: var(--accent);
   border-color: var(--accent);
 }
@@ -1661,7 +1679,7 @@ input[type="range"]:focus-visible {
 .log-entry.success {
   color: var(--accent);
   font-weight: 600;
-  background: rgba(0, 229, 160, 0.07);
+  background: rgba(var(--accent-rgb), 0.07);
   border-left: 2px solid var(--accent);
   padding-left: 6px;
 }
@@ -1770,7 +1788,7 @@ input[type="range"]:focus-visible {
   padding: 7px 14px;
   border-radius: var(--r-md);
   border: 1px solid var(--br2);
-  background: rgba(0, 229, 160, 0.07);
+  background: rgba(var(--accent-rgb), 0.07);
   color: var(--accent);
   font-family: var(--font-ui);
   font-size: 12px;
@@ -1783,7 +1801,7 @@ input[type="range"]:focus-visible {
   flex-shrink: 0;
 }
 .compare-back:hover {
-  background: rgba(0, 229, 160, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
   box-shadow: var(--glow);
 }
 .compare-title {
@@ -1923,25 +1941,25 @@ input[type="range"]:focus-visible {
   color: #000;
 }
 .win-badge.fast {
-  background: linear-gradient(135deg, #f7b731, #ff9800);
+  background: linear-gradient(135deg, var(--accent4), var(--accent4));
 }
 .win-badge.optimal {
-  background: linear-gradient(135deg, #00e5a0, #00b8ff);
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
 }
 .win-badge.balanced {
-  background: linear-gradient(135deg, #a78bfa, #00b8ff);
+  background: linear-gradient(135deg, var(--accent5), var(--accent2));
 }
 .compare-card.winner-fast {
-  border-color: #f7b731 !important;
-  box-shadow: 0 0 20px rgba(247, 183, 49, 0.35) !important;
+  border-color: var(--accent4) !important;
+  box-shadow: 0 0 20px rgba(var(--amber-rgb), 0.35) !important;
 }
 .compare-card.winner-optimal {
-  border-color: #00e5a0 !important;
-  box-shadow: 0 0 20px rgba(0, 229, 160, 0.35) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.35) !important;
 }
 .compare-card.winner-balanced {
-  border-color: #a78bfa !important;
-  box-shadow: 0 0 20px rgba(167, 139, 250, 0.35) !important;
+  border-color: var(--accent5) !important;
+  box-shadow: 0 0 20px rgba(var(--violet-rgb), 0.35) !important;
 }
 #compareBarChart {
   width: 100%;
@@ -1981,7 +1999,7 @@ input[type="range"]:focus-visible {
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .bar-fill.winner-bar {
-  background: linear-gradient(90deg, var(--accent4), #ff9800);
+  background: linear-gradient(90deg, var(--accent4), var(--accent4));
 }
 .bar-val {
   width: 42px;
@@ -2132,7 +2150,7 @@ input[type="range"]:focus-visible {
   border-bottom: none;
 }
 kbd {
-  background: rgba(0, 229, 160, 0.1);
+  background: rgba(var(--accent-rgb), 0.1);
   border: 1px solid var(--br2);
   border-radius: 3px;
   padding: 2px 6px;
@@ -2188,19 +2206,16 @@ kbd {
   );
 }
 .onboarding-logo {
-  font-size: 32px;
-  text-align: center;
-  margin-bottom: 12px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
 }
 .onboarding-title {
   font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: var(--accent);
+  font-size: 1.35rem;
+  font-weight: 650;
+  color: var(--tx1);
   text-align: center;
-  text-transform: uppercase;
-  text-shadow: var(--glow);
   margin-bottom: 6px;
 }
 .onboarding-sub {
@@ -2221,7 +2236,7 @@ kbd {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  background: rgba(0, 229, 160, 0.04);
+  background: rgba(var(--accent-rgb), 0.04);
   border: 1px solid var(--br1);
   border-radius: var(--r-md);
   padding: 10px 12px;
@@ -2269,8 +2284,8 @@ kbd {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--accent2);
-  background: rgba(0, 184, 255, 0.1);
-  border: 1px solid rgba(0, 184, 255, 0.3);
+  background: rgba(var(--blue-rgb), 0.1);
+  border: 1px solid rgba(var(--blue-rgb), 0.3);
   border-radius: 3px;
   padding: 1px 6px;
 }
@@ -2281,8 +2296,8 @@ kbd {
   border: 1px solid var(--accent);
   background: linear-gradient(
     135deg,
-    rgba(0, 229, 160, 0.18),
-    rgba(0, 184, 255, 0.12)
+    rgba(var(--accent-rgb), 0.18),
+    rgba(var(--blue-rgb), 0.12)
   );
   color: var(--accent);
   font-family: var(--font-ui);
@@ -2296,10 +2311,10 @@ kbd {
 .onboarding-start:hover {
   background: linear-gradient(
     135deg,
-    rgba(0, 229, 160, 0.28),
-    rgba(0, 184, 255, 0.2)
+    rgba(var(--accent-rgb), 0.28),
+    rgba(var(--blue-rgb), 0.2)
   );
-  box-shadow: 0 0 28px rgba(0, 229, 160, 0.5);
+  box-shadow: 0 0 28px rgba(var(--accent-rgb), 0.5);
 }
 .ob-skip {
   margin-top: 10px;
@@ -2384,7 +2399,7 @@ body.fullscreen #fsHUD {
   transition: all var(--t-fast);
 }
 #fsBtn:hover {
-  background: rgba(0, 229, 160, 0.12);
+  background: rgba(var(--accent-rgb), 0.12);
 }
 body.fullscreen .sidebar,
 body.fullscreen .right-panel {
@@ -2492,7 +2507,7 @@ body.fullscreen .statusbar {
     <!-- ONBOARDING OVERLAY -->
     <div class="onboarding-overlay" id="onboardingOverlay" role="dialog" aria-modal="true" aria-label="Welcome to MetroMind AI">
       <div class="onboarding-box">
-        <div class="onboarding-logo">🏙</div>
+        <div class="onboarding-logo" aria-hidden="true"><span class="mm-mark"><i></i><i></i><i></i></span></div>
         <div class="onboarding-title">MetroMind AI</div>
         <div class="onboarding-sub">Advanced Pathfinding &amp; RL Simulator · v11</div>
         <div class="onboarding-steps">
@@ -2566,18 +2581,18 @@ body.fullscreen .statusbar {
     <!-- HEADER -->
     <header class="header" role="banner">
       <div class="logo-wrap">
-        <button class="icon-btn" id="sidebarToggleBtn" title="Toggle sidebar (Tab)" aria-label="Toggle sidebar">☰</button>
-        <div class="logo" aria-hidden="true">🏙</div>
+        <button class="icon-btn" id="sidebarToggleBtn" title="Toggle sidebar (Tab)" aria-label="Toggle sidebar"><svg class="header-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM9 5v14"/></svg></button>
+        <span class="mm-mark" aria-hidden="true"><i></i><i></i><i></i></span>
         <div class="title-block">
           <div class="app-title">MetroMind AI</div>
-          <div class="app-sub">AI Pathfinding Visualization v11</div>
+          <div class="app-sub">Grid Lab · 2D</div>
         </div>
       </div>
       <div class="header-right">
-        <button class="icon-btn" id="btnOpenCompare" title="Compare algorithms (X)" aria-label="Compare algorithms">⚡</button>
-        <button class="icon-btn" id="btnShowShortcuts" title="Keyboard shortcuts (?)" aria-label="Show shortcuts">⌨</button>
-        <button class="icon-btn" id="rpToggleBtn" title="Toggle log panel" aria-label="Toggle log panel">📋</button>
-        <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Toggle theme">🌙</button>
+        <button class="icon-btn" id="btnOpenCompare" title="Compare algorithms (X)" aria-label="Compare algorithms"><svg class="header-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 19V9m7 10V5m7 14v-7"/></svg></button>
+        <button class="icon-btn" id="btnShowShortcuts" title="Keyboard shortcuts (?)" aria-label="Show shortcuts"><svg class="header-icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01m3.3 0h.01m3.3 0h.01m3.3 0h.01M8 14h8"/></svg></button>
+        <button class="icon-btn" id="rpToggleBtn" title="Toggle log panel" aria-label="Toggle log panel"><svg class="header-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 5h14v14H5zM8 9h8m-8 3h8m-8 3h5"/></svg></button>
+        <button class="icon-btn" id="themeBtn" title="Toggle theme" aria-label="Light theme" aria-pressed="false"><svg class="header-icon theme-moon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20.5 15A8.8 8.8 0 0 1 9 3.5 8.8 8.8 0 1 0 20.5 15Z"/></svg><svg class="header-icon theme-sun" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></svg></button>
         <span class="hbadge" id="algoBadge" aria-live="polite">A* Search</span>
         <span class="hbadge blue" id="heurBadge" aria-live="polite">Manhattan</span>
       </div>
@@ -2783,19 +2798,19 @@ body.fullscreen .statusbar {
             <div class="sb-label sec-label">Terrain Legend</div>
             <div class="terrain-legend">
               <div class="terrain-item">
-                <div class="terrain-swatch" style="background: #1a3a50; border-color: rgba(100, 160, 200, 0.3);"></div>
+                <div class="terrain-swatch wall"></div>
                 <div style="flex: 1"><div style="font-size: var(--text-sm); color: var(--tx1)">Wall</div><div class="tw-badge" style="margin-top: 2px">blocked</div></div>
               </div>
               <div class="terrain-item">
-                <div class="terrain-swatch" style="background: rgba(0, 220, 255, 0.3); border-color: rgba(0, 220, 255, 0.6);"></div>
+                <div class="terrain-swatch highway"></div>
                 <div style="flex: 1"><div style="font-size: var(--text-sm); color: var(--tx1)">Highway</div><div class="tw-badge" style="margin-top: 2px; color: var(--accent2); border-color: rgba(0, 220, 255, 0.4); background: rgba(0, 220, 255, 0.1);">0.5×</div></div>
               </div>
               <div class="terrain-item">
-                <div class="terrain-swatch" style="background: rgba(255, 140, 0, 0.3); border-color: rgba(255, 140, 0, 0.6);"></div>
+                <div class="terrain-swatch traffic"></div>
                 <div style="flex: 1"><div style="font-size: var(--text-sm); color: var(--tx1)">Traffic</div><div class="tw-badge" style="margin-top: 2px; color: var(--accent4); border-color: rgba(255, 140, 0, 0.4); background: rgba(255, 140, 0, 0.1);">3×</div></div>
               </div>
               <div class="terrain-item">
-                <div class="terrain-swatch" style="background: rgba(120, 72, 30, 0.4); border-color: rgba(140, 90, 40, 0.7);"></div>
+                <div class="terrain-swatch mud"></div>
                 <div style="flex: 1"><div style="font-size: var(--text-sm); color: var(--tx1)">Mud</div><div class="tw-badge" style="margin-top: 2px; color: var(--accent4); border-color: rgba(140, 90, 40, 0.4); background: rgba(120, 72, 30, 0.15);">10×</div></div>
               </div>
             </div>
@@ -2942,24 +2957,25 @@ body.fullscreen .statusbar {
     const isDark = document.documentElement.getAttribute("data-theme") !== "light";
     if (isDark)
       return {
-        [EMPTY]: "#0a1520",
-        [WALL]: "#1a3a50",
-        wallStroke: "#2a5070",
-        [START]: "#00e5a0",
-        [GOAL]: "#ff4d6d",
-        [OPEN]: "rgba(247,183,49,0.85)",
-        [CLOSED]: "rgba(0,184,255,0.38)",
-        closedStroke: "rgba(0,184,255,0.65)",
-        [PATH]: "#00e5a0",
-        [HIGHWAY]: "rgba(0,220,255,0.22)",
-        highwayStroke: "rgba(0,220,255,0.55)",
-        [TRAFFIC]: "rgba(255,140,0,0.28)",
-        trafficStroke: "rgba(255,140,0,0.55)",
-        [MUD]: "rgba(100,60,20,0.45)",
-        mudStroke: "rgba(120,72,30,0.7)",
-        grid: "rgba(0,184,255,0.05)",
-        gridStroke: "rgba(0,184,255,0.08)",
-        pathLine: "rgba(0,229,160,0.9)"
+        [EMPTY]: "#111f1c",
+        [WALL]: "#1a2b27",
+        wallStroke: "#39544a",
+        [START]: "#9ce7c6",
+        [GOAL]: "#dba7bf",
+        [OPEN]: "rgba(213,185,130,0.83)",
+        frontierStroke: "rgba(213,185,130,0.55)",
+        [CLOSED]: "rgba(77,148,131,0.52)",
+        closedStroke: "rgba(92,175,153,0.55)",
+        [PATH]: "#9ce7c6",
+        [HIGHWAY]: "#3d5246",
+        highwayStroke: "#6c9481",
+        [TRAFFIC]: "#67563c",
+        trafficStroke: "#9b8057",
+        [MUD]: "#47424c",
+        mudStroke: "#7f758b",
+        grid: "#1b2e28",
+        gridStroke: "rgba(130,174,155,0.15)",
+        pathLine: "rgba(156,231,198,0.95)"
       };
     return {
       [EMPTY]: "#e8f0f8",
@@ -2968,6 +2984,7 @@ body.fullscreen .statusbar {
       [START]: "#00956a",
       [GOAL]: "#d63050",
       [OPEN]: "rgba(210,140,0,0.7)",
+      frontierStroke: "rgba(180,110,0,0.4)",
       [CLOSED]: "rgba(0,120,200,0.15)",
       closedStroke: "rgba(0,120,200,0.4)",
       [PATH]: "#00956a",
@@ -2985,56 +3002,56 @@ body.fullscreen .statusbar {
   var PORTRAIT_CONFIGS = {
     dstarlite: {
       label: "D* LITE",
-      col: "#f7b731",
-      col2: "#00e5a0",
+      col: "#d5b982",
+      col2: "#9ce7c6",
       style: "bidir"
     },
     astar: {
       label: "A* SEARCH",
-      col: "#00e5a0",
-      col2: "#00b8ff",
+      col: "#9ce7c6",
+      col2: "#85b5c3",
       style: "wave"
     },
     dijkstra: {
       label: "DIJKSTRA",
-      col: "#00b8ff",
-      col2: "#a78bfa",
+      col: "#85b5c3",
+      col2: "#b5a2dd",
       style: "rings"
     },
     greedy: {
       label: "GREEDY BFS",
-      col: "#f7b731",
-      col2: "#ff4d6d",
+      col: "#d5b982",
+      col2: "#dba7bf",
       style: "arrow"
     },
     bfs: {
       label: "BREADTH-FIRST",
-      col: "#00b8ff",
-      col2: "#00e5a0",
+      col: "#85b5c3",
+      col2: "#9ce7c6",
       style: "layers"
     },
     dfs: {
       label: "DEPTH-FIRST",
-      col: "#a78bfa",
-      col2: "#ff4d6d",
+      col: "#b5a2dd",
+      col2: "#dba7bf",
       style: "spiral"
     },
     bidirectional: {
       label: "BIDIR. A*",
-      col: "#00e5a0",
-      col2: "#ff4d6d",
+      col: "#9ce7c6",
+      col2: "#dba7bf",
       style: "bidir"
     },
     jps: {
       label: "JUMP PT SEARCH",
-      col: "#00e5a0",
-      col2: "#f7b731",
+      col: "#9ce7c6",
+      col2: "#d5b982",
       style: "jump"
     },
     thetastar: {
       label: "THETA*",
-      col: "#a78bfa",
-      col2: "#00b8ff",
+      col: "#b5a2dd",
+      col2: "#85b5c3",
       style: "angle"
     }
   };
@@ -3067,9 +3084,9 @@ body.fullscreen .statusbar {
   var toastTimer = null;
   var sparkData = { nodes: [], path: [], open: [], cost: [] };
   var sparkColors = {
-    nodes: "rgba(0,229,160,",
-    path: "rgba(0,184,255,",
-    open: "rgba(247,183,49,",
+    nodes: "rgba(156,231,198,",
+    path: "rgba(133,181,195,",
+    open: "rgba(213,185,130,",
     cost: "rgba(167,139,250,"
   };
   var portraitFrame = null;
@@ -3206,7 +3223,7 @@ body.fullscreen .statusbar {
     if (effData.length < 2) return;
     const max = Math.max(...effData) || 1;
     const isDark = document.documentElement.getAttribute("data-theme") !== "light";
-    const col = isDark ? "rgba(0,229,160," : "rgba(0,149,106,";
+    const col = isDark ? "rgba(156,231,198," : "rgba(0,149,106,";
     effCtx.clearRect(0, 0, w, h);
     effCtx.beginPath();
     effCtx.moveTo(0, h);
@@ -3327,7 +3344,7 @@ body.fullscreen .statusbar {
         if (Math.abs(p1 - p2) < 12) {
           pc.beginPath();
           pc.arc(w / 2, h / 2, 8, 0, Math.PI * 2);
-          pc.fillStyle = "rgba(247,183,49,0.8)";
+          pc.fillStyle = "rgba(213,185,130,0.8)";
           pc.fill();
         }
       } else if (cfg.style === "jump") {
@@ -3537,7 +3554,7 @@ body.fullscreen .statusbar {
     const next = cur === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", next);
     const btn = document.getElementById("themeBtn");
-    if (btn) btn.textContent = next === "dark" ? "🌙" : "☀️";
+    if (btn) btn.setAttribute("aria-pressed", String(next === "light"));
     if (drawGridCallback) drawGridCallback();
   }
 
@@ -3630,7 +3647,7 @@ body.fullscreen .statusbar {
       }
       rctx.beginPath();
       rctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
-      rctx.strokeStyle = `rgba(0,229,160,${rp.alpha})`;
+      rctx.strokeStyle = `rgba(156,231,198,${rp.alpha})`;
       rctx.lineWidth = 1.5 * (1 - rp.t);
       rctx.stroke();
     }
@@ -3641,7 +3658,7 @@ body.fullscreen .statusbar {
     dragGhost.textContent = emoji;
     dragGhost.style.display = "flex";
     dragGhost.style.borderColor = color || "var(--accent)";
-    dragGhost.style.boxShadow = `0 0 18px ${color || "rgba(0,229,160,0.5)"}`;
+    dragGhost.style.boxShadow = `0 0 18px ${color || "rgba(156,231,198,0.5)"}`;
     ghostVisible = true;
   }
   function hideGhost() {
@@ -3687,7 +3704,7 @@ body.fullscreen .statusbar {
       rctx.beginPath();
       rctx.moveTo((p.c + 0.5) * sx, (p.r + 0.5) * sy);
       rctx.lineTo((q.c + 0.5) * sx, (q.r + 0.5) * sy);
-      rctx.strokeStyle = `rgba(247,183,49,${wave * 0.8})`;
+      rctx.strokeStyle = `rgba(213,185,130,${wave * 0.8})`;
       rctx.lineWidth = 3;
       rctx.stroke();
     }
@@ -3697,15 +3714,15 @@ body.fullscreen .statusbar {
     const ax = (A.c + 0.5 + (B.c - A.c) * frac) * sx;
     const ay = (A.r + 0.5 + (B.r - A.r) * frac) * sy;
     const grd = rctx.createRadialGradient(ax, ay, 0, ax, ay, sx * 1.5);
-    grd.addColorStop(0, "rgba(247,183,49,0.5)");
-    grd.addColorStop(1, "rgba(247,183,49,0)");
+    grd.addColorStop(0, "rgba(213,185,130,0.5)");
+    grd.addColorStop(1, "rgba(213,185,130,0)");
     rctx.beginPath();
     rctx.arc(ax, ay, sx * 1.5, 0, Math.PI * 2);
     rctx.fillStyle = grd;
     rctx.fill();
     rctx.beginPath();
     rctx.arc(ax, ay, Math.max(3, sx * 0.35), 0, Math.PI * 2);
-    rctx.fillStyle = "#f7b731";
+    rctx.fillStyle = "#d5b982";
     rctx.fill();
     rctx.strokeStyle = "#fff";
     rctx.lineWidth = 1;
@@ -3769,7 +3786,7 @@ body.fullscreen .statusbar {
           ctx.fillRect(x, y, CELL, CELL);
           drawTerrain(r, c, x, y);
           if (fogActive) {
-            ctx.fillStyle = isDarkMode ? "rgba(5,11,20,0.45)" : "rgba(224,236,248,0.5)";
+            ctx.fillStyle = isDarkMode ? "rgba(16,22,23,0.45)" : "rgba(224,236,248,0.5)";
             ctx.fillRect(x, y, CELL, CELL);
           }
           if (!terrainGrid[r][c]) {
@@ -3807,14 +3824,14 @@ body.fullscreen .statusbar {
           drawTerrain(r, c, x, y);
           ctx.fillStyle = C[OPEN];
           ctx.fillRect(x, y, CELL, CELL);
-          ctx.strokeStyle = "rgba(247,183,49,0.4)";
+          ctx.strokeStyle = C.frontierStroke;
           ctx.lineWidth = 0.5;
           ctx.strokeRect(x + 0.5, y + 0.5, CELL - 1, CELL - 1);
           if (showCost && searchState2) {
             const nd = searchState2.nodeMap && searchState2.nodeMap[`${r},${c}`];
             if (nd) {
               ctx.fillStyle = isDarkMode ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.5)";
-              ctx.font = `${CELL * 0.3}px IBM Plex Mono`;
+              ctx.font = `${CELL * 0.3}px Consolas, monospace`;
               ctx.textAlign = "center";
               ctx.textBaseline = "middle";
               ctx.fillText(Math.round(nd.f), x + CELL / 2, y + CELL / 2);
@@ -3836,7 +3853,7 @@ body.fullscreen .statusbar {
           ctx.lineWidth = 1.5 + pulse;
           ctx.strokeRect(x + 1, y + 1, CELL - 2, CELL - 2);
           ctx.fillStyle = C[START];
-          ctx.font = `bold ${CELL * 0.5}px Orbitron`;
+          ctx.font = `bold ${CELL * 0.5}px "Segoe UI", sans-serif`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText("S", x + CELL / 2, y + CELL / 2 + 1);
@@ -3847,7 +3864,7 @@ body.fullscreen .statusbar {
           ctx.lineWidth = 1.5;
           ctx.strokeRect(x + 1, y + 1, CELL - 2, CELL - 2);
           ctx.fillStyle = C[GOAL];
-          ctx.font = `bold ${CELL * 0.5}px Orbitron`;
+          ctx.font = `bold ${CELL * 0.5}px "Segoe UI", sans-serif`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText("G", x + CELL / 2, y + CELL / 2 + 1);
@@ -3856,7 +3873,7 @@ body.fullscreen .statusbar {
     }
     if (searchState2 && !searchState2.done && searchState2.livePath && searchState2.livePath.length > 1) {
       const lp = searchState2.livePath;
-      ctx.strokeStyle = isDarkMode ? "rgba(247,183,49,0.5)" : "rgba(180,110,0,0.5)";
+      ctx.strokeStyle = isDarkMode ? "rgba(213,185,130,0.5)" : "rgba(180,110,0,0.5)";
       ctx.lineWidth = 2;
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
@@ -3878,13 +3895,13 @@ body.fullscreen .statusbar {
       ctx.moveTo(p[0].c * CELL + CELL / 2, p[0].r * CELL + CELL / 2);
       for (let i = 1; i < p.length; i++)
         ctx.lineTo(p[i].c * CELL + CELL / 2, p[i].r * CELL + CELL / 2);
-      ctx.strokeStyle = isDarkMode ? "rgba(0,229,160,0.95)" : "rgba(0,149,106,0.95)";
+      ctx.strokeStyle = C.pathLine;
       ctx.lineWidth = Math.max(3, CELL / 6);
-      ctx.shadowColor = isDarkMode ? "#00e5a0" : "#00956a";
+      ctx.shadowColor = C[PATH];
       ctx.shadowBlur = 4;
       ctx.stroke();
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = isDarkMode ? "rgba(247,183,49,0.95)" : "rgba(200,130,20,0.92)";
+      ctx.strokeStyle = isDarkMode ? "rgba(199,246,225,0.82)" : "rgba(200,130,20,0.92)";
       ctx.lineWidth = 2;
       ctx.stroke();
       ctx.strokeStyle = "rgba(255,255,255,0.5)";
@@ -5489,7 +5506,7 @@ body.fullscreen .statusbar {
     function frame() {
       ctx2.clearRect(0, 0, c.width, c.height);
       const isDark = document.documentElement.getAttribute("data-theme") !== "light";
-      const col = isDark ? "0,229,160" : "0,140,100";
+      const col = isDark ? "156,231,198" : "0,140,100";
       const target = searchActive ? 1 : 0;
       searchIntensity += (target - searchIntensity) * 0.04;
       const speedMul = 1 + searchIntensity * 5;

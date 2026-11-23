@@ -26,7 +26,7 @@ export function startBackground() {
     ctx.clearRect(0, 0, c.width, c.height);
     const isDark =
       document.documentElement.getAttribute("data-theme") !== "light";
-    const col = isDark ? "0,229,160" : "0,140,100";
+    const col = isDark ? "156,231,198" : "0,140,100";
     // Ease intensity
     const target = searchActive ? 1 : 0;
     searchIntensity += (target - searchIntensity) * 0.04;

@@ -10,9 +10,9 @@ let toastBarTimer = null;
 
 const sparkData = { nodes: [], path: [], open: [], cost: [] };
 const sparkColors = {
-  nodes: "rgba(0,229,160,",
-  path: "rgba(0,184,255,",
-  open: "rgba(247,183,49,",
+  nodes: "rgba(156,231,198,",
+  path: "rgba(133,181,195,",
+  open: "rgba(213,185,130,",
   cost: "rgba(167,139,250,",
 };
 
@@ -162,7 +162,7 @@ export function drawEffChart() {
   if (effData.length < 2) return;
   const max = Math.max(...effData) || 1;
   const isDark = document.documentElement.getAttribute("data-theme") !== "light";
-  const col = isDark ? "rgba(0,229,160," : "rgba(0,149,106,";
+  const col = isDark ? "rgba(156,231,198," : "rgba(0,149,106,";
   effCtx.clearRect(0, 0, w, h);
   effCtx.beginPath();
   effCtx.moveTo(0, h);
@@ -284,7 +284,7 @@ export function startPortrait(algo) {
       if (Math.abs(p1 - p2) < 12) {
         pc.beginPath();
         pc.arc(w / 2, h / 2, 8, 0, Math.PI * 2);
-        pc.fillStyle = "rgba(247,183,49,0.8)";
+        pc.fillStyle = "rgba(213,185,130,0.8)";
         pc.fill();
       }
     } else if (cfg.style === "jump") {
@@ -509,7 +509,7 @@ export function toggleTheme(drawGridCallback) {
   const next = cur === "dark" ? "light" : "dark";
   document.documentElement.setAttribute("data-theme", next);
   const btn = document.getElementById("themeBtn");
-  if (btn) btn.textContent = next === "dark" ? "🌙" : "☀️";
+  if (btn) btn.setAttribute("aria-pressed", String(next === "light"));
   if (drawGridCallback) drawGridCallback();
 }
 

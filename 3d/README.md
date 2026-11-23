@@ -4,7 +4,7 @@ The 3D edition combines an editable city with the pathfinding and reinforcement 
 
 ## Open the simulator
 
-Open `../metromind-3d.html` in a modern browser. The generated file includes the stylesheet, application code, Three.js and OrbitControls; it does not require npm or a development server. External web fonts are optional and have system-font fallbacks.
+Open `../metromind-3d.html` in a modern browser. The generated file includes the stylesheet, application code, Three.js and OrbitControls; it does not require npm or a development server. City Studio uses system fonts.
 
 For development, serve this directory and open its `index.html`:
 
@@ -24,7 +24,7 @@ node 3d/scripts/build.cjs --check
 node --test 3d/tests/engine.test.cjs 3d/tests/app.test.cjs 3d/tests/select.test.cjs 3d/tests/city.test.cjs 3d/tests/traffic.test.cjs 3d/tests/traffic-flow.test.cjs
 ```
 
-The builder uses only Node's built-in modules. It embeds local stylesheet and script references from `index.html`, preserves their order, and escapes script terminators so the generated HTML remains valid. `--check` reports a nonzero exit code when the standalone file differs from its sources. Do not edit the generated HTML directly.
+The builder uses only Node's built-in modules. It copies the repository-root `theme.css` into `3d/css/theme.css`. It embeds local stylesheet and script references from `index.html`, preserves their order, and escapes script terminators so the generated HTML remains valid. `--check` reports a nonzero exit code when the standalone file differs from its sources. Do not edit the generated HTML directly.
 
 | File | Responsibility |
 | --- | --- |

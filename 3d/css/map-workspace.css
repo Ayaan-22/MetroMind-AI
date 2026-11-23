@@ -37,16 +37,15 @@
   min-height: 54px;
   padding: 0 12px 0 16px;
   gap: 10px;
-  border: 1px solid #89b79c35;
+  border: 1px solid var(--mm-panel-line);
   border-radius: 11px;
-  background: #111d1bdc;
+  background: color-mix(in srgb, var(--mm-bg) 94%, transparent);
   box-shadow: 0 6px 25px #0003;
   backdrop-filter: blur(20px);
 }
 
-.map-first .brand { font-size: 15px; letter-spacing: 1px; gap: 10px; }
+.map-first .brand { font-size: 15px; letter-spacing: .5px; gap: 10px; }
 .map-first .brand small, .map-first .local-indicator { display: none; }
-.map-first .brand-mark { transform: scale(.78) skewY(-16deg); transform-origin: left center; margin-right: -5px; }
 .map-first .top-divider { margin: 0 6px; height: 20px; }
 .map-first .studio-label { font-size: 12px; }
 .map-first .topbar .button { min-height: 34px; font-size: 12px; }
@@ -61,7 +60,7 @@
   z-index: 22;
   padding: 22px 0 16px;
   border-right: 1px solid #799d8c25;
-  background: #111b1bea;
+  background: color-mix(in srgb, var(--mm-surface) 95%, transparent);
   backdrop-filter: blur(16px);
   gap: 12px;
 }
@@ -128,9 +127,9 @@
   width: var(--map-panel);
   min-height: 230px;
   z-index: 30;
-  border: 1px solid #759d8666;
+  border: 1px solid var(--mm-panel-line);
   border-radius: 12px;
-  background: #15211df5;
+  background: color-mix(in srgb, var(--mm-panel) 97%, transparent);
   box-shadow: 0 16px 55px #0006;
   backdrop-filter: blur(24px);
   overflow: hidden;
@@ -212,7 +211,7 @@
   gap: 12px;
   border: 1px solid #83b39461;
   border-radius: 12px;
-  background: #12251dea;
+  background: color-mix(in srgb, var(--mm-toolbar) 95%, transparent);
   backdrop-filter: blur(24px);
   box-shadow: 0 8px 40px #0005;
 }
@@ -309,8 +308,6 @@
   .map-first .rail { display: none; }
   .map-first .topbar { top: 12px; left: 12px; right: 12px; height: 50px; min-height: 50px; padding: 0 8px 0 12px; gap: 6px; }
   .map-first .brand { font-size: 13px; letter-spacing: .6px; }
-  .map-first .brand-mark { transform: scale(.65) skewY(-16deg); width: 22px; margin-right: -6px; }
-  .map-first .brand-ai { font-size: 10px; }
   .map-first .topbar .button { min-height: 32px; padding: 5px 7px; }
   .map-first .topbar .avatar { display: none; }
   .map-first .workspace-menu { display: inline-flex; width: 30px; height: 32px; }

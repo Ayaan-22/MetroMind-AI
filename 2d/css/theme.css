@@ -1,0 +1,47 @@
+/* Edit the repository-root theme.css. Each edition build copies it to its local CSS folder. */
+:root {
+  --mm-bg: #101617;
+  --mm-surface: #151c1e;
+  --mm-panel: #141e1c;
+  --mm-toolbar: #182320;
+  --mm-popover: #172722;
+  --mm-raised: #1c2426;
+  --mm-surface-hover: #222c2e;
+  --mm-control: #202e29;
+  --mm-control-hover: #273e34;
+  --mm-line: #2a3335;
+  --mm-panel-line: #35443f;
+  --mm-control-line: #485a52;
+  --mm-text: #e7ece8;
+  --mm-muted: #9aa9a4;
+  --mm-mint: #9ce7c6;
+  --mm-mint-hover: #baf2d6;
+  --mm-ink: #102b20;
+  --mm-blue: #85b5c3;
+  --mm-amber: #d5b982;
+  --mm-visited: #4d9483;
+  --mm-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+  --mm-mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.mm-mark {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 24px;
+  height: 26px;
+  color: var(--mm-mint);
+  transform: skewY(-16deg);
+}
+
+.mm-mark i {
+  position: absolute;
+  bottom: 0;
+  width: 5px;
+  border-radius: 1px;
+  background: currentColor;
+}
+
+.mm-mark i:nth-child(1) { height: 14px; left: 0; }
+.mm-mark i:nth-child(2) { height: 24px; left: 8px; }
+.mm-mark i:nth-child(3) { height: 18px; left: 16px; }

@@ -22,7 +22,6 @@
   .map-first .topbar .avatar { display: none; }
   .map-first .brand { flex: 1; min-width: 0; font-size: 14px; gap: 6px; letter-spacing: .5px; }
   .map-first .brand > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .map-first .brand-mark { flex: none; width: 24px; margin-right: -3px; }
   .map-first .topbar > .button, .map-first .topbar .workspace-menu { flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; justify-content: center; }
   .map-first .topbar > .button > span, .map-first .topbar .export-button .small { display: none; }
   .map-first .topbar .sidebar-toggle, .map-first .topbar .header-focus { width: 44px; height: 44px; }
@@ -122,7 +121,6 @@
   .map-first .topbar { left: var(--mobile-left); right: var(--mobile-right); gap: 3px; }
   .map-first .topbar .sidebar-toggle { display: none; }
   .map-first .topbar .workspace-menu { display: inline-flex; }
-  .map-first .brand-ai { display: none; }
   .map-first .workspace-actions { left: var(--mobile-left); right: var(--mobile-right); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
   .map-first .workspace-actions .button { width: 100%; min-width: 0; padding: 4px; font-size: 12px; }
   .map-first .workspace-actions .button svg { display: none; }
@@ -170,7 +168,6 @@
 @media (max-width: 370px) {
   .map-first .brand > span:last-child { display: none; }
   .map-first .brand { flex: 1; }
-  .map-first .brand-mark { margin: 0; }
   .map-first .workspace-actions .button { font-size: 12px; }
   .map-first .builder-toolbar { grid-template-columns: 92px minmax(48px, 1fr) 44px 62px; gap: 8px 4px; }
   .map-first .builder-toolbar .builder-done { width: 62px; padding: 0 5px; }

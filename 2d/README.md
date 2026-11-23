@@ -82,7 +82,7 @@ npm run check:parity
 npm test
 ```
 
-`build` bundles the modular JavaScript into a classic inline script and embeds the shared stylesheet in `../metromind-2d.html`. The generated standalone file can be opened directly without a server, Node.js, or adjacent source files. Both editions use the same optional Google Fonts stylesheet and fall back to system fonts when offline.
+`build` bundles the modular JavaScript into a classic inline script and embeds the shared stylesheet in `../metromind-2d.html`. The generated standalone file can be opened directly without a server, Node.js, or adjacent source files. The build also copies the repository-root `theme.css` into `2d/css/theme.css` and embeds it in the standalone. Grid Lab uses system fonts.
 
 `check:parity` fails if the checked-in standalone file differs from a fresh build. `npm test` includes this drift check and runs the same interaction scenarios against the ES module entry point and the generated standalone script. Rebuild after editing any application HTML, CSS, or JavaScript. Commit the updated standalone file along with the modular source changes.
 

@@ -7,6 +7,8 @@ const path = require('node:path');
 
 const sourceRoot = path.resolve(__dirname, '..');
 const outputPath = path.resolve(sourceRoot, '..', 'metromind-3d.html');
+const sharedThemePath = path.resolve(sourceRoot, '..', 'theme.css');
+const localThemePath = path.resolve(sourceRoot, 'css/theme.css');
 const normalize = value => value.replace(/\r\n?/g, '\n');
 const isRemote = value => /^(?:[a-z][a-z\d+.-]*:|\/\/|#)/i.test(value);
 
@@ -57,7 +59,9 @@ function buildStandalone() {
 }
 
 function checkStandalone() {
-  return fs.existsSync(outputPath) && normalize(fs.readFileSync(outputPath, 'utf8')) === buildStandalone();
+  return fs.existsSync(outputPath) && fs.existsSync(localThemePath) &&
+    normalize(fs.readFileSync(sharedThemePath, 'utf8')) === normalize(fs.readFileSync(localThemePath, 'utf8')) &&
+    normalize(fs.readFileSync(outputPath, 'utf8')) === buildStandalone();
 }
 
 module.exports = { buildStandalone, checkStandalone, outputPath };
@@ -74,6 +78,7 @@ if (require.main === module) {
         process.exitCode = 1;
       }
     } else {
+      fs.copyFileSync(sharedThemePath, localThemePath);
       const html = buildStandalone();
       fs.writeFileSync(outputPath, html, 'utf8');
       console.log(`Built metromind-3d.html (${Buffer.byteLength(html).toLocaleString('en-US')} bytes).`);

@@ -5,11 +5,14 @@ import { resolve } from 'node:path';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 export const outputPath = resolve(root, '../metromind-2d.html');
+const sharedThemePath = resolve(root, '../theme.css');
+const localThemePath = resolve(root, 'css/theme.css');
 const normalize = text => text.replace(/\r\n/g, '\n');
 
 export async function buildStandalone() {
-  const [template, css, bundle] = await Promise.all([
+  const [template, theme, css, bundle] = await Promise.all([
     readFile(resolve(root, 'index.html'), 'utf8'),
+    readFile(localThemePath, 'utf8'),
     readFile(resolve(root, 'css/styles.css'), 'utf8'),
     build({
       absWorkingDir: root,
@@ -22,30 +25,39 @@ export async function buildStandalone() {
       write: false,
     }),
   ]);
+  const themeTag = '<link rel="stylesheet" href="css/theme.css" />';
   const styleTag = '<link rel="stylesheet" href="css/styles.css" />';
   const scriptTag = '<script type="module" src="js/main.js"></script>';
-  if (!template.includes(styleTag) || !template.includes(scriptTag)) {
+  if (!template.includes(themeTag) || !template.includes(styleTag) || !template.includes(scriptTag)) {
     throw new Error('The modular entry point must contain the expected stylesheet and script tags.');
   }
   return normalize(template)
     .replace('<!doctype html>', '<!doctype html>\n<!-- Generated from 2d. Edit those sources, then run npm run build there. -->')
+    .replace(themeTag, () => `<style>\n${normalize(theme).trimEnd()}\n    </style>`)
     .replace(styleTag, () => `<style>\n${normalize(css).trimEnd()}\n    </style>`)
     .replace(scriptTag, () => `<script>\n${normalize(bundle.outputFiles[0].text).trimEnd()}\n    </script>`);
 }
 
 export async function checkStandalone() {
-  return normalize(await readFile(outputPath, 'utf8')) === await buildStandalone();
+  const [sharedTheme, localTheme, standalone] = await Promise.all([
+    readFile(sharedThemePath, 'utf8'),
+    readFile(localThemePath, 'utf8'),
+    readFile(outputPath, 'utf8'),
+  ]);
+  return normalize(sharedTheme) === normalize(localTheme) &&
+    normalize(standalone) === await buildStandalone();
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   if (process.argv.includes('--check')) {
     if (!await checkStandalone()) {
-      console.error('Standalone HTML is out of sync. Run npm run build in 2d.');
+      console.error('Standalone HTML or the local theme is out of sync. Run npm run build in 2d.');
       process.exitCode = 1;
     } else {
       console.log('Standalone HTML matches the modular HTML, CSS and JavaScript.');
     }
   } else {
+    await writeFile(localThemePath, await readFile(sharedThemePath, 'utf8'), 'utf8');
     await writeFile(outputPath, await buildStandalone(), 'utf8');
     console.log('Built ../metromind-2d.html from the modular sources.');
   }
