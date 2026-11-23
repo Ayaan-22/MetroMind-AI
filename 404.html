@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting · MetroMind AI</title>
+  <script>
+    // GitHub Pages 404 auto-resolver for legacy URLs
+    const path = window.location.pathname.toLowerCase();
+    const repoBase = '/MetroMind-AI/';
+    
+    if (path.includes('3d') && !path.endsWith('metromind-3d.html')) {
+      window.location.replace(repoBase + 'metromind-3d.html');
+    } else if ((path.includes('v11') || path.includes('modular') || path.includes('2d')) && !path.endsWith('metromind-2d.html')) {
+      window.location.replace(repoBase + 'metromind-2d.html');
+    } else {
+      window.location.replace(repoBase);
+    }
+  </script>
+  <style>
+    body {
+      background: #101617;
+      color: #e7ece8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    a {
+      color: #9ce7c6;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <h2 style="font-weight: 500; margin-bottom: 8px;">Redirecting...</h2>
+    <p style="color: #9aa9a4; font-size: 14px;">Taking you to MetroMind AI.</p>
+    <p><a href="/MetroMind-AI/">Click here if not redirected automatically &rarr;</a></p>
+  </div>
+</body>
+</html>
