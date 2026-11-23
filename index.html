@@ -3,28 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MetroMind AI · Autonomous Pathfinding & RL Simulator</title>
-  <meta name="description" content="MetroMind AI is an interactive browser simulator for pathfinding algorithms and reinforcement learning. Explore 3D City Studio and 2D Grid Lab.">
+  <title>MetroMind AI · Autonomous Pathfinding & Reinforcement Learning</title>
+  <meta name="description" content="MetroMind AI is a modern browser-based simulator for autonomous pathfinding algorithms and reinforcement learning. Explore 3D procedural cities and 2D grid lab offline.">
+  <meta name="keywords" content="Pathfinding, A*, Dijkstra, D* Lite, Reinforcement Learning, Q-Learning, Three.js, WebGL, AI Simulation">
+  <meta name="theme-color" content="#101617">
+  
+  <!-- OpenGraph / Social Media -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="MetroMind AI · Autonomous Pathfinding & RL Simulator">
+  <meta property="og:description" content="Compare 9 search algorithms, dynamic D* Lite rerouting, and Q-learning policy visualizers in procedural 3D cities or interactive 2D grid environments.">
+  <meta property="og:image" content="docs/media/city-studio.webp">
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23101617'/><path d='M8 22h4v-7H8zm6 0h4v-14h-4zm6 0h4v-10h-4z' fill='%239ce7c6'/></svg>">
+  
   <style>
     :root {
       color-scheme: dark;
-      --bg: #101617;
-      --surface: #151c1e;
-      --surface-raised: #1c2527;
-      --surface-hover: #232f32;
-      --line: #273436;
-      --line-soft: #1d2729;
-      --text: #e7ece8;
-      --muted: #8c9d9a;
-      --faint: #5d6e6c;
+      --bg: #0d1213;
+      --bg-alt: #12191b;
+      --surface: #151d1f;
+      --surface-raised: #1b2628;
+      --surface-hover: #223033;
+      --line: #243235;
+      --line-soft: #1c2729;
+      --line-highlight: #3b4e52;
+      --text: #edf2ef;
+      --text-dim: #cad5d0;
+      --muted: #8a9c98;
+      --faint: #566865;
+      
       --mint: #9ce7c6;
-      --mint-glow: rgba(156, 231, 198, 0.22);
-      --mint-dark: #163c29;
-      --amber: #d5b982;
+      --mint-glow: rgba(156, 231, 198, 0.25);
+      --mint-dark: #0e291d;
+      --mint-border: rgba(156, 231, 198, 0.35);
+      
+      --cyan: #78dce8;
+      --amber: #e5c07b;
       --blue: #85b5c3;
-      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
-      --mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      --purple: #c678dd;
+      --red: #e06c75;
+      
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", Helvetica, Arial, sans-serif;
+      --mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --radius: 12px;
+      --radius-sm: 6px;
+      --radius-lg: 18px;
     }
 
     * {
@@ -41,50 +64,62 @@
       background-color: var(--bg);
       color: var(--text);
       font-family: var(--sans);
-      font-size: 15px;
+      font-size: 14px;
       line-height: 1.6;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      position: relative;
     }
 
-    /* Ambient background lighting */
+    /* Interactive Matrix Canvas Background */
+    #hero-bg-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 680px;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.45;
+    }
+
     .ambient-glow {
-      position: fixed;
-      top: -20%;
+      position: absolute;
+      top: -150px;
       left: 50%;
       transform: translateX(-50%);
-      width: 800px;
-      height: 450px;
-      background: radial-gradient(ellipse at center, rgba(156, 231, 198, 0.08) 0%, rgba(133, 181, 195, 0.03) 45%, transparent 70%);
+      width: 900px;
+      height: 500px;
+      background: radial-gradient(ellipse at center, rgba(156, 231, 198, 0.12) 0%, rgba(120, 220, 232, 0.05) 45%, transparent 70%);
       pointer-events: none;
       z-index: 0;
     }
 
-    /* Container */
     .container {
       width: 100%;
-      max-width: 1180px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 0 24px;
       position: relative;
       z-index: 1;
     }
 
-    /* Header & Navigation */
+    /* Top Navigation */
     header {
       border-bottom: 1px solid var(--line-soft);
-      backdrop-filter: blur(12px);
-      background: rgba(16, 22, 23, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(13, 18, 19, 0.82);
       position: sticky;
       top: 0;
-      z-index: 50;
+      z-index: 100;
     }
 
     .nav-wrapper {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 70px;
+      height: 72px;
     }
 
     .brand {
@@ -112,11 +147,12 @@
       width: 5px;
       background: var(--mint);
       border-radius: 1px;
+      box-shadow: 0 0 10px rgba(156, 231, 198, 0.4);
     }
 
-    .brand-mark i:nth-child(1) { height: 15px; left: 0; }
-    .brand-mark i:nth-child(2) { height: 26px; left: 9px; }
-    .brand-mark i:nth-child(3) { height: 20px; left: 18px; }
+    .brand-mark i:nth-child(1) { height: 16px; left: 0; }
+    .brand-mark i:nth-child(2) { height: 27px; left: 9px; }
+    .brand-mark i:nth-child(3) { height: 21px; left: 18px; }
 
     .brand-text {
       display: flex;
@@ -133,24 +169,25 @@
     .brand-ai {
       color: var(--mint);
       font-size: 11px;
-      margin-left: 4px;
-      padding: 1px 4px;
+      margin-left: 5px;
+      padding: 1px 5px;
       background: rgba(156, 231, 198, 0.12);
-      border-radius: 3px;
-      border: 1px solid rgba(156, 231, 198, 0.25);
+      border-radius: 4px;
+      border: 1px solid var(--mint-border);
+      letter-spacing: 0.5px;
     }
 
     .brand-sub {
       font-family: var(--mono);
       font-size: 8px;
       color: var(--muted);
-      letter-spacing: 1.5px;
+      letter-spacing: 1.6px;
     }
 
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 24px;
     }
 
     .nav-link {
@@ -158,32 +195,42 @@
       text-decoration: none;
       font-size: 13px;
       font-weight: 500;
-      transition: color 0.15s;
+      transition: color 0.18s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .nav-link:hover {
       color: var(--mint);
     }
 
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
     .btn-github {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      padding: 7px 13px;
+      gap: 8px;
+      padding: 8px 15px;
       background: var(--surface-raised);
       border: 1px solid var(--line);
-      border-radius: 6px;
+      border-radius: var(--radius-sm);
       color: var(--text);
       text-decoration: none;
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 500;
-      transition: all 0.18s;
+      transition: all 0.2s ease;
     }
 
     .btn-github:hover {
       background: var(--surface-hover);
       border-color: var(--mint);
       color: var(--mint);
+      box-shadow: 0 0 12px var(--mint-glow);
     }
 
     .btn-github svg {
@@ -194,168 +241,311 @@
 
     /* Hero Section */
     .hero {
-      padding: 68px 0 52px;
+      padding: 72px 0 44px;
       text-align: center;
+      position: relative;
     }
 
-    .hero-badge {
+    .hero-badge-wrap {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      padding: 4px 12px;
-      background: rgba(156, 231, 198, 0.08);
-      border: 1px solid rgba(156, 231, 198, 0.24);
-      border-radius: 20px;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--mint);
-      letter-spacing: 0.8px;
-      margin-bottom: 22px;
+      gap: 8px;
+      padding: 5px 14px;
+      background: rgba(156, 231, 198, 0.07);
+      border: 1px solid rgba(156, 231, 198, 0.28);
+      border-radius: 30px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(8px);
     }
 
-    .hero-badge .dot {
-      width: 6px;
-      height: 6px;
+    .status-dot {
+      width: 7px;
+      height: 7px;
       background: var(--mint);
       border-radius: 50%;
       box-shadow: 0 0 8px var(--mint);
+      animation: pulse-dot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    .hero-badge-text {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--mint);
+      letter-spacing: 0.9px;
+      font-weight: 500;
     }
 
     .hero-title {
-      font-size: clamp(32px, 5vw, 54px);
-      font-weight: 700;
-      line-height: 1.15;
-      letter-spacing: -1.2px;
-      margin-bottom: 18px;
-      background: linear-gradient(180deg, #ffffff 30%, #b2c4bf 100%);
+      font-size: clamp(34px, 5.2vw, 58px);
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -1.4px;
+      margin-bottom: 20px;
+      background: linear-gradient(180deg, #ffffff 40%, #b8ccc7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-title span.accent {
+      background: linear-gradient(90deg, #9ce7c6, #78dce8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .hero-desc {
-      max-width: 720px;
+      max-width: 740px;
       margin: 0 auto 36px;
-      color: var(--muted);
-      font-size: 16px;
+      color: var(--text-dim);
+      font-size: 16.5px;
       line-height: 1.7;
     }
 
-    /* Launcher Cards Grid */
+    /* Live Stat Bar (KPIs) */
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin: 10px auto 56px;
+      max-width: 980px;
+    }
+
+    .metric-pill {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .metric-pill:hover {
+      border-color: var(--line-highlight);
+      transform: translateY(-2px);
+    }
+
+    .metric-pill::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--mint);
+      opacity: 0.7;
+    }
+
+    .metric-val {
+      font-family: var(--mono);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .metric-val small {
+      font-size: 12px;
+      color: var(--mint);
+      font-weight: 600;
+    }
+
+    .metric-lbl {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-weight: 500;
+    }
+
+    /* Section Headers */
+    .section-header {
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line-soft);
+      padding-bottom: 14px;
+    }
+
+    .section-header h2 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-header h2 .badge {
+      font-size: 10px;
+      font-family: var(--mono);
+      padding: 3px 7px;
+      background: rgba(156, 231, 198, 0.1);
+      border: 1px solid var(--mint-border);
+      color: var(--mint);
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .section-header span.sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.8px;
+    }
+
+    /* Launcher Editions Grid */
     .editions-section {
       padding: 20px 0 60px;
     }
 
-    .section-header {
-      margin-bottom: 24px;
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-    }
-
-    .section-header h2 {
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: -0.4px;
-    }
-
-    .section-header span {
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--muted);
-    }
-
     .editions-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      gap: 28px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 30px;
     }
 
     .edition-card {
       background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: 14px;
+      border-radius: var(--radius-lg);
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      transition: transform 0.22s, border-color 0.22s, box-shadow 0.22s;
       position: relative;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s, box-shadow 0.25s;
     }
 
     .edition-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(156, 231, 198, 0.4);
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45), 0 0 24px rgba(156, 231, 198, 0.08);
+      transform: translateY(-5px);
+      border-color: var(--mint-border);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), 0 0 30px rgba(156, 231, 198, 0.08);
     }
 
-    .card-preview {
+    .card-preview-wrap {
       position: relative;
       width: 100%;
-      height: 230px;
+      height: 250px;
       overflow: hidden;
-      background: #192527;
-      border-bottom: 1px solid var(--line-soft);
+      background: #141f21;
     }
 
-    .card-preview img {
+    .card-preview-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: transform 0.35s ease;
+      transition: transform 0.4s ease;
     }
 
-    .edition-card:hover .card-preview img {
-      transform: scale(1.03);
+    .edition-card:hover .card-preview-img {
+      transform: scale(1.035);
     }
 
-    .preview-badge {
+    .card-badges {
       position: absolute;
       top: 14px;
       left: 14px;
+      display: flex;
+      gap: 8px;
+      z-index: 2;
+    }
+
+    .pill-badge {
       padding: 4px 10px;
-      background: rgba(16, 24, 25, 0.85);
-      border: 1px solid rgba(156, 231, 198, 0.3);
+      background: rgba(13, 20, 21, 0.88);
+      border: 1px solid rgba(156, 231, 198, 0.35);
       border-radius: 6px;
       backdrop-filter: blur(8px);
       font-family: var(--mono);
       font-size: 10px;
       color: var(--mint);
       letter-spacing: 0.6px;
+      font-weight: 500;
+    }
+
+    .pill-badge.amber {
+      border-color: rgba(229, 192, 123, 0.35);
+      color: var(--amber);
     }
 
     .card-body {
-      padding: 26px;
+      padding: 28px;
       display: flex;
       flex-direction: column;
       flex: 1;
     }
 
-    .card-title {
-      font-size: 22px;
-      font-weight: 650;
-      letter-spacing: -0.4px;
-      margin-bottom: 10px;
+    .card-heading-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 23px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
     }
 
     .tag-standalone {
       font-family: var(--mono);
       font-size: 10px;
-      color: var(--amber);
-      background: rgba(213, 185, 130, 0.1);
-      border: 1px solid rgba(213, 185, 130, 0.25);
-      padding: 2px 7px;
+      color: var(--mint);
+      background: rgba(156, 231, 198, 0.09);
+      border: 1px solid rgba(156, 231, 198, 0.25);
+      padding: 3px 8px;
       border-radius: 4px;
-      font-weight: normal;
     }
 
     .card-desc {
-      color: var(--muted);
-      font-size: 13.5px;
+      color: var(--text-dim);
+      font-size: 14px;
       line-height: 1.65;
-      margin-bottom: 20px;
+      margin-bottom: 22px;
+    }
+
+    /* Specs micro-grid inside card */
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 22px;
+      padding: 12px 14px;
+      background: var(--bg-alt);
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+    }
+
+    .spec-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .spec-item span.k {
+      font-size: 9.5px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .spec-item span.v {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 2px;
     }
 
     .feature-list {
@@ -369,40 +559,48 @@
     .feature-tag {
       font-family: var(--mono);
       font-size: 10px;
-      padding: 3px 8px;
+      padding: 3px 9px;
       background: var(--surface-raised);
-      border: 1px solid var(--line-soft);
+      border: 1px solid var(--line);
       border-radius: 4px;
-      color: #b8c9c4;
+      color: var(--text-dim);
     }
 
     .card-actions {
       margin-top: auto;
       display: flex;
       flex-direction: column;
-      gap: 9px;
+      gap: 10px;
     }
 
     .btn-launch {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 9px;
-      padding: 12px 20px;
+      gap: 10px;
+      padding: 13px 22px;
       background: var(--mint);
       color: var(--mint-dark);
       text-decoration: none;
       border-radius: 8px;
-      font-weight: 650;
-      font-size: 13.5px;
-      transition: all 0.18s;
-      box-shadow: 0 4px 15px rgba(156, 231, 198, 0.16);
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 18px rgba(156, 231, 198, 0.2);
     }
 
     .btn-launch:hover {
       background: #bbf6dc;
-      box-shadow: 0 4px 22px rgba(156, 231, 198, 0.3);
+      box-shadow: 0 6px 25px rgba(156, 231, 198, 0.35);
       transform: translateY(-1px);
+    }
+
+    .btn-launch svg {
+      transition: transform 0.2s;
+    }
+
+    .btn-launch:hover svg {
+      transform: translateX(3px);
     }
 
     .btn-secondary {
@@ -417,61 +615,248 @@
       text-decoration: none;
       border-radius: 6px;
       font-size: 12px;
-      transition: all 0.15s;
+      font-weight: 500;
+      transition: all 0.18s;
     }
 
     .btn-secondary:hover {
       background: var(--surface-raised);
-      border-color: #405452;
+      border-color: var(--line-highlight);
       color: var(--text);
     }
 
-    /* Algorithm Spotlight & Features */
-    .features-section {
+    /* Live Interactive Mini Pathfinding Lab */
+    .playground-section {
+      padding: 40px 0 60px;
+      border-top: 1px solid var(--line-soft);
+    }
+
+    .playground-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 24px;
+    }
+
+    .playground-canvas-area {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .canvas-hud {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .canvas-hud span.active-algo {
+      color: var(--mint);
+      font-weight: 600;
+    }
+
+    #playground-canvas {
+      width: 100%;
+      height: 320px;
+      background: #0d1416;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      cursor: crosshair;
+      display: block;
+      touch-action: none;
+    }
+
+    .playground-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding-left: 8px;
+      border-left: 1px solid var(--line-soft);
+    }
+
+    .playground-control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .playground-control-group label {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pg-select {
+      background: var(--surface-raised);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-family: var(--sans);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .pg-select:focus {
+      border-color: var(--mint);
+    }
+
+    .btn-pg-run {
+      background: var(--mint);
+      color: var(--mint-dark);
+      border: none;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: all 0.15s;
+    }
+
+    .btn-pg-run:hover {
+      background: #bbf6dc;
+      box-shadow: 0 0 14px var(--mint-glow);
+    }
+
+    .btn-pg-clear {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-pg-clear:hover {
+      background: var(--surface-raised);
+      color: var(--text);
+    }
+
+    .pg-instructions {
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.6;
+      background: var(--bg-alt);
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid var(--line-soft);
+    }
+
+    .pg-telemetry {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--line-soft);
+    }
+
+    .pg-telemetry-row {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Algorithm Matrix Cards */
+    .algos-section {
       padding: 50px 0 60px;
       border-top: 1px solid var(--line-soft);
     }
 
-    .features-grid {
+    .algos-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
       margin-top: 24px;
     }
 
-    .feature-card {
+    .algo-card {
       background: var(--surface);
-      border: 1px solid var(--line-soft);
-      border-radius: 10px;
-      padding: 22px;
-    }
-
-    .feature-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      background: rgba(156, 231, 198, 0.1);
-      border: 1px solid rgba(156, 231, 198, 0.2);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--mint);
-      margin-bottom: 14px;
+      flex-direction: column;
+      transition: border-color 0.2s, transform 0.2s;
     }
 
-    .feature-card h3 {
-      font-size: 15px;
-      font-weight: 600;
+    .algo-card:hover {
+      border-color: var(--line-highlight);
+      transform: translateY(-2px);
+    }
+
+    .algo-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 8px;
     }
 
-    .feature-card p {
-      font-size: 12.5px;
-      color: var(--muted);
-      line-height: 1.6;
+    .algo-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
     }
 
-    /* Comparison Table */
+    .algo-badge {
+      font-family: var(--mono);
+      font-size: 9.5px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(156, 231, 198, 0.25);
+      color: var(--mint);
+      background: rgba(156, 231, 198, 0.08);
+    }
+
+    .algo-badge.amber {
+      border-color: rgba(229, 192, 123, 0.3);
+      color: var(--amber);
+      background: rgba(229, 192, 123, 0.08);
+    }
+
+    .algo-badge.blue {
+      border-color: rgba(133, 181, 195, 0.3);
+      color: var(--blue);
+      background: rgba(133, 181, 195, 0.08);
+    }
+
+    .algo-desc {
+      font-size: 12.5px;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 14px;
+      flex: 1;
+    }
+
+    .algo-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--faint);
+      padding-top: 10px;
+      border-top: 1px solid var(--line-soft);
+    }
+
+    /* Comparison Table Section */
     .comparison-section {
       padding: 50px 0 60px;
       border-top: 1px solid var(--line-soft);
@@ -480,7 +865,7 @@
     .table-container {
       overflow-x: auto;
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: var(--radius);
       background: var(--surface);
       margin-top: 20px;
     }
@@ -493,7 +878,7 @@
     }
 
     th, td {
-      padding: 13px 18px;
+      padding: 14px 20px;
       border-bottom: 1px solid var(--line-soft);
     }
 
@@ -502,7 +887,7 @@
       font-family: var(--mono);
       font-size: 11px;
       color: var(--muted);
-      letter-spacing: 0.6px;
+      letter-spacing: 0.8px;
       text-transform: uppercase;
     }
 
@@ -512,7 +897,11 @@
 
     td.check {
       color: var(--mint);
-      font-weight: bold;
+      font-weight: 600;
+    }
+
+    td.dim {
+      color: var(--faint);
     }
 
     /* Shortcuts Bar */
@@ -521,7 +910,7 @@
       padding: 18px 24px;
       background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: 10px;
+      border-radius: var(--radius);
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -554,7 +943,7 @@
     kbd {
       font-family: var(--mono);
       font-size: 11px;
-      padding: 2px 6px;
+      padding: 3px 7px;
       background: var(--surface-raised);
       border: 1px solid var(--line);
       border-radius: 4px;
@@ -564,9 +953,10 @@
     /* Footer */
     footer {
       border-top: 1px solid var(--line-soft);
-      padding: 40px 0 50px;
+      padding: 44px 0 54px;
       color: var(--faint);
-      font-size: 12px;
+      font-size: 12.5px;
+      background: var(--bg);
     }
 
     .footer-content {
@@ -579,7 +969,7 @@
 
     .footer-links {
       display: flex;
-      gap: 20px;
+      gap: 24px;
     }
 
     .footer-links a {
@@ -592,24 +982,58 @@
       color: var(--mint);
     }
 
-    @media (max-width: 768px) {
+    /* Responsive */
+    @media (max-width: 992px) {
       .editions-grid {
         grid-template-columns: 1fr;
       }
-      .nav-links .nav-link {
+      .metrics-bar {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .playground-card {
+        grid-template-columns: 1fr;
+      }
+      .playground-sidebar {
+        border-left: none;
+        padding-left: 0;
+        border-top: 1px solid var(--line-soft);
+        padding-top: 16px;
+      }
+      .algos-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav-links {
         display: none;
       }
       .hero-title {
         font-size: 32px;
+      }
+      .metrics-bar {
+        grid-template-columns: 1fr;
+      }
+      .algos-grid {
+        grid-template-columns: 1fr;
       }
       .shortcuts-bar {
         flex-direction: column;
         align-items: flex-start;
       }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- Ambient background lighting & Canvas -->
+  <canvas id="hero-bg-canvas"></canvas>
   <div class="ambient-glow"></div>
 
   <!-- Header -->
@@ -625,67 +1049,120 @@
         </div>
       </a>
 
-      <div class="nav-links">
+      <nav class="nav-links">
         <a href="#editions" class="nav-link">Editions</a>
-        <a href="#features" class="nav-link">Capabilities</a>
-        <a href="#comparison" class="nav-link">Compare</a>
+        <a href="#playground" class="nav-link">Interactive Lab</a>
+        <a href="#algorithms" class="nav-link">Algorithms</a>
+        <a href="#comparison" class="nav-link">Comparison</a>
+      </nav>
+
+      <div class="nav-actions">
         <a href="https://github.com/Ayaan-22/MetroMind-AI" target="_blank" rel="noopener noreferrer" class="btn-github">
           <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          <span>GitHub</span>
+          <span>Star on GitHub</span>
         </a>
       </div>
     </div>
   </header>
 
-  <!-- Hero -->
   <main class="container">
+    <!-- Hero Section -->
     <section class="hero">
-      <div class="hero-badge">
-        <span class="dot"></span>
-        <span>VERSION 11.0 · CLIENT-SIDE SIMULATOR</span>
+      <div class="hero-badge-wrap">
+        <span class="status-dot"></span>
+        <span class="hero-badge-text">METROMIND AI v11.0 · HIGH-PERFORMANCE SIMULATION</span>
       </div>
-      <h1 class="hero-title">Autonomous Pathfinding &amp;<br>Reinforcement Learning</h1>
+      <h1 class="hero-title">
+        Autonomous Pathfinding &amp;<br>
+        <span class="accent">Reinforcement Learning</span>
+      </h1>
       <p class="hero-desc">
-        Compare nine search algorithms on identical urban topography, watch reactive D* Lite replan routes around real-time obstacles, and train reinforcement learning agents to navigate custom procedural cities.
+        Compare nine search algorithms on identical urban topography, watch reactive D* Lite replan routes around live roadblocks, and inspect policy convergence in procedural 3D cities or interactive 2D grids.
       </p>
+
+      <!-- KPI Metrics Bar -->
+      <div class="metrics-bar">
+        <div class="metric-pill">
+          <div class="metric-val">9 <small>ALGORITHMS</small></div>
+          <div class="metric-lbl">A*, D* Lite, Theta*, JPS &amp; More</div>
+        </div>
+        <div class="metric-pill">
+          <div class="metric-val">60+ <small>FPS</small></div>
+          <div class="metric-lbl">Three.js WebGL Engine</div>
+        </div>
+        <div class="metric-pill">
+          <div class="metric-val">0 <small>MS LATENCY</small></div>
+          <div class="metric-lbl">100% Client-Side / Offline</div>
+        </div>
+        <div class="metric-pill">
+          <div class="metric-val">Q-RL <small>POLICY</small></div>
+          <div class="metric-lbl">Reinforcement Learning Overlays</div>
+        </div>
+      </div>
     </section>
 
-    <!-- Editions Selection -->
+    <!-- Editions Selection Cards -->
     <section id="editions" class="editions-section">
       <div class="section-header">
-        <h2>Choose Your Edition</h2>
-        <span>SELECT TO LAUNCH IN BROWSER</span>
+        <h2>
+          Choose Your Edition
+          <span class="badge">READY TO LAUNCH</span>
+        </h2>
+        <span class="sub">STANDALONE BROWSER APPS</span>
       </div>
 
       <div class="editions-grid">
         <!-- 3D City Studio Card -->
         <article class="edition-card">
-          <div class="card-preview">
-            <span class="preview-badge">3D WEBGL STUDIO</span>
-            <img src="docs/media/city-studio.webp" alt="3D City Studio preview showing downtown route">
+          <div class="card-preview-wrap">
+            <div class="card-badges">
+              <span class="pill-badge">3D PROCEDURAL ENGINE</span>
+              <span class="pill-badge amber">THREE.JS</span>
+            </div>
+            <img src="docs/media/city-studio.webp" alt="3D City Studio route overview" class="card-preview-img">
           </div>
           <div class="card-body">
-            <div class="card-title">
-              <span>3D City Studio</span>
-              <span class="tag-standalone">Standalone HTML</span>
+            <div class="card-heading-row">
+              <h3 class="card-title">3D City Studio</h3>
+              <span class="tag-standalone">Single-File HTML</span>
             </div>
             <p class="card-desc">
-              Explore a procedural 3D metropolis. Draw elevated roads and buildings in Free Build mode, orbit live camera angles, toggle Day/Dusk/Night cycles, and inspect route insights in real time.
+              Fly through procedural skyscrapers, paint elevated highway overpasses, and inspect dynamic D* Lite rerouting with dusk/night city illumination and live telemetry HUD.
             </p>
+
+            <div class="specs-grid">
+              <div class="spec-item">
+                <span class="k">Graphics Pipeline</span>
+                <span class="v">WebGL 2.0 / Three.js</span>
+              </div>
+              <div class="spec-item">
+                <span class="k">Elevation Model</span>
+                <span class="v">3D Volumetric Terrain</span>
+              </div>
+              <div class="spec-item">
+                <span class="k">Special Modes</span>
+                <span class="v">Free Build &amp; Day/Night</span>
+              </div>
+              <div class="spec-item">
+                <span class="k">RL Visualization</span>
+                <span class="v">3D Elevation Columns</span>
+              </div>
+            </div>
+
             <ul class="feature-list">
-              <li class="feature-tag">Three.js Engine</li>
-              <li class="feature-tag">Free Build &amp; Elevation</li>
+              <li class="feature-tag">Orbit Camera Controls</li>
+              <li class="feature-tag">Free Build Topography</li>
               <li class="feature-tag">D* Lite Replanning</li>
-              <li class="feature-tag">3D Q-Learning Columns</li>
-              <li class="feature-tag">Live Telemetry HUD</li>
+              <li class="feature-tag">Lighting &amp; Vignettes</li>
             </ul>
+
             <div class="card-actions">
               <a href="MetroMind%20AI%203D.html" class="btn-launch">
                 <span>Launch 3D City Studio</span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </a>
               <a href="3d/index.html" class="btn-secondary">
-                <span>Open Modular Source (3d/index.html)</span>
+                <span>Browse Modular Source (3d/index.html)</span>
               </a>
             </div>
           </div>
@@ -693,32 +1170,55 @@
 
         <!-- 2D Grid Lab Card -->
         <article class="edition-card">
-          <div class="card-preview">
-            <span class="preview-badge">2D ALGORITHMIC LAB</span>
-            <img src="docs/media/grid-lab.webp" alt="2D Grid Lab preview showing A* corridor search">
+          <div class="card-preview-wrap">
+            <div class="card-badges">
+              <span class="pill-badge">2D ALGORITHMIC WORKBENCH</span>
+              <span class="pill-badge">ULTRA-FAST</span>
+            </div>
+            <img src="docs/media/grid-lab.webp" alt="2D Grid Lab path search" class="card-preview-img">
           </div>
           <div class="card-body">
-            <div class="card-title">
-              <span>2D Grid Lab</span>
-              <span class="tag-standalone">High Speed</span>
+            <div class="card-heading-row">
+              <h3 class="card-title">2D Grid Lab</h3>
+              <span class="tag-standalone">Single-File HTML</span>
             </div>
             <p class="card-desc">
-              A precise grid workbench for algorithmic dissection. Paint walls, highways, and mud terrains. Step backward and forward through search history, compare all 9 algorithms, and export run metrics.
+              High-throughput 2D grid playground optimized for sub-millisecond step-by-step algorithmic analysis, maze generators, multi-terrain painting, and side-by-side benchmarking.
             </p>
+
+            <div class="specs-grid">
+              <div class="spec-item">
+                <span class="k">Graphics Pipeline</span>
+                <span class="v">High-Speed 2D Canvas</span>
+              </div>
+              <div class="spec-item">
+                <span class="k">Terrain Friction</span>
+                <span class="v">Highway, Mud, Traffic</span>
+              </div>
+              <div class="spec-item">
+                <span class="k">History Control</span>
+                <span class="v">Step Back &amp; Forward (S/B)</span>
+              </div>
+              <div class="spec-item">
+                <span class="k">RL Visualization</span>
+                <span class="v">2D Heatmap &amp; Policy Overlay</span>
+              </div>
+            </div>
+
             <ul class="feature-list">
               <li class="feature-tag">9 Search Algorithms</li>
-              <li class="feature-tag">Side-by-Side Benchmark</li>
-              <li class="feature-tag">Step History (S / B)</li>
-              <li class="feature-tag">RL Heatmap &amp; Policy Overlay</li>
+              <li class="feature-tag">Benchmark Mode (X)</li>
+              <li class="feature-tag">Dynamic Terrains</li>
               <li class="feature-tag">CSV &amp; JSON Export</li>
             </ul>
+
             <div class="card-actions">
               <a href="MetroMind_AI_v11.html" class="btn-launch">
                 <span>Launch 2D Grid Lab</span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </a>
               <a href="modular_version/MetroMind_AI_v11.html" class="btn-secondary">
-                <span>Open Modular Source (modular_version/)</span>
+                <span>Browse Modular Source (modular_version/)</span>
               </a>
             </div>
           </div>
@@ -726,59 +1226,184 @@
       </div>
     </section>
 
-    <!-- Shortcuts Bar -->
-    <div class="shortcuts-bar">
-      <div class="shortcuts-title">
-        <span>⚡ Keyboard Controls:</span>
-      </div>
-      <div class="shortcut-items">
-        <div class="shortcut-item"><kbd>Space</kbd> Play / Pause</div>
-        <div class="shortcut-item"><kbd>X</kbd> Comparison View</div>
-        <div class="shortcut-item"><kbd>S</kbd> / <kbd>B</kbd> Step Next / Back</div>
-        <div class="shortcut-item"><kbd>R</kbd> Reset Route</div>
-        <div class="shortcut-item"><kbd>G</kbd> Focus Map</div>
-        <div class="shortcut-item"><kbd>?</kbd> Shortcut Guide</div>
-      </div>
-    </div>
-
-    <!-- Core Capabilities -->
-    <section id="features" class="features-section">
+    <!-- Live Interactive Mini-Playground Section -->
+    <section id="playground" class="playground-section">
       <div class="section-header">
-        <h2>Engineering Highlights</h2>
-        <span>WHAT POWERS METROMIND</span>
+        <h2>
+          Interactive Pathfinding Lab
+          <span class="badge">TRY IT LIVE</span>
+        </h2>
+        <span class="sub">CLICK &amp; DRAG TO DRAW WALLS</span>
       </div>
 
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <div class="playground-card">
+        <div class="playground-canvas-area">
+          <div class="canvas-hud">
+            <span>GRID: 24×14 &bull; START: <b style="color: #9ce7c6;">GREEN</b> &bull; GOAL: <b style="color: #e06c75;">RED</b></span>
+            <span>ACTIVE: <span id="pg-hud-algo" class="active-algo">A* Search</span></span>
           </div>
-          <h3>Reactive D* Lite Replanning</h3>
-          <p>Watch paths heal dynamically when obstacles or road closures appear mid-route, without restarting search from scratch.</p>
+          <canvas id="playground-canvas" width="672" height="364"></canvas>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <div class="playground-sidebar">
+          <div class="playground-control-group">
+            <label for="pg-algo-select">Select Algorithm</label>
+            <select id="pg-algo-select" class="pg-select">
+              <option value="astar">A* Search (Manhattan)</option>
+              <option value="dijkstra">Dijkstra's Algorithm</option>
+              <option value="bfs">Breadth-First Search (BFS)</option>
+              <option value="greedy">Greedy Best-First</option>
+            </select>
           </div>
-          <h3>Weighted Topography</h3>
-          <p>Model real urban friction with highways (0.5×), heavy traffic (3×), and mud (10×), accounting for elevation changes in 3D.</p>
+
+          <button id="pg-btn-run" class="btn-pg-run">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Run Pathfinding</span>
+          </button>
+
+          <button id="pg-btn-clear" class="btn-pg-clear">
+            <span>Clear Obstacles &amp; Reset</span>
+          </button>
+
+          <div class="pg-instructions">
+            💡 <strong>Quick Test:</strong> Click &amp; drag on the canvas to paint walls. Click <strong>Run Pathfinding</strong> to see the search frontier expand and trace the shortest route.
+          </div>
+
+          <div class="pg-telemetry">
+            <div class="pg-telemetry-row">
+              <span>Explored Nodes:</span>
+              <strong id="pg-stat-explored" style="color: var(--mint);">0</strong>
+            </div>
+            <div class="pg-telemetry-row">
+              <span>Path Steps:</span>
+              <strong id="pg-stat-steps" style="color: var(--cyan);">0</strong>
+            </div>
+            <div class="pg-telemetry-row">
+              <span>Execution Time:</span>
+              <strong id="pg-stat-time">0 ms</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Algorithms Architecture Matrix -->
+    <section id="algorithms" class="algos-section">
+      <div class="section-header">
+        <h2>
+          Supported Algorithms
+          <span class="badge">9 HEURISTIC &amp; GRAPH METHODS</span>
+        </h2>
+        <span class="sub">TIME &amp; SPACE COMPLEXITY</span>
+      </div>
+
+      <div class="algos-grid">
+        <div class="algo-card">
+          <div class="algo-card-top">
+            <span class="algo-name">A* Search</span>
+            <span class="algo-badge">Optimal</span>
+          </div>
+          <p class="algo-desc">Combines path cost $g(n)$ with heuristic estimate $h(n)$ for directed, fast, and guaranteed optimal pathfinding.</p>
+          <div class="algo-meta">
+            <span>Time: O(E)</span>
+            <span>Heuristic: Admissible</span>
+          </div>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <div class="algo-card">
+          <div class="algo-card-top">
+            <span class="algo-name">D* Lite</span>
+            <span class="algo-badge amber">Dynamic Reactive</span>
           </div>
-          <h3>Reinforcement Learning</h3>
-          <p>Train model-free Q-Learning agents. Tune epsilon exploration and learning rate while watching policy arrows converge on the goal.</p>
+          <p class="algo-desc">Incrementally repairs routes when obstacles change dynamically during navigation without restarting from scratch.</p>
+          <div class="algo-meta">
+            <span>Time: Incremental</span>
+            <span>Replanning: Real-time</span>
+          </div>
         </div>
 
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        <div class="algo-card">
+          <div class="algo-card-top">
+            <span class="algo-name">Theta*</span>
+            <span class="algo-badge blue">Any-Angle</span>
           </div>
-          <h3>100% Offline &amp; Zero Backend</h3>
-          <p>Runs entirely in modern web browsers via WebGL and HTML5 Canvas. Zero network latency, zero telemetry, and complete privacy.</p>
+          <p class="algo-desc">Evaluates line-of-sight between parent nodes to bypass strict grid turns, yielding realistic straight-line trajectories.</p>
+          <div class="algo-meta">
+            <span>Geometry: Euclidean</span>
+            <span>Any-Angle: Yes</span>
+          </div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-top">
+            <span class="algo-name">Jump Point Search (JPS)</span>
+            <span class="algo-badge">Grid Pruning</span>
+          </div>
+          <p class="algo-desc">Accelerates A* on uniform grids by pruning symmetric corridors and leaping directly between jump point nodes.</p>
+          <div class="algo-meta">
+            <span>Speed: 5-10× Faster</span>
+            <span>Symmetry Pruning: Yes</span>
+          </div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-top">
+            <span class="algo-name">Dijkstra's Algorithm</span>
+            <span class="algo-badge">Uniform Cost</span>
+          </div>
+          <p class="algo-desc">Guarantees shortest paths on any weighted non-negative graph by thoroughly exploring uniform-cost wavefronts.</p>
+          <div class="algo-meta">
+            <span>Time: O(E + V log V)</span>
+            <span>Heuristic: None</span>
+          </div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-top">
+            <span class="algo-name">Bidirectional Search</span>
+            <span class="algo-badge">Dual-Frontier</span>
+          </div>
+          <p class="algo-desc">Expands simultaneous search frontiers from both origin and target until they intersect, cutting search volume in half.</p>
+          <div class="algo-meta">
+            <span>Frontiers: 2</span>
+            <span>Volume: ~O(b^(d/2))</span>
+          </div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-top">
+            <span class="algo-name">Greedy Best-First</span>
+            <span class="algo-badge amber">Fast Heuristic</span>
+          </div>
+          <p class="algo-desc">Expands nodes strictly minimizing distance to target. Blazing fast, but sacrifices path optimality around dead-ends.</p>
+          <div class="algo-meta">
+            <span>Time: O(b^m)</span>
+            <span>Optimal: No</span>
+          </div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-top">
+            <span class="algo-name">Breadth-First (BFS)</span>
+            <span class="algo-badge">Unweighted</span>
+          </div>
+          <p class="algo-desc">Level-by-level exhaustive expansion. Optimal for unweighted graphs, exploring every neighbor layer radially.</p>
+          <div class="algo-meta">
+            <span>Time: O(V + E)</span>
+            <span>Optimal: Unweighted</span>
+          </div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-card-top">
+            <span class="algo-name">Q-Learning (RL)</span>
+            <span class="algo-badge blue">Reinforcement</span>
+          </div>
+          <p class="algo-desc">Model-free temporal difference learning. Learns state-action values $Q(s, a)$ with epsilon-greedy exploration.</p>
+          <div class="algo-meta">
+            <span>Convergence: Bellman</span>
+            <span>Policy: Heatmap Overlays</span>
+          </div>
         </div>
       </div>
     </section>
@@ -786,83 +1411,462 @@
     <!-- Comparison Table -->
     <section id="comparison" class="comparison-section">
       <div class="section-header">
-        <h2>Edition Comparison</h2>
-        <span>FEATURE AVAILABILITY</span>
+        <h2>
+          Edition Feature Matrix
+          <span class="badge">SPECIFICATION</span>
+        </h2>
+        <span class="sub">3D CITY STUDIO VS 2D GRID LAB</span>
       </div>
 
       <div class="table-container">
         <table>
           <thead>
             <tr>
-              <th>Feature</th>
+              <th>Platform Capability</th>
               <th>3D City Studio</th>
               <th>2D Grid Lab</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>A*, Dijkstra, BFS, DFS, Greedy BFS</td>
+              <td>Core Algorithms (A*, Dijkstra, BFS, DFS, Greedy BFS)</td>
               <td class="check">✓ Included</td>
               <td class="check">✓ Included</td>
             </tr>
             <tr>
-              <td>Jump Point Search (JPS) &amp; Theta* Any-Angle</td>
+              <td>Advanced Search (JPS &amp; Theta* Any-Angle)</td>
               <td class="check">✓ Included</td>
               <td class="check">✓ Included</td>
             </tr>
             <tr>
-              <td>D* Lite Dynamic Real-time Replanning</td>
+              <td>D* Lite Real-time Reactive Replanning</td>
               <td class="check">✓ Included</td>
               <td class="check">✓ Included</td>
             </tr>
             <tr>
-              <td>Procedural 3D City Mesh &amp; Orbit Camera</td>
-              <td class="check">✓ Included</td>
-              <td>—</td>
+              <td>Procedural 3D City Mesh with Orbit Controls</td>
+              <td class="check">✓ Three.js / WebGL</td>
+              <td class="dim">— (2D Grid Canvas)</td>
             </tr>
             <tr>
-              <td>Elevation &amp; Slope Resistance</td>
+              <td>Elevation &amp; Slope Resistance Modeling</td>
               <td class="check">✓ Included</td>
-              <td>—</td>
+              <td class="dim">—</td>
             </tr>
             <tr>
-              <td>Step-by-step History Scrubber</td>
-              <td class="check">✓ Included</td>
-              <td class="check">✓ Included</td>
-            </tr>
-            <tr>
-              <td>Side-by-Side 9-Algorithm Benchmark (X key)</td>
+              <td>Step-by-step History Scrubber (S / B keys)</td>
               <td class="check">✓ Included</td>
               <td class="check">✓ Included</td>
             </tr>
             <tr>
-              <td>Reinforcement Learning (Q-Learning) Visualization</td>
+              <td>Side-by-Side 9-Algorithm Benchmark HUD (X key)</td>
+              <td class="check">✓ Included</td>
+              <td class="check">✓ Included</td>
+            </tr>
+            <tr>
+              <td>Reinforcement Learning (Q-Learning) Visualizer</td>
               <td class="check">✓ 3D Height Columns</td>
               <td class="check">✓ 2D Heatmap &amp; Vectors</td>
             </tr>
             <tr>
-              <td>CSV Metrics &amp; JSON Map Export</td>
+              <td>CSV Metric Telemetry &amp; JSON Map Export</td>
               <td class="check">✓ Included</td>
               <td class="check">✓ Included</td>
+            </tr>
+            <tr>
+              <td>Offline Single-File Bundle Support</td>
+              <td class="check">✓ MetroMind AI 3D.html</td>
+              <td class="check">✓ MetroMind_AI_v11.html</td>
             </tr>
           </tbody>
         </table>
       </div>
     </section>
+
+    <!-- Shortcuts HUD -->
+    <div class="shortcuts-bar">
+      <div class="shortcuts-title">
+        <span>⚡ Global Simulator Hotkeys:</span>
+      </div>
+      <div class="shortcut-items">
+        <div class="shortcut-item"><kbd>Space</kbd> Start / Pause</div>
+        <div class="shortcut-item"><kbd>X</kbd> Comparison View</div>
+        <div class="shortcut-item"><kbd>S</kbd> / <kbd>B</kbd> Step Forward / Back</div>
+        <div class="shortcut-item"><kbd>R</kbd> Reset Route</div>
+        <div class="shortcut-item"><kbd>G</kbd> Focus Map</div>
+        <div class="shortcut-item"><kbd>?</kbd> Shortcut Guide</div>
+      </div>
+    </div>
   </main>
 
   <!-- Footer -->
   <footer>
     <div class="container footer-content">
       <div>
-        <strong>MetroMind AI</strong> · Open-source browser simulator for autonomous navigation and AI education.
+        <strong>MetroMind AI</strong> &bull; Open-source autonomous pathfinding &amp; reinforcement learning simulator.
       </div>
       <div class="footer-links">
         <a href="https://github.com/Ayaan-22/MetroMind-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
         <a href="README.md">README</a>
         <a href="future.md">Roadmap</a>
+        <a href="#editions">Back to Top &uarr;</a>
       </div>
     </div>
   </footer>
+
+  <!-- Interactive Background Canvas & Mini-Playground Script -->
+  <script>
+    // 1. Subtle Animated Ambient Network in Hero
+    (function initHeroCanvas() {
+      const canvas = document.getElementById('hero-bg-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let width, height;
+      const nodes = [];
+      const nodeCount = 38;
+
+      function resize() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = Math.min(window.innerHeight, 720);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      for (let i = 0; i < nodeCount; i++) {
+        nodes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.45,
+          vy: (Math.random() - 0.5) * 0.45,
+          radius: Math.random() * 1.8 + 1
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+        ctx.strokeStyle = 'rgba(156, 231, 198, 0.08)';
+        ctx.lineWidth = 1;
+
+        for (let i = 0; i < nodes.length; i++) {
+          const a = nodes[i];
+          a.x += a.vx;
+          a.y += a.vy;
+          if (a.x < 0 || a.x > width) a.vx *= -1;
+          if (a.y < 0 || a.y > height) a.vy *= -1;
+
+          ctx.beginPath();
+          ctx.arc(a.x, a.y, a.radius, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(156, 231, 198, 0.28)';
+          ctx.fill();
+
+          for (let j = i + 1; j < nodes.length; j++) {
+            const b = nodes[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 140) {
+              ctx.beginPath();
+              ctx.strokeStyle = `rgba(156, 231, 198, ${0.12 * (1 - dist / 140)})`;
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+      requestAnimationFrame(draw);
+    })();
+
+    // 2. In-Page Interactive Pathfinding Lab
+    (function initPlayground() {
+      const canvas = document.getElementById('playground-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const algoSelect = document.getElementById('pg-algo-select');
+      const hudAlgo = document.getElementById('pg-hud-algo');
+      const runBtn = document.getElementById('pg-btn-run');
+      const clearBtn = document.getElementById('pg-btn-clear');
+      const statExplored = document.getElementById('pg-stat-explored');
+      const statSteps = document.getElementById('pg-stat-steps');
+      const statTime = document.getElementById('pg-stat-time');
+
+      const COLS = 24;
+      const ROWS = 13;
+      let cellW = canvas.width / COLS;
+      let cellH = canvas.height / ROWS;
+
+      let grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+      let start = { r: 6, c: 2 };
+      let goal = { r: 6, c: 21 };
+      let isDrawing = false;
+      let drawMode = 1; // 1 = wall, 0 = erase
+      let exploredNodes = [];
+      let finalPath = [];
+      let isSearching = false;
+
+      // Seed initial labyrinth obstacles
+      for (let r = 2; r <= 10; r++) {
+        grid[r][7] = 1;
+        grid[r][16] = 1;
+      }
+      grid[5][7] = 0;
+      grid[7][16] = 0;
+
+      function drawGrid() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        cellW = canvas.width / COLS;
+        cellH = canvas.height / ROWS;
+
+        // Draw cells
+        for (let r = 0; r < ROWS; r++) {
+          for (let c = 0; c < COLS; c++) {
+            const x = c * cellW;
+            const y = r * cellH;
+
+            // Background
+            ctx.fillStyle = '#101719';
+            if (grid[r][c] === 1) {
+              ctx.fillStyle = '#2d3e42'; // Wall
+            }
+            ctx.fillRect(x, y, cellW, cellH);
+
+            // Grid border lines
+            ctx.strokeStyle = '#182326';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, cellW, cellH);
+          }
+        }
+
+        // Draw Explored Nodes
+        for (const node of exploredNodes) {
+          if ((node.r === start.r && node.c === start.c) || (node.r === goal.r && node.c === goal.c)) continue;
+          const x = node.c * cellW;
+          const y = node.r * cellH;
+          ctx.fillStyle = 'rgba(120, 220, 232, 0.28)';
+          ctx.fillRect(x + 1, y + 1, cellW - 2, cellH - 2);
+        }
+
+        // Draw Final Path
+        if (finalPath.length > 0) {
+          ctx.strokeStyle = '#9ce7c6';
+          ctx.lineWidth = 3.5;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.beginPath();
+          for (let i = 0; i < finalPath.length; i++) {
+            const px = finalPath[i].c * cellW + cellW / 2;
+            const py = finalPath[i].r * cellH + cellH / 2;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+
+          // Highlight path nodes
+          for (const node of finalPath) {
+            if ((node.r === start.r && node.c === start.c) || (node.r === goal.r && node.c === goal.c)) continue;
+            ctx.fillStyle = '#9ce7c6';
+            ctx.beginPath();
+            ctx.arc(node.c * cellW + cellW / 2, node.r * cellH + cellH / 2, 4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // Draw Start Node
+        ctx.fillStyle = '#9ce7c6';
+        ctx.beginPath();
+        ctx.arc(start.c * cellW + cellW / 2, start.r * cellH + cellH / 2, cellW * 0.32, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#101617';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Draw Goal Node
+        ctx.fillStyle = '#e06c75';
+        ctx.beginPath();
+        ctx.arc(goal.c * cellW + cellW / 2, goal.r * cellH + cellH / 2, cellW * 0.32, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#101617';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      function getCellFromCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = (clientX - rect.left) * scaleX;
+        const y = (clientY - rect.top) * scaleY;
+        const c = Math.floor(x / cellW);
+        const r = Math.floor(y / cellH);
+        return { r, c };
+      }
+
+      function handlePointerDown(e) {
+        if (isSearching) return;
+        const { r, c } = getCellFromCoords(e);
+        if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+        if ((r === start.r && c === start.c) || (r === goal.r && c === goal.c)) return;
+
+        isDrawing = true;
+        drawMode = grid[r][c] === 1 ? 0 : 1;
+        grid[r][c] = drawMode;
+        exploredNodes = [];
+        finalPath = [];
+        drawGrid();
+      }
+
+      function handlePointerMove(e) {
+        if (!isDrawing || isSearching) return;
+        const { r, c } = getCellFromCoords(e);
+        if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+        if ((r === start.r && c === start.c) || (r === goal.r && c === goal.c)) return;
+        grid[r][c] = drawMode;
+        drawGrid();
+      }
+
+      function handlePointerUp() {
+        isDrawing = false;
+      }
+
+      canvas.addEventListener('mousedown', handlePointerDown);
+      window.addEventListener('mousemove', handlePointerMove);
+      window.addEventListener('mouseup', handlePointerUp);
+
+      canvas.addEventListener('touchstart', (e) => { e.preventDefault(); handlePointerDown(e); }, { passive: false });
+      window.addEventListener('touchmove', (e) => { if (isDrawing) handlePointerMove(e); }, { passive: false });
+      window.addEventListener('touchend', handlePointerUp);
+
+      algoSelect.addEventListener('change', () => {
+        hudAlgo.textContent = algoSelect.options[algoSelect.selectedIndex].text;
+      });
+
+      clearBtn.addEventListener('click', () => {
+        grid = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+        exploredNodes = [];
+        finalPath = [];
+        statExplored.textContent = '0';
+        statSteps.textContent = '0';
+        statTime.textContent = '0 ms';
+        drawGrid();
+      });
+
+      // Simple Search Engine (A*, Dijkstra, BFS, Greedy)
+      function runSearch() {
+        if (isSearching) return;
+        isSearching = true;
+        exploredNodes = [];
+        finalPath = [];
+        drawGrid();
+
+        const t0 = performance.now();
+        const algo = algoSelect.value;
+        const queue = [];
+        const cameFrom = new Map();
+        const costSoFar = new Map();
+
+        const key = (r, c) => `${r},${c}`;
+        const parseKey = (k) => { const [r, c] = k.split(',').map(Number); return { r, c }; };
+
+        const startKey = key(start.r, start.c);
+        queue.push({ r: start.r, c: start.c, priority: 0 });
+        costSoFar.set(startKey, 0);
+
+        function heuristic(r, c) {
+          return Math.abs(r - goal.r) + Math.abs(c - goal.c);
+        }
+
+        const visitedOrder = [];
+        let reached = false;
+
+        while (queue.length > 0) {
+          queue.sort((a, b) => a.priority - b.priority);
+          const current = queue.shift();
+          const currKey = key(current.r, current.c);
+
+          if (current.r === goal.r && current.c === goal.c) {
+            reached = true;
+            break;
+          }
+
+          visitedOrder.push({ r: current.r, c: current.c });
+
+          const neighbors = [
+            { r: current.r - 1, c: current.c },
+            { r: current.r + 1, c: current.c },
+            { r: current.r, c: current.c - 1 },
+            { r: current.r, c: current.c + 1 }
+          ];
+
+          for (const nb of neighbors) {
+            if (nb.r >= 0 && nb.r < ROWS && nb.c >= 0 && nb.c < COLS) {
+              if (grid[nb.r][nb.c] === 1) continue; // Obstacle
+              const nbKey = key(nb.r, nb.c);
+              const newCost = costSoFar.get(currKey) + 1;
+
+              if (!costSoFar.has(nbKey) || newCost < costSoFar.get(nbKey)) {
+                costSoFar.set(nbKey, newCost);
+                cameFrom.set(nbKey, currKey);
+
+                let priority = newCost;
+                if (algo === 'astar') priority = newCost + heuristic(nb.r, nb.c);
+                else if (algo === 'greedy') priority = heuristic(nb.r, nb.c);
+                else if (algo === 'bfs') priority = visitedOrder.length;
+                else if (algo === 'dijkstra') priority = newCost;
+
+                queue.push({ r: nb.r, c: nb.c, priority });
+              }
+            }
+          }
+        }
+
+        const t1 = performance.now();
+        statTime.textContent = (t1 - t0).toFixed(1) + ' ms';
+
+        // Reconstruct path
+        if (reached) {
+          let curr = key(goal.r, goal.c);
+          while (curr) {
+            finalPath.unshift(parseKey(curr));
+            curr = cameFrom.get(curr);
+          }
+        }
+
+        // Animate the search expansion step-by-step
+        let step = 0;
+        const animSpeed = 12; // ms per batch
+        function stepAnim() {
+          const batch = 3;
+          for (let b = 0; b < batch && step < visitedOrder.length; b++) {
+            exploredNodes.push(visitedOrder[step]);
+            step++;
+          }
+          statExplored.textContent = exploredNodes.length;
+          drawGrid();
+
+          if (step < visitedOrder.length) {
+            setTimeout(stepAnim, animSpeed);
+          } else {
+            isSearching = false;
+            statSteps.textContent = finalPath.length ? finalPath.length - 1 : 0;
+            drawGrid();
+          }
+        }
+
+        if (visitedOrder.length > 0) stepAnim();
+        else {
+          isSearching = false;
+          drawGrid();
+        }
+      }
+
+      runBtn.addEventListener('click', runSearch);
+
+      // Initial Draw
+      drawGrid();
+    })();
+  </script>
 </body>
 </html>
