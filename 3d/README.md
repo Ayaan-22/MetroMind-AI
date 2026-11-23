@@ -1,22 +1,33 @@
-# MetroMind AI — 3D edition
+# MetroMind AI — 3D City Studio
 
-The 3D edition combines an editable city with the pathfinding and reinforcement learning tools from v11. Its source is kept separately so the established v11 edition remains independently maintainable.
+City Studio is MetroMind’s 3D workspace for building procedural cities, comparing nine pathfinding algorithms, and training Q-learning agents. It shares the dashboard’s dark mint palette, skyline mark, and system fonts. See the [synchronized route preview](../index.html#editions) and [algorithm capabilities](../index.html#algorithms).
+
+[Offline City Studio](../metromind-3d.html) · [2D Grid Lab guide](../2d/README.md)
 
 ## Open the simulator
 
-Open `../metromind-3d.html` in a modern browser. The generated file includes the stylesheet, application code, Three.js and OrbitControls; it does not require npm or a development server. City Studio uses system fonts.
+Download [metromind-3d.html](../metromind-3d.html) and open it in a modern browser with WebGL. The standalone file includes its styles, application code, Three.js, and OrbitControls.
 
-For development, serve this directory and open its `index.html`:
+To run the editable edition, start the server from the repository root.
 
 ```powershell
 python -m http.server 8000 --directory 3d
 ```
 
-Then visit `http://localhost:8000`. Run that command from the repository root.
+Open [City Studio](http://localhost:8000/).
+
+## First run
+
+1. Select **Run simulation** to replay A* in the default 30 × 30 Downtown map.
+2. Open **Insights** to inspect the explored cells, route, and cost. Drag the city to orbit, or select **Top** or **Street** in the camera dock.
+3. Open **Controls** to choose another algorithm. To repair a route after a map edit, choose **D* Lite** and keep **Live replanning** enabled.
+4. Open **Free Build** to draw streets or buildings, or select **Learning** to train an agent.
+
+If City Studio shows **Your city needs WebGL**, enable hardware acceleration in your browser and select **Try again**. Grid Lab can open without WebGL. See the [2D Grid Lab standalone](../metromind-2d.html).
 
 ## Edit and rebuild
 
-Edit the source files in this directory, then regenerate the standalone file from the repository root:
+Edit the source files in this directory. Run the build and tests from the repository root.
 
 ```powershell
 node 3d/scripts/build.cjs
@@ -24,12 +35,13 @@ node 3d/scripts/build.cjs --check
 node --test 3d/tests/engine.test.cjs 3d/tests/app.test.cjs 3d/tests/select.test.cjs 3d/tests/city.test.cjs 3d/tests/traffic.test.cjs 3d/tests/traffic-flow.test.cjs
 ```
 
-The builder uses only Node's built-in modules. It copies the repository-root `theme.css` into `3d/css/theme.css`. It embeds local stylesheet and script references from `index.html`, preserves their order, and escapes script terminators so the generated HTML remains valid. `--check` reports a nonzero exit code when the standalone file differs from its sources. Do not edit the generated HTML directly.
+The builder uses Node’s built-in modules to copy the [shared theme](../theme.css) into `css/theme.css` and embed the edition’s styles and scripts in [metromind-3d.html](../metromind-3d.html). The `--check` option verifies the generated HTML and local theme copy. Edit the source files and rebuild after a change. For changes to the shared palette, typography, or skyline mark, edit the repository-root theme and rebuild both simulators.
 
 | File | Responsibility |
 | --- | --- |
 | `index.html` | Workspace layout and accessible controls |
-| `css/styles.css` | Responsive interface, typography and themes |
+| `css/theme.css` | Generated copy of the shared MetroMind theme |
+| `css/styles.css` | Base interface, layout, and controls |
 | `css/typography.css` | Readable text sizes, contrast, spacing and responsive type rules |
 | `css/map-workspace.css` | Full-window map, floating controls and on-demand panels |
 | `css/tools.css` | Stable map tool rail and labeled terrain/elevation flyout |
@@ -52,9 +64,9 @@ The builder uses only Node's built-in modules. It copies the repository-root `th
 | `tests/traffic.test.cjs` | Lane continuity, turns, heading, spacing, valid roads, timing and car-state preservation using real Three.js transforms |
 | `tests/traffic-flow.test.cjs` | Sustained traffic flow, independent body-overlap checks and block-sized travel on actual generated maps |
 
-The previous 3D prototype is preserved separately in `../old_versions/MetroMind_AI_3D_original.html` when supplied with this update. The v11 standalone file is still generated from `../modular_version/` using its own documented workflow.
-
 ## Workspace
+
+### Navigation and views
 
 The city fills the window by default. A compact floating group provides Free Build, Controls, Compare and Insights. The sidebar keeps Learning, Layers, Display and Help. A small environment card exposes grid size, maps, regeneration, diagonal movement and live replanning. Algorithm and speed sit in a floating capsule above playback; Learning mode offers episode count and Test policy there. Opening Controls brings the actual algorithm, speed and grid fields into the panel, retaining their values. Closing the panel returns them to their floating positions.
 
@@ -68,11 +80,15 @@ The camera starts in a closer exploration view. Use the map zoom buttons or the 
 
 The compass follows the camera's bearing as you orbit, with north at 000°. Click it to face north while retaining the current target, tilt and zoom. Resetting north also stops automatic orbit. The speed control shows its current value and filled track in both the floating dock and Controls panel. Scrollable panels, menus and dialogs share custom scrollbars.
 
+### Free Build
+
 Open the floating **Free Build** button, or press **E**, to edit the current city without replacing it. Draw beyond its edge to expand the canvas automatically, up to 200 × 200 blocks. Existing buildings, streets and endpoint positions stay in the same world locations as the canvas grows. Choose **Done**, or press **E** again, to keep the map and return to simulation.
 
 Free Build uses a bounded floating editor dock with drawing tools, Surface, Brush width, Guides, undo/redo, New canvas and Done directly accessible. The dock arranges its controls into rows at narrower widths. New canvas starts undeveloped ground with two endpoint cells. Select Road and drag a street between the origin and destination; unbuilt ground is not traversable. Surface offers Street (1×), Highway (0.5×), Traffic (3×) and Mud (10×), and Brush width offers 1, 3 or 5 blocks. Place buildings, erase development, or move either endpoint with the toolbar tools. Guides reveals the hidden cells. Undo and redo buttons, Ctrl+Z and Ctrl+Y restore complete build strokes, including canvas growth.
 
 The search and learning models still use a computational grid beneath the freehand editing tools. Free Build provides an expanding canvas with hidden guides, rather than an infinite canvas or a vector road graph. Outside Free Build, ordinary editing remains bounded by the selected grid and the surrounding ground is scenery.
+
+### Search and learning
 
 Dropdowns use the same visual style throughout the workspace. Arrow keys, Home/End and typeahead highlight an option; Enter commits it, Escape cancels, and Tab continues normal keyboard navigation. Menus stay within the window and appear above scrolling panels.
 
@@ -83,6 +99,8 @@ Choose a search algorithm, adjust the heuristic and speed, then run or step thro
 The learning workspace trains a Q-learning agent and exposes its parameters, episode progress, reward trend and learned policy. Training performance depends on the layout and exploration settings; an incomplete policy is reported as such.
 
 Compare algorithms against the same city, inspect live route/search statistics, and save or export layouts and results. Browser saves remain local to the current browser and origin. Downloaded JSON layouts provide a portable copy.
+
+### Display and traffic
 
 City camera and lighting controls provide isometric, top-down and street views, day/dusk/night lighting, automatic orbit, traffic visibility, reduced motion and rendering quality. Focus mode hides the interface. The city is a procedural simulation; roads, traffic and buildings visualize the editable grid rather than live map or traffic data.
 

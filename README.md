@@ -1,76 +1,82 @@
 # MetroMind AI
 
-MetroMind AI is a browser simulator for pathfinding and reinforcement learning. Compare nine search algorithms on the same map, change roads or obstacles to watch D* Lite repair a route, and train a Q-learning agent to find its own way. Choose the 2D grid for inspecting individual search steps or 3D City Studio for exploring and editing a procedural city.
+MetroMind is a browser simulator for pathfinding and reinforcement learning. Replay a search on the same map in **2D Grid Lab** and **3D City Studio**, then open either simulator to edit the map, compare algorithms, or train a Q-learning agent.
 
-## Interactive previews
+[Open the live dashboard](https://ayaan-22.github.io/MetroMind-AI/)
 
-Expand or collapse each preview by clicking its title. Click an image to see it at full size. To run the simulator and edit the map yourself, download the standalone HTML below the preview and open it in a browser.
+## Explore the dashboard
 
-<details open>
-<summary><strong>3D City Studio · Explore a completed route</strong></summary>
+- **Replay a route.** Choose one of nine algorithms and select **Replay search** to watch the search unfold across a 2D grid and a live 3D model of Downtown.
+- **Explore the city.** Drag to orbit, cycle through dusk, night, and day, or pause scene motion. When WebGL is unavailable, the dashboard shows a City Studio screenshot alongside the 2D replay.
+- **Read the results.** The dashboard reports visited cells, route waypoints, and weighted cost. Theta* can connect distant waypoints in a single segment. The **Algorithm capabilities** table compares search strategies, path guarantees, and replanning behavior.
 
-[![3D City Studio orbiting a completed route through Downtown at dusk, with the live insights panel open](docs/media/city-studio.webp)](docs/media/city-studio.webp)
+## Choose an edition
 
-Orbit the city, draw roads and buildings in **Free Build**, and inspect routes with **Insights**. Try **Run simulation** on the default Downtown map, then drag the city to change your view.
+| Edition | What you can do | Offline file | Source |
+| --- | --- | --- | --- |
+| **2D Grid Lab** | Draw walls and weighted terrain, step through search history, and compare routes and explored cells on a flat grid. | [metromind-2d.html](metromind-2d.html) | [Grid Lab guide](2d/README.md) |
+| **3D City Studio** | Orbit a procedural city, build streets and adjust elevation in **Free Build**, and inspect routes and live search metrics. | [metromind-3d.html](metromind-3d.html) | [City Studio guide](3d/README.md) |
 
-[Standalone 3D HTML](metromind-3d.html) · [3D controls and development guide](3d/README.md)
+Both editions share the dashboard’s dark mint theme, skyline mark, and typography. Grid Lab also offers a light theme.
+
+<details>
+<summary><strong>Recorded demo · 2D Grid Lab</strong></summary>
+
+[![A* explores a corridor maze and traces a route from start to goal](docs/media/grid-lab.webp)](docs/media/grid-lab.webp)
 
 </details>
 
-<details open>
-<summary><strong>2D Grid Lab · Watch A* explore a corridor maze</strong></summary>
+<details>
+<summary><strong>Recorded demo · 3D City Studio</strong></summary>
 
-[![A* expanding across a 2D corridor maze and tracing the route from start to goal](docs/media/grid-lab.webp)](docs/media/grid-lab.webp)
-
-Draw walls and weighted terrain, step backward through search history, and compare all nine algorithms with **X**. For a live reroute, select **D* Lite**, click **Find Path**, and draw a wall across the route.
-
-[Standalone 2D HTML](metromind-2d.html) · [2D development guide](2d/README.md)
+[![City Studio orbits a completed route through Downtown at dusk with Insights open](docs/media/city-studio.webp)](docs/media/city-studio.webp)
 
 </details>
 
 ## Run locally
 
-Download or clone this repository and open either standalone HTML file in a modern browser. Both embed the code needed to run offline. The 3D edition requires WebGL.
+Download either standalone HTML file and open it in a modern browser. Each file includes its styles and application code. City Studio requires WebGL.
 
-| Edition | Standalone file | Editable source |
-| --- | --- | --- |
-| 3D City Studio | [metromind-3d.html](metromind-3d.html) | [3d/](3d/) |
-| 2D Grid Lab | [metromind-2d.html](metromind-2d.html) | [2d/](2d/) |
-
-## What you can try
-
-- **Compare search strategies.** Run A*, Dijkstra, bidirectional search, BFS, DFS, greedy best-first search, Jump Point Search, Theta*, and D* Lite. Use the comparison view to see how search effort and route cost change across algorithms.
-- **Experiment with route costs.** Paint highways (0.5×), heavy traffic (3×), or mud (10×). City Studio also lets you edit elevation. Use D* Lite to see how changing obstacles and costs affects an existing route.
-- **Train a Q-learning agent.** Adjust learning parameters, follow reward trends, and inspect the learned policy with arrows and Q-value overlays. City Studio can also show learned values as columns above the map.
-- **Inspect and export runs.** Pause, step through search history, export run statistics as CSV, and save a map as JSON to revisit it later.
-
-| Shortcut | Action |
-| --- | --- |
-| Space | Start or pause search |
-| X | Open algorithm comparison |
-| S / B | Step forward or backward through the search |
-| R | Reset the current route |
-| G | Focus on the map |
-| ? | Open the edition's shortcut guide |
-
-## Develop and rebuild
-
-Edit the source directory for your edition and regenerate its standalone file. To serve both source editions for local development, run this command from the repository root:
+To use the landing dashboard locally, clone or download the repository and open [index.html](index.html) with its adjacent assets. To serve the repository over HTTP, run this command from its root.
 
 ```powershell
 python -m http.server 8000
 ```
 
-Open [3D City Studio](http://localhost:8000/3d/) or the [2D Grid Lab](http://localhost:8000/2d/) after starting the server.
+Open the [landing dashboard](http://localhost:8000/), [2D Grid Lab source](http://localhost:8000/2d/), or [3D City Studio source](http://localhost:8000/3d/).
 
-For **3D City Studio**, build and check the standalone file from the repository root:
+## What you can try
+
+- **Compare all nine searches.** Run A*, Dijkstra, bidirectional search, BFS, DFS, greedy best-first, Jump Point Search, Theta*, and D* Lite against the same map.
+- **Change route costs.** Paint highways (0.5×), traffic (3×), or mud (10×). City Studio also models additional uphill cost.
+- **Reroute with D* Lite.** Run a route in either simulator, then block a street or change a terrain cost to watch the search repair it.
+- **Train a Q-learning agent.** Follow rewards and inspect the learned policy. City Studio can also show Q-values as columns above the map.
+- **Inspect and export a run.** Pause or step through search history, download run statistics as CSV, and export map layouts as JSON.
+
+### Simulator shortcuts
+
+| Key | Action |
+| --- | --- |
+| `Space` | Start or pause search |
+| `X` | Compare algorithms |
+| `S` / `B` | Step forward or backward |
+| `R` | Reset the route |
+| `G` | Focus on the map |
+| `?` | Open the edition’s shortcut guide |
+
+## Develop and rebuild
+
+Edit [theme.css](theme.css) at the repository root to change the shared palette, typography, or skyline mark. Each simulator build copies it into its own CSS folder and embeds it in the standalone HTML. Rebuild both editions after a shared theme change.
+
+Run the City Studio build and tests from the repository root.
 
 ```powershell
 node 3d/scripts/build.cjs
 node 3d/scripts/build.cjs --check
+node --test 3d/tests/*.test.cjs
 ```
 
-For **2D Grid Lab**, build, check parity, and run the tests:
+Use Node.js 22 or later for the Grid Lab build and tests.
 
 ```powershell
 cd 2d
@@ -80,13 +86,13 @@ npm run check:parity
 npm test
 ```
 
-See the [3D development guide](3d/README.md#edit-and-rebuild) and [2D synchronization guide](2d/README.md#keep-both-editions-synchronized) for source layouts and validation commands.
+See the [3D build guide](3d/README.md#edit-and-rebuild) and [2D build guide](2d/README.md#keep-both-editions-synchronized) for source layouts and test coverage.
 
 ## Roadmap
-
-See [ROADMAP.md](ROADMAP.md) for detailed planning and architectural tiers.
 
 - [x] D* Lite dynamic replanning
 - [x] 3D City Studio with a standalone offline build
 - [ ] Multi-agent coordination and collision avoidance
 - [ ] GIS data ingestion for real-world maps
+
+See [ROADMAP.md](ROADMAP.md) for details.

@@ -1,79 +1,68 @@
-# MetroMind AI — 2D Grid Lab Edition
+# MetroMind AI — 2D Grid Lab
 
-![2D Edition](https://img.shields.io/badge/Edition-2D%20Grid%20Lab-orange?style=for-the-badge) ![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge) ![JavaScript](https://img.shields.io/badge/Code-ES6%2B%20Modules-yellow?style=for-the-badge)
+Grid Lab is the flat-grid edition of MetroMind. Paint terrain, watch the search expand one cell at a time, and compare nine pathfinding algorithms on the same map. It shares the landing dashboard’s dark mint palette, skyline mark, and typography. The **Light theme** button in the header switches the workspace and canvas palette.
 
-Welcome to the **2D Grid Lab** edition of MetroMind AI. This edition is designed for developers, researchers, and AI students who wish to study, extend, or benchmark pathfinding algorithms and reinforcement learning agents.
+[Offline Grid Lab](../metromind-2d.html) · [Dashboard and algorithm comparison](../index.html#algorithms) · [3D City Studio guide](../3d/README.md)
 
-Both editions share the same algorithmic foundations. The root `metromind-2d.html` is generated from this directory's HTML, CSS, and JavaScript; it embeds everything needed to run the simulator as a single file. Edit the sources here and rebuild the standalone file instead of editing two implementations.
+## Quick start
 
----
+Download [metromind-2d.html](../metromind-2d.html) and open it directly in a modern browser. The standalone file includes its CSS and JavaScript and works offline.
 
-## 🚀 Quick Start Instructions
+To run the editable edition, start a server from the `2d` directory.
 
-Because this version utilizes **ES6 JavaScript Modules**, it requires a local web server to handle module resolution.
-
-### 1. Open your Terminal
-Navigate to this directory (`/2d`) in your terminal.
-
-### 2. Start a Local Server
 ```powershell
 python -m http.server 8000
 ```
 
-### 3. Launch the Simulator
-Open your browser and navigate to:
-[http://localhost:8000](http://localhost:8000) (or `http://localhost:8000/2d/index.html` from repository root)
+Open [Grid Lab](http://localhost:8000/). If the server started from the repository root, open [Grid Lab under /2d/](http://localhost:8000/2d/).
 
----
+## Use Grid Lab
 
-## 🏗️ Project Architecture
+1. Pick a grid size or maze in **Tools**. Drag a brush across the grid to place walls or paint highway (0.5×), traffic (3×), or mud (10×).
+2. Use **Start** and **Goal** to place the route endpoints. In **Algo**, choose a search strategy, then select **Find Path**.
+3. Use **Step** or the history buttons to inspect the search. Open **Stats** or the algorithm log to see what the search explored. Select **Compare All** to run all nine searches on the same grid.
 
-The 2D codebase is decoupled into modular ES6 components:
+Open **RL** to train a Q-learning agent and inspect its policy and training statistics. Use **Export Stats CSV** or **Export Grid JSON** in **Tools** to save results or a map.
 
-```text
-2d/
-├── index.html              # Modular entry point
-├── css/
-│   └── styles.css          # Grid UI styling
-└── js/
-    ├── main.js             # Application bootstrap
-    ├── config.js           # Constants & hyperparameters
-    ├── background.js       # Background animation
-    ├── comparison.js       # Nine-algorithm comparison and charts
-    ├── ui.js               # DOM manipulation & event listeners
-    ├── grid.js             # Canvas rendering & grid logic
-    ├── maze.js             # Procedural generation algorithms
-    ├── history.js          # Undo/redo & state tracking
-    └── pathfinding/
-        ├── algorithms.js   # A*, Dijkstra, JPS, Theta*
-        ├── dstar-lite.js   # Incremental D* Lite replanning
-        ├── heuristics.js   # Distance functions
-        └── qlearning.js    # Reinforcement learning agent
-```
-
----
-
-## 🧠 Why Modular?
-
-- **Extensibility**: Want to add a new algorithm? Simply edit `js/pathfinding/algorithms.js`.
-- **Readability**: Code is categorized by responsibility, making it easier to debug and understand.
-- **Modern Standards**: Uses native `import`/`export` syntax for clean dependency management.
+| Key | Action |
+| --- | --- |
+| `Space` | Start or pause search |
+| `X` | Compare all nine algorithms |
+| `S` | Advance the search one step |
+| `B` / `F` | Move backward or forward through search history |
+| `R` | Reset the route |
+| `Tab` | Toggle the tools sidebar |
+| `G` | Focus on the grid |
+| `?` | Open the shortcut guide |
 
 ## Dynamic replanning with D* Lite
 
-1. Choose **D* Lite ↻** in the **Algo** tab and click **Find Path**.
+1. Choose **D* Lite** in **Algo** and select **Find Path**.
 2. Draw or erase walls while searching or after a route appears. The active session repairs the route using its existing goal distances. Highway, traffic, and mud edits also trigger repairs.
-3. **Pause** keeps edits queued without running the search; **Step** processes one queue expansion, and **Resume** continues at the selected speed. A blocked route stays active and recovers when you open a passage.
+3. Use **Pause** to queue edits, **Step** to process one queue expansion, or **Resume** to continue at the selected speed. If the route is blocked, opening a passage lets the active session recover.
 
-Repairs immediately clear the old route, cost, and agent overlay. Routes run from the selected start to the selected goal; the drone remains a route visualization. Moving either endpoint, changing diagonal movement, loading a maze, resizing, clearing, resetting, or selecting another algorithm clears the session. History navigation pauses D* Lite and previews search colors without replacing the live grid; Resume or Step returns to that live state, and map edits clear old snapshots.
+An edit clears the previous route, cost, and agent overlay. Moving an endpoint, changing diagonal movement, loading a maze, resizing, clearing, resetting, or choosing another algorithm resets the session. History navigation pauses the search and shows a recorded state. **Resume** and **Step** return to the live grid, and map edits clear old snapshots.
 
-D* Lite uses `g`/`rhs` goal distances and a lexicographic two-part priority queue, following [Koenig and Likhachev's D* Lite](https://idm-lab.org/bib/abstracts/Koen02e.html). Its automatic heuristic uses Manhattan distance for four-way movement or octile distance for eight-way movement, scaled by the minimum terrain cost (0.5). The heuristic buttons and weight slider are disabled for this algorithm. Terrain costs are charged on entry, and diagonal corner crossing follows the existing grid rules. Explored-node counts accumulate across repairs.
+D* Lite keeps `g` and `rhs` goal distances and uses a two-part priority key. It chooses Manhattan distance for four-way movement and octile distance for eight-way movement, scaled to the minimum terrain cost of 0.5. Terrain is charged on entry. The heuristic and weight controls are disabled for D* Lite. Explored-node counts accumulate across repairs. See [Koenig and Likhachev’s D* Lite paper](https://idm-lab.org/bib/abstracts/Koen02e.html).
 
-The other eight algorithms retain their existing search behavior. Both editions include D* Lite, comparison mode, RL training and policy overlays, mouse/touch editing, keyboard shortcuts, history, and exports.
+## Source layout
+
+| File | Responsibility |
+| --- | --- |
+| `index.html` | ES-module entry point and workspace controls |
+| `css/theme.css` | Generated copy of the repository’s [shared theme](../theme.css) |
+| `css/styles.css` | Grid Lab layout, controls, and light theme |
+| `js/main.js` | Bootstrap, playback, and app state |
+| `js/config.js` and `js/grid.js` | Grid settings, canvas colors, rendering, and input |
+| `js/ui.js` and `js/background.js` | Interface events, panels, and background animation |
+| `js/maze.js` and `js/history.js` | Map generation and search snapshots |
+| `js/comparison.js` | Algorithm comparison and charts |
+| `js/pathfinding/` | Search, D* Lite repair, heuristics, and Q-learning |
+| `scripts/build-standalone.js` | Offline HTML builder and parity check |
 
 ## Keep both editions synchronized
 
-From this directory, with Node.js 22 or later:
+Run these commands from the `2d` directory with Node.js 22 or later.
 
 ```powershell
 npm ci
@@ -82,30 +71,10 @@ npm run check:parity
 npm test
 ```
 
-`build` bundles the modular JavaScript into a classic inline script and embeds the shared stylesheet in `../metromind-2d.html`. The generated standalone file can be opened directly without a server, Node.js, or adjacent source files. The build also copies the repository-root `theme.css` into `2d/css/theme.css` and embeds it in the standalone. Grid Lab uses system fonts.
+`build` copies the [repository theme](../theme.css) into `css/theme.css`, bundles the modular JavaScript, and embeds both CSS files in [metromind-2d.html](../metromind-2d.html). Edit the original source files and regenerate the standalone after a change. Edit the repository-root theme for palette, typography, or skyline mark updates.
 
-`check:parity` fails if the checked-in standalone file differs from a fresh build. `npm test` includes this drift check and runs the same interaction scenarios against the ES module entry point and the generated standalone script. Rebuild after editing any application HTML, CSS, or JavaScript. Commit the updated standalone file along with the modular source changes.
+`check:parity` checks both the local theme copy and the offline build. The tests compare D* Lite routes against an independent Dijkstra solver and exercise app controls, playback, comparison, learning, and exports in the modular and standalone builds.
 
-### Tests
+## Troubleshooting
 
-After `npm ci`, run `npm test` from this directory. Tests compare initial and repaired routes against an independent Dijkstra solver, exercise obstacle and weighted-terrain changes in four/eight-way mode, and run the app's real control handlers with a simulated DOM and clock. All eight existing algorithms have smoke coverage. Edition parity tests also cover comparison, onboarding, touch edits, shortcuts, RL training and policy, and grid exports.
-
----
-
-## 🛠️ Troubleshooting
-
-### "The grid is blank and buttons do nothing!"
-**Root Cause:** You are likely opening the HTML file directly from your file system (using the `file://` protocol). Modern browsers block ES6 module imports over `file://` due to CORS restrictions.
-
-**The Fix:**
-1. Open your terminal in the `2d` folder.
-2. Run a local server: `python -m http.server 8000`.
-3. Open `http://localhost:8000` in your browser.
-
-Everything will work instantly — no code changes needed.
-
----
-
-> [!TIP]
-> If you don't have Python installed, you can also use Node.js (`npx serve`) or the **Live Server** extension in VS Code.
-
+If `2d/index.html` opens to a blank grid from your file system, serve the `2d` directory over HTTP so the browser can load its modules. The [standalone Grid Lab file](../metromind-2d.html) can be opened directly.
